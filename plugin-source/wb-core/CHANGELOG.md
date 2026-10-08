@@ -1,5 +1,19 @@
 # wb-core changelog
 
+## 1.3.1 — 8 October 2026
+The set-up checklist restyled (Zina, 8 October: "this doesn't look very professional at all").
+- **Getting started** on System Settings is now a progress card in the same anatomy as "Needs
+  attention": a title with "3 of 8 done" and a thin meter, then one row per step with a tick or an
+  empty circle, the step's name, one line saying what it means, and "Do it" on the steps still to
+  do. Two columns on a desk, one on a phone. Labels shortened ("Company details"; the detail is the
+  line under it).
+- **The notification bar** on every screen uses the same rows (chip, message, Open) instead of a
+  bulleted list.
+- Links inside lists and table cells are no longer underlined (prose links still are); they
+  underline on hover. The waiting count on the top bar never wraps; on a phone it shows the number
+  alone.
+- The accessibility gate renders System Settings too.
+
 ## 1.3.0 — 8 October 2026
 The flows explained, and walkthroughs (Zina, 8 October: "an explanation of the flows you've built,
 and a how-to section with walk throughs").

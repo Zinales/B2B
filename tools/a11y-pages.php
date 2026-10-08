@@ -65,6 +65,9 @@ function get_query_var( $k, $d = '' ) { return $d; }
 function add_action( ...$a ) {} function add_filter( ...$a ) {} function add_shortcode( ...$a ) {}
 function wb_notice( string $kind, string $msg ): string { return '<div class="wb-notice wb-' . $kind . '" role="status">' . $msg . '</div>'; }
 class WB_Storage { public static function exists( $k ) { return false; } }
+class WB_Tables { public static function all_present() { return true; } }
+class WB_CCT { public static function count( ...$a ) { return 3; } }
+function wb_truthy( $v ) { return in_array( strtolower( (string) $v ), [ '1', 'yes', 'true', 'on' ], true ); }
 /** The real stylesheets and the default brand tokens, as the plugin would print them. */
 function wp_head() {
 	echo '<style>' . WB_Setup::css_vars( WB_Setup::DEFAULT_COLORS ) . '</style>';
@@ -74,6 +77,7 @@ function wp_head() {
 /** A stand-in panel with the primitives every screen uses, so the frame's content area is not empty. */
 function do_shortcode( $s ) {
 	if ( '[wb_howto]' === $s ) return WB_Guide::render();   // the How-to screen is pure words, so the real thing is rendered
+	if ( '[wb_setup]' === $s ) return WB_Setup::checklist_card() . do_shortcode( '' );   // the set-up checklist (six of eight done, as a new site looks)
 	return '<div class="wb-panel"><h2>Panel</h2><p class="wb-muted">Showing the newest 50.</p>'
 		. '<p><button type="submit" class="wb-btn">Save</button> <button type="submit" class="wb-btn wb-btn-ghost">Cancel</button> '
 		. '<a class="wb-btn" href="#">Open</a> <a class="wb-btn wb-btn-ghost" href="#">Back</a></p>'
@@ -103,6 +107,7 @@ $pages = [
 	[ 'home-owner', 'home', 'wb_owner' ],
 	[ 'quotes-sales', 'quotes', 'wb_sales' ],
 	[ 'howto-sales', 'howto', 'wb_sales' ],
+	[ 'setup-owner', 'setup', 'wb_owner' ],
 	[ 'payroll-refused-sales', 'setup', 'wb_sales' ],
 	[ 'home-refused-customer', 'home', 'wb_customer' ],
 	[ 'portal-customer', 'portal', 'wb_customer' ],

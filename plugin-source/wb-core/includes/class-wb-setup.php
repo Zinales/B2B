@@ -330,31 +330,38 @@ class WB_Setup {
 
 	/* ================================================================== checklist */
 
-	/** [ key => [ label, done, where ] ] — computed every time, never stored. */
+	/** [ key => [ label, done, where, what it means ] ] — computed every time, never stored. */
 	public static function checklist(): array {
 		$b    = self::brand();
 		$maps = (array) get_option( 'wb_bank_mapping', [] );
 		$pay  = (array) get_option( 'wb_payroll', [] );
 		return [
-			'tables'   => [ 'Business tables', WB_Tables::all_present(), '#wb-setup-tables' ],   // 0.3.0: first, everything else needs them
-			'company'  => [ 'Company details (legal name and address)', '' !== $b['legal_name'] && '' !== trim( $b['physical_address'] ), '#wb-setup-company' ],
-			'colours'  => [ 'Colours and logo', '' !== (string) $b['colors_saved_at'], '#wb-setup-look' ],
-			'vat'      => [ 'VAT', 'no' === $b['vat_registered'] || '' !== $b['vat_number'], '#wb-setup-company' ],
-			'bank'     => [ 'Bank statement layout', (bool) array_filter( $maps, fn( $m ) => is_array( $m ) && isset( $m['columns'] ) ), WB_Workspace::url( 'payments' ) ],
-			'product'  => [ 'First product', WB_CCT::count( 'wb_products', [], false ) > 0, WB_Workspace::url( 'products' ) ],
-			'customer' => [ 'First customer', WB_CCT::count( 'wb_customers', [], false ) > 0, WB_Workspace::url( 'customers' ) ],
-			'payroll'  => [ 'Payroll settings', wb_truthy( $pay['configured'] ?? '' ), WB_Workspace::url( 'payroll' ) ],
+			'tables'   => [ 'Business tables', WB_Tables::all_present(), '#wb-setup-tables', 'The tables the system keeps its records in' ],   // 0.3.0: first, everything else needs them
+			'company'  => [ 'Company details', '' !== $b['legal_name'] && '' !== trim( $b['physical_address'] ), '#wb-setup-company', 'Legal name and address, on every document' ],
+			'colours'  => [ 'Colours and logo', '' !== (string) $b['colors_saved_at'], '#wb-setup-look', 'Your look, checked for contrast' ],
+			'vat'      => [ 'VAT', 'no' === $b['vat_registered'] || '' !== $b['vat_number'], '#wb-setup-company', 'Registered or not, and the number' ],
+			'bank'     => [ 'Bank statement layout', (bool) array_filter( $maps, fn( $m ) => is_array( $m ) && isset( $m['columns'] ) ), WB_Workspace::url( 'payments' ), 'Which columns your bank\'s CSV uses, saved once' ],
+			'product'  => [ 'First product', WB_CCT::count( 'wb_products', [], false ) > 0, WB_Workspace::url( 'products' ), 'Cost, list price and lowest margin' ],
+			'customer' => [ 'First customer', WB_CCT::count( 'wb_customers', [], false ) > 0, WB_Workspace::url( 'customers' ), 'Terms, credit limit and price tier' ],
+			'payroll'  => [ 'Payroll settings', wb_truthy( $pay['configured'] ?? '' ), WB_Workspace::url( 'payroll' ), 'Only if the system will do your pay' ],
 		];
 	}
 
 	public static function checklist_card(): string {
 		$items = self::checklist();
 		$done  = count( array_filter( $items, fn( $i ) => $i[1] ) );
-		$h     = '<div class="wb-fold wb-checklist"><div class="wb-fold-body"><p><strong>Getting started</strong> · ' . $done . ' of ' . count( $items ) . ' done</p><ul class="wb-checklist-list">';
+		$all   = count( $items );
+		$pct   = $all ? (int) round( 100 * $done / $all ) : 0;
+		$h     = '<section class="wb-card wb-card--lead wb-checklist" aria-labelledby="wb-checklist-h"><div class="wb-checklist-head"><h2 id="wb-checklist-h">Getting started</h2>'
+			. '<span class="wb-checklist-count">' . $done . ' of ' . $all . ' done</span></div>'
+			. '<div class="wb-meter" role="progressbar" aria-valuenow="' . $done . '" aria-valuemin="0" aria-valuemax="' . $all . '" aria-label="Set-up steps done"><span style="width:' . $pct . '%"></span></div>'
+			. ( $done === $all ? '<p class="wb-muted">Everything is set up. You are selling.</p>' : '' ) . '<ul class="wb-check">';
 		foreach ( $items as $i ) {
-			$h .= '<li>' . WB_Render::chip( $i[1] ? 'done' : 'to_do' ) . ' <a href="' . esc_url( $i[2] ) . '">' . esc_html( $i[0] ) . '</a></li>';
+			$h .= '<li class="' . ( $i[1] ? 'is-done' : 'is-todo' ) . '"><span class="wb-check-mark" aria-hidden="true">' . ( $i[1] ? '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>' : '' ) . '</span>'
+				. '<span class="wb-check-t"><a href="' . esc_url( $i[2] ) . '">' . esc_html( $i[0] ) . '</a><small>' . esc_html( (string) ( $i[3] ?? '' ) ) . '</small></span>'
+				. ( $i[1] ? '<span class="wb-check-state">Done</span>' : '<a class="wb-btn wb-btn-sm wb-btn-ghost" href="' . esc_url( $i[2] ) . '">Do it<span class="wb-sr">: ' . esc_html( $i[0] ) . '</span></a>' ) . '</li>';
 		}
-		return $h . '</ul></div></div>';
+		return $h . '</ul></section>';
 	}
 
 	/* ================================================================== screen */

@@ -32,7 +32,8 @@ html{-webkit-text-size-adjust:100%}
 body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-family:var(--wb-font,'Poppins',system-ui,sans-serif);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
 .wb-app a{color:var(--wb-primary);text-decoration:none;transition:color var(--wb-speed) var(--wb-ease)}
 .wb-app a:hover{color:var(--wb-ink)}
-.wb-app p a,.wb-app li a,.wb-app td a{text-decoration:underline;text-underline-offset:.15em}
+.wb-app p a,.wb-app .wb-fold-note a{text-decoration:underline;text-underline-offset:.15em}
+.wb-app li a:hover,.wb-app td a:hover{text-decoration:underline;text-underline-offset:.15em}
 .wb-app :focus-visible{outline:none;box-shadow:var(--wb-focus)}
 .wb-app h1,.wb-app h2,.wb-app h3,.wb-app h4{font-family:var(--wb-font-head,var(--wb-font));color:var(--wb-ink);line-height:1.2;margin:0;letter-spacing:-.015em}
 .wb-app img{max-width:100%;height:auto}
@@ -92,7 +93,7 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-crumb li+li::before{content:"›";margin-right:.35rem;color:var(--wb-line)}
 .wb-crumb [aria-current]{color:var(--wb-ink);font-weight:600}
 .wb-top-me{margin-left:auto;color:var(--wb-muted);text-align:right}
-.wb-app a.wb-top-wait{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .7rem;border-radius:var(--wb-r-chip);border:1px solid var(--wb-line);background:var(--wb-card);color:var(--wb-ink);font-weight:600;font-size:var(--wb-fs-sm)}
+.wb-app a.wb-top-wait{display:inline-flex;white-space:nowrap;align-items:center;gap:.4rem;padding:.3rem .7rem;border-radius:var(--wb-r-chip);border:1px solid var(--wb-line);background:var(--wb-card);color:var(--wb-ink);font-weight:600;font-size:var(--wb-fs-sm)}
 .wb-app a.wb-top-wait:hover{border-color:var(--wb-primary);color:var(--wb-primary)}
 .wb-top-wait b{min-width:1.3rem;padding:0 .35rem;border-radius:var(--wb-r-chip);background:var(--wb-primary);color:var(--wb-on-primary,#F7F3EE);text-align:center;font-size:var(--wb-fs-xs);line-height:1.5}
 .wb-top-wait.is-clear b{background:var(--wb-good)}
@@ -146,8 +147,6 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-fold--reference{margin-left:5rem;background:transparent;border-color:var(--wb-line)}
 .wb-fold--reference>summary{color:var(--wb-muted);font-weight:500}
 .wb-fold-ro{font-size:var(--wb-fs-xs);font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border:1px solid var(--wb-line);border-radius:var(--wb-r-chip);color:var(--wb-muted)}
-.wb-checklist{border-left:3px solid var(--wb-primary)}
-.wb-checklist .wb-fold-body{padding-top:.9rem}
 
 /* ---------- tables: never sideways; cards under 640px ---------- */
 .wb-list{border:1px solid var(--wb-line);border-radius:var(--wb-r);overflow:hidden;margin:0 0 var(--wb-s4);font-size:var(--wb-fs-md)}
@@ -177,8 +176,13 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-state-t{font-weight:600;color:var(--wb-ink);margin:0 0 .15rem}
 .wb-state-s{margin:0;color:var(--wb-muted);font-size:var(--wb-fs-md)}
 .wb-state--blocked{border-style:solid;background:var(--wb-tint)}
-.wb-notify-bar{background:var(--wb-card);border:1px solid var(--wb-line);border-left:3px solid var(--wb-primary);border-radius:0 var(--wb-r) var(--wb-r) 0;padding:.7rem 1rem;margin:0 0 var(--wb-s4);font-size:var(--wb-fs-md)}
-.wb-notify-bar ul{margin:.4rem 0;padding-left:1.1rem}
+.wb-notify-bar{border-left:3px solid var(--wb-primary);padding:.8rem 1rem;margin:0 0 var(--wb-s4)}
+.wb-notify-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--wb-s3);margin:0 0 .3rem}
+.wb-notify-head strong{font-size:var(--wb-fs-md)}
+.wb-notify-list{list-style:none;margin:0;padding:0}
+.wb-notify-list li{display:grid;grid-template-columns:auto 1fr auto;gap:.7rem;align-items:center;padding:.5rem 0;border-top:1px solid var(--wb-line);min-height:44px}
+.wb-notify-list li:first-child{border-top:0}
+.wb-notify-t{color:var(--wb-ink)}
 
 /* ---------- needs attention + quick actions (Today) ---------- */
 .wb-today{margin:0 0 var(--wb-s4)}
@@ -219,8 +223,25 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-inline-form label{display:inline-flex;align-items:center;gap:.4rem;font-size:var(--wb-fs-md);color:var(--wb-muted)}
 .wb-inline-form input,.wb-inline-form select{font:inherit;padding:.5rem .6rem;min-height:40px;border:1px solid var(--wb-line);border-radius:var(--wb-r);background:var(--wb-card);color:var(--wb-ink)}
 .wb-copy{display:block;width:100%;font-size:var(--wb-fs-sm);margin-top:.4rem;overflow-wrap:anywhere;word-break:break-all;user-select:all;padding:.5rem .6rem;border:1px solid var(--wb-line);border-radius:var(--wb-r);background:var(--wb-canvas);color:var(--wb-ink)}
-.wb-checklist-list{list-style:none;margin:.3rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:.35rem 1rem}
-.wb-checklist-list a{color:var(--wb-ink)}
+/* ---- Getting started: the set-up checklist as a progress card (1.3.1) ---- */
+.wb-checklist{margin:0 0 var(--wb-s5)}
+.wb-checklist-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--wb-s3);flex-wrap:wrap}
+.wb-checklist-head h2{margin:0}
+.wb-checklist-count{color:var(--wb-muted);font-size:var(--wb-fs-sm);font-weight:600;font-variant-numeric:tabular-nums}
+.wb-meter{height:6px;background:var(--wb-tint);border-radius:3px;overflow:hidden;margin:.6rem 0 .4rem}
+.wb-meter span{display:block;height:100%;background:var(--wb-primary);border-radius:3px;transition:width var(--wb-speed) var(--wb-ease)}
+.wb-check{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;column-gap:var(--wb-s5)}
+.wb-check li{display:grid;grid-template-columns:auto 1fr auto;gap:.7rem;align-items:center;padding:.6rem 0;border-top:1px solid var(--wb-line);min-height:48px}
+.wb-check li:nth-child(-n+2){border-top:0}
+.wb-check-mark{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--wb-line);display:inline-flex;align-items:center;justify-content:center;background:var(--wb-card)}
+.wb-check-mark svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.wb-check li.is-done .wb-check-mark{background:var(--wb-good);border-color:var(--wb-good)}
+.wb-check li.is-todo .wb-check-mark{border-color:var(--wb-primary)}
+.wb-check-t{min-width:0}
+.wb-app .wb-check-t a{color:var(--wb-ink);font-weight:600}
+.wb-check li.is-done .wb-check-t a{color:var(--wb-muted);font-weight:500}
+.wb-check-t small{display:block;color:var(--wb-muted);font-size:var(--wb-fs-xs);line-height:1.35}
+.wb-check-state{font-size:var(--wb-fs-xs);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--wb-good)}
 .wb-swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:.5rem}
 .wb-swatch{border:1px solid var(--wb-line);border-radius:var(--wb-r);padding:.6rem .8rem;font-size:var(--wb-fs-md);background:var(--wb-card)}
 
@@ -235,6 +256,8 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 
 /* ---------- phones and small tablets ---------- */
 @media (max-width:900px){
+ .wb-check{grid-template-columns:1fr}
+ .wb-check li:nth-child(2){border-top:1px solid var(--wb-line)}
  .wb-side{position:fixed;left:0;top:0;bottom:0;height:auto;z-index:60;width:17rem;transform:translateX(-100%);transition:transform .2s var(--wb-ease)}
  .wb-side-open .wb-side{transform:none}
  .wb-side-open .wb-scrim{display:block;position:fixed;inset:0;z-index:50;background:rgba(6,15,29,.5)}
@@ -251,6 +274,8 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
  .wb-fold--sibling,.wb-fold--reference{margin-left:0}
 }
 @media (max-width:640px){
+ .wb-top-wait-w{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+ .wb-notify-list li{grid-template-columns:auto 1fr}.wb-notify-list li>a,.wb-notify-list li>span:last-child{grid-column:2}
  .wb-stat-num{font-size:var(--wb-fs-xl)}
  .wb-quick{grid-template-columns:1fr}
  .wb-field input,.wb-field select,.wb-field textarea,.wb-inline-form input,.wb-inline-form select{font-size:16px}

@@ -358,7 +358,7 @@ class WB_Workspace {
 		if ( ! $portal ) {
 			$crumb = '<nav aria-label="Breadcrumb"><ol class="wb-crumb"><li>' . ( 'home' === $slug ? '<span aria-current="page">Today</span>' : '<a href="' . esc_url( self::url( 'home' ) ) . '">Today</a>' ) . '</li>'
 				. ( 'home' !== $slug && '' !== $title ? '<li><span aria-current="page">' . esc_html( $title ) . '</span></li>' : '' ) . '</ol></nav>';
-			$crumb .= '<a class="wb-top-wait' . ( $wait ? '' : ' is-clear' ) . '" href="' . esc_url( self::url( 'home' ) ) . '#wb-waiting"><b>' . (int) $wait . '</b>' . ( $wait ? ' waiting on you' : ' waiting' ) . '</a>';
+			$crumb .= '<a class="wb-top-wait' . ( $wait ? '' : ' is-clear' ) . '" href="' . esc_url( self::url( 'home' ) ) . '#wb-waiting"><b>' . (int) $wait . '</b>' . ( $wait ? '<span class="wb-top-wait-w"> waiting on you</span>' : '<span class="wb-top-wait-w"> waiting</span>' ) . '</a>';
 		}
 		$top = '<header class="wb-top">'
 			. ( $portal ? '<a class="wb-top-brand" href="' . esc_url( home_url( '/' ) ) . '"><span class="wb-side-mark">' . $mark . '</span>' . esc_html( $name ) . '</a>' : '<button type="button" class="wb-top-menu" aria-controls="wb-side" aria-expanded="false">Menu</button>' . $crumb )

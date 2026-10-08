@@ -151,7 +151,7 @@ foreach ( $logins as $role ) {
 	if ( current_user_can( 'wb_access_workspace' ) ) {
 		[ , $html ] = WB_Workspace::render( 'home' );
 		ok( "{$role}: breadcrumb on the top bar", false !== strpos( $html, '<ol class="wb-crumb"><li><span aria-current="page">Today</span></li></ol>' ) );
-		ok( "{$role}: the waiting count is on the top bar and links to Needs attention", false !== strpos( $html, 'class="wb-top-wait is-clear" href="https://b2b.test/workspace/#wb-waiting"><b>0</b> waiting</a>' ) );
+		ok( "{$role}: the waiting count is on the top bar and links to Needs attention", false !== strpos( $html, 'class="wb-top-wait is-clear" href="https://b2b.test/workspace/#wb-waiting"><b>0</b><span class="wb-top-wait-w"> waiting</span></a>' ) );
 		ok( "{$role}: every menu item carries an icon", substr_count( $html, 'class="wb-side-item' ) === substr_count( $html, '<span class="wb-side-ic"' ) );
 		ok( "{$role}: the person and Sign out are at the foot of the menu", false !== strpos( $html, '<div class="wb-side-foot">' ) && false !== strpos( $html, '<span class="wb-side-av" aria-hidden="true">TM</span>' ) );
 	}

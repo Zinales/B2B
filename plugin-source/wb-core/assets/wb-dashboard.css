@@ -39,8 +39,6 @@ button.wb-btn-ghost,.wb-btn-ghost{background:transparent;color:var(--wb-ink);bor
 /* 0.2.0: the brand (WB_Setup prints the tokens in the page head), setup checklist, colour swatches */
 .wb-form button.wb-btn:hover,button.wb-btn:hover,.wb-btn:hover{background:var(--wb-primary-dark,var(--wb-ink))}
 .wb-list,.wb-fold,.wb-field,.wb-stat,.wb-notice{font-family:var(--wb-font,inherit)}
-.wb-checklist-list{list-style:none;margin:.3rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:.35rem 1rem}
-.wb-checklist-list a{color:var(--wb-ink)}
 .wb-swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:.5rem}
 .wb-swatch{border:1px solid var(--wb-line);border-radius:8px;padding:.6rem .8rem;font-size:.88rem}
 @media (max-width:640px){

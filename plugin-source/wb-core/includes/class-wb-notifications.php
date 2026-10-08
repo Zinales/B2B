@@ -153,12 +153,13 @@ class WB_Notifications {
 		$n   = self::unread_count( $uid );
 		if ( ! $n ) return '';
 		$rows = array_slice( array_filter( self::rows( $uid, 5 ), fn( $r ) => empty( $r['read_at'] ) ), 0, 3 );
-		$h    = '<div class="wb-notify-bar"><strong>' . esc_html( sprintf( _n( '%d new notification', '%d new notifications', $n, 'wb' ), $n ) ) . '</strong><ul>';
+		$h    = '<section class="wb-card wb-notify-bar" aria-label="New notifications"><div class="wb-notify-head"><strong>' . esc_html( sprintf( _n( '%d new notification', '%d new notifications', $n, 'wb' ), $n ) ) . '</strong>'
+			. '<a href="' . esc_url( WB_Workspace::url( 'notifications' ) ) . '">See all</a></div><ul class="wb-notify-list">';
 		foreach ( $rows as $r ) {
-			$h .= '<li>' . WB_Render::chip( self::GROUPS[ $r['ngroup'] ] ?? '' ) . ' ' . esc_html( (string) $r['message'] )
-				. ( '' !== $r['link'] ? ' <a href="' . esc_url( (string) $r['link'] ) . '">Open</a>' : '' ) . '</li>';
+			$h .= '<li>' . WB_Render::chip( self::GROUPS[ $r['ngroup'] ] ?? '' ) . '<span class="wb-notify-t">' . esc_html( (string) $r['message'] ) . '</span>'
+				. ( '' !== $r['link'] ? '<a class="wb-btn wb-btn-sm wb-btn-ghost" href="' . esc_url( (string) $r['link'] ) . '">Open<span class="wb-sr">: ' . esc_html( (string) $r['message'] ) . '</span></a>' : '<span></span>' ) . '</li>';
 		}
-		return $h . '</ul><a href="' . esc_url( WB_Workspace::url( 'notifications' ) ) . '">See all</a></div>';
+		return $h . '</ul></section>';
 	}
 
 	public static function panel( $atts = [] ): string {
