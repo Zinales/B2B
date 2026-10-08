@@ -15,7 +15,7 @@ watched closely.
 | **System Integrity Framework/** | How it is built and why it holds together. Start with `DATA-ARCHITECTURE.md`. |
 | **plugin-source/wb-core/** | The WordPress plugin master (engines: ledger, numbering, roles, pricing, stock, orders, invoices, payments, demand, staff, setup, customer portal, payroll). |
 | **sample/** | The clickable sample. Double-click `sample/index.html`. Demo data only. |
-| **docs/** | Working notes and decisions, the payroll rules, the review findings (`docs/review-*/`), and `BUILD-PATTERNS.md` (what Kaycie, FindGro and Brandzgro taught us about *how* to build, applied to wb-core). |
+| **docs/** | `FLOWS.md` (how every flow runs) and `HOW-TO.md` (walkthroughs), both written from the program by `tools/guide-md.php`; the payroll rules; the review findings (`docs/review-*/`); and `BUILD-PATTERNS.md` (what Kaycie, FindGro and Brandzgro taught us about *how* to build, applied to wb-core). |
 | **tools/** | `build.py`, the only way an upload zip is made (see *How we change this safely*). |
 | **DEPLOY/** | The upload zips, one per version. Old ones are kept for rolling back. |
 
@@ -55,12 +55,16 @@ Everything else (data design, controls, engines) is designed for this product on
 merits and recorded in `System Integrity Framework/`.
 
 ## Where we are (8 October 2026)
-wb-core 1.0.0 is version one: the engines, the screens in the Brandzgro look with Kaycie's
-anatomy, every master record typed or uploaded, a public front page with a shared demo, and the
-system's own sign-in page. It is ready for a client's own name, colours and data. Still open:
-the real product name (table names need a one-time migration after the first live client), PDFs
-for documents and payslips, IRP5/EMP501 figures, and the items in `docs/BUILD-PATTERNS.md` §5
-not yet ticked (2.5, 2.6, 2.10; 2.4 only partly).
+wb-core 1.3.0 is version one for market: the engines, the screens in the Brandzgro look with
+Kaycie's anatomy, every master record typed or uploaded, a public front page with a shared demo,
+the system's own sign-in page, every numbered document as a PDF (1.1.0), a year of demo trading
+played through the real engines (1.2.0), and the flows explained in the program itself: the How-to
+screen, a "How this screen fits in" fold on every screen, and `docs/FLOWS.md` / `docs/HOW-TO.md`
+written from the same words (1.3.0). Still open: the real product name in table names (a one-time
+migration after the first live client), IRP5/EMP501 figures, and the items in
+`docs/BUILD-PATTERNS.md` §5 not yet ticked (2.5, 2.6, 2.10; 2.4 only partly). The 1.2.0 seed has
+not yet been run against a WordPress database: this build environment has no MySQL server, so the
+first run is "Load demo data" on the staging site.
 
 ## Decisions (Zina, 2 October 2026)
 1. **Name, colours and logo are set on a Setup screen** and stored per client. Brandzgro colours

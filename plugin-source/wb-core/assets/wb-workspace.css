@@ -344,3 +344,34 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 @media (prefers-reduced-motion:reduce){
  .wb-pen path{animation:none;stroke-dashoffset:0}
 }
+
+/* ---- How-to: the flows and the walkthroughs (1.3.0) ---- */
+.wb-guide-toc{display:grid;grid-template-columns:1fr 1fr;gap:var(--wb-s3) var(--wb-s5);padding:var(--wb-s4);background:var(--wb-card);border:1px solid var(--wb-line);border-radius:var(--wb-r);margin:0 0 var(--wb-s5)}
+.wb-guide-toc ul{list-style:none;margin:0;padding:0}
+.wb-guide-toc li{margin:0 0 var(--wb-s2)}
+.wb-guide-toc li a{display:inline-block;min-height:24px;line-height:24px}
+.wb-guide{margin:0 0 var(--wb-s6)}
+.wb-guide h2{margin:0 0 var(--wb-s2)}
+.wb-guide-flow{padding:var(--wb-s4) 0 var(--wb-s3);border-top:1px solid var(--wb-line)}
+.wb-guide-flow h3{margin:0 0 var(--wb-s2)}
+.wb-guide-idea{color:var(--wb-muted);margin:0 0 var(--wb-s3)}
+.wb-guide-h{margin:var(--wb-s3) 0 var(--wb-s2);font-size:var(--wb-fs-md);font-weight:600}
+.wb-guide-steps{list-style:none;counter-reset:wb-step;margin:0;padding:0}
+.wb-guide-steps li{display:grid;grid-template-columns:2rem 9rem 1fr;gap:var(--wb-s2) var(--wb-s3);align-items:start;padding:var(--wb-s2) 0;border-top:1px dashed var(--wb-line);counter-increment:wb-step}
+.wb-guide-steps li:first-child{border-top:0}
+.wb-guide-steps li::before{content:counter(wb-step);font-weight:600;color:var(--wb-muted);line-height:24px}
+.wb-guide-steps li.is-here{background:var(--wb-tint);margin:0 calc(-1 * var(--wb-s2));padding-left:var(--wb-s2);padding-right:var(--wb-s2);border-radius:var(--wb-r)}
+.wb-app a.wb-guide-where,.wb-guide-where{display:inline-block;text-decoration:none;min-height:24px;line-height:22px;padding:0 8px;border:1px solid var(--wb-line);border-radius:var(--wb-r);font-size:var(--wb-fs-sm);font-weight:600;color:var(--wb-primary);background:var(--wb-card);white-space:nowrap}
+.wb-app a.wb-guide-where:hover{border-color:var(--wb-primary)}
+.wb-app a.wb-guide-where.is-current{background:var(--wb-primary);color:#fff;border-color:var(--wb-primary)}
+.wb-guide-where--sys{color:var(--wb-muted);font-weight:500;font-style:italic;background:transparent}
+.wb-guide-rules-h{margin:var(--wb-s3) 0 var(--wb-s2);font-size:var(--wb-fs-sm);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--wb-muted)}
+.wb-guide-rules{margin:0;padding-left:1.2rem}
+.wb-guide-rules li{margin:0 0 var(--wb-s2)}
+.wb-fold--reference .wb-guide-steps li{grid-template-columns:1.5rem 8rem 1fr}
+@media (max-width:640px){
+ .wb-guide-toc{grid-template-columns:1fr}
+ .wb-guide-steps li,.wb-fold--reference .wb-guide-steps li{grid-template-columns:1.5rem 1fr}
+ .wb-guide-steps li span:last-child{grid-column:2}
+ .wb-guide-where{white-space:normal}
+}

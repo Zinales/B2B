@@ -70,7 +70,7 @@ eq( 'sales: Sell has customers, quotes, orders', array_keys( $m['Sell'] ), [ 'cu
 eq( 'sales: no Integrity', isset( $m['Know']['integrity'] ), false );
 
 $m = WB_Workspace::menu( $staff );
-eq( 'plain staff: Today, Notifications, Staff, Payroll', $m, [ '' => [ 'home' => 'Today', 'notifications' => 'Notifications' ], 'Team' => [ 'staff' => 'Staff', 'payroll' => 'Payroll' ] ] );
+eq( 'plain staff: Today, Notifications, How to, Staff, Payroll', $m, [ '' => [ 'home' => 'Today', 'notifications' => 'Notifications', 'howto' => 'How to' ], 'Team' => [ 'staff' => 'Staff', 'payroll' => 'Payroll' ] ] );
 eq( 'customer login: empty menu', WB_Workspace::menu( $cust ), [] );
 
 eq( 'next links: all for admin', WB_Workspace::next_links( 'cashflow', $admin ), [ 'invoices' => 'Overdue invoices', 'purchasing' => 'Supplier orders' ] );

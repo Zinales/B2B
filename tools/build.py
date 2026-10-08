@@ -116,6 +116,14 @@ def current_inventory():
         fail('inventory output was not JSON:\n' + out[-2000:])
 
 
+def gate_docs():
+    """docs/FLOWS.md and docs/HOW-TO.md are written from WB_Guide; they must match it."""
+    code, out = run([PHP, os.path.join(ROOT, 'tools', 'guide-md.php'), '--check'])
+    if code != 0:
+        fail('the flow documents do not match WB_Guide:\n' + out[-2000:])
+    print('2c. Docs       FLOWS.md and HOW-TO.md match WB_Guide')
+
+
 def gate_inventory(accept):
     inv = current_inventory()
     if accept:
@@ -191,6 +199,7 @@ def main():
     gate_syntax()
     gate_tests()
     gate_pages()
+    gate_docs()
     gate_inventory('--accept-inventory' in args)
     version = gate_versions()
     if '--check' in args or '--accept-inventory' in args:

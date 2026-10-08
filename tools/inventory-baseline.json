@@ -509,6 +509,7 @@
   "wb/v1/download",
   "wb/v1/health",
   "wb/v1/payroll-bank-file",
+  "wb/v1/pdf",
   "wb/v1/private",
   "wb/v1/quote-accept"
  ],
@@ -519,6 +520,7 @@
   "wb_demo",
   "wb_documents",
   "wb_home",
+  "wb_howto",
   "wb_integrity",
   "wb_invoices",
   "wb_list",

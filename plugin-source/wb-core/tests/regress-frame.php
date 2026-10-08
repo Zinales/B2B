@@ -66,7 +66,7 @@ function wb_notice( string $kind, string $msg ): string { return '<div class="wb
 class WB_Storage { public static function exists( $k ) { return false; } }
 
 $base = WB_PLUGIN_DIR . 'includes/';
-foreach ( [ 'roles', 'setup', 'workspace', 'welcome', 'render', 'needs', 'demo' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
+foreach ( [ 'roles', 'setup', 'workspace', 'welcome', 'render', 'needs', 'demo', 'guide' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
 function date_i18n( $f ) { return date( $f, 1789982000 ); }   // Monday 21 September 2026, 09:13 UTC: a morning
 function wp_nonce_field( ...$a ) { return ''; }
 function sanitize_html_class( $s ) { return $s; }

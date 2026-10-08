@@ -73,6 +73,7 @@ function wp_head() {
 }
 /** A stand-in panel with the primitives every screen uses, so the frame's content area is not empty. */
 function do_shortcode( $s ) {
+	if ( '[wb_howto]' === $s ) return WB_Guide::render();   // the How-to screen is pure words, so the real thing is rendered
 	return '<div class="wb-panel"><h2>Panel</h2><p class="wb-muted">Showing the newest 50.</p>'
 		. '<p><button type="submit" class="wb-btn">Save</button> <button type="submit" class="wb-btn wb-btn-ghost">Cancel</button> '
 		. '<a class="wb-btn" href="#">Open</a> <a class="wb-btn wb-btn-ghost" href="#">Back</a></p>'
@@ -84,7 +85,7 @@ function do_shortcode( $s ) {
 }
 
 $base = WB_PLUGIN_DIR . 'includes/';
-foreach ( [ 'roles', 'setup', 'workspace', 'welcome', 'render', 'needs', 'demo' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
+foreach ( [ 'roles', 'setup', 'workspace', 'welcome', 'render', 'needs', 'demo', 'guide' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
 
 function caps_of( string $role ): array {
 	if ( 'administrator' === $role ) return WB_Roles::staff_caps();
@@ -101,6 +102,7 @@ $pages = [
 	[ 'welcome-customer', 'welcome', 'wb_customer' ],
 	[ 'home-owner', 'home', 'wb_owner' ],
 	[ 'quotes-sales', 'quotes', 'wb_sales' ],
+	[ 'howto-sales', 'howto', 'wb_sales' ],
 	[ 'payroll-refused-sales', 'setup', 'wb_sales' ],
 	[ 'home-refused-customer', 'home', 'wb_customer' ],
 	[ 'portal-customer', 'portal', 'wb_customer' ],

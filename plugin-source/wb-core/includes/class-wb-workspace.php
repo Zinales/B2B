@@ -36,6 +36,7 @@ class WB_Workspace {
 	const SCREENS = [
 		'home'          => [ 'Today', 'What needs you, in one place.', 'wb_access_workspace', '', '[wb_notify_bar][wb_home]', [ 'quotes' => 'Write a quote', 'payments' => 'Match payments' ] ],
 		'notifications' => [ 'Notifications', 'Everything the system has told you, newest first.', 'wb_access_workspace', '', '[wb_notifications]', [ 'home' => 'Today' ] ],
+		'howto'         => [ 'How to', 'Every flow in plain words, then walkthroughs: one thing to press or read per step.', 'wb_access_workspace', '', '[wb_howto]', [ 'home' => 'Today', 'quotes' => 'Write a quote' ] ],
 		'customers'     => [ 'Customers', 'Accounts, terms and credit limits. Archive, never delete.', 'wb_view_customers', 'sell', '[wb_notify_bar][wb_customers]', [ 'quotes' => 'Quote a customer', 'marketing' => 'Who is due to order' ] ],
 		'quotes'        => [ 'Quotes', 'Check one finds the customer\'s price; check two makes sure the product allows it.', 'wb_create_quotes', 'sell', '[wb_notify_bar][wb_quotes]', [ 'orders' => 'Orders from accepted quotes' ] ],
 		'orders'        => [ 'Orders', 'Built from the accepted quote. Goods leave only when the release check says so.', 'wb_manage_orders', 'sell', '[wb_notify_bar][wb_orders]', [ 'deliveries' => 'Ready to go out', 'invoices' => 'Invoices' ] ],
@@ -179,7 +180,7 @@ class WB_Workspace {
 		$s = self::screen( $slug );
 		if ( ! $s ) return [ 404, self::page( $slug, 'Not found', '', wb_notice( 'warn', 'There is no screen at this address.' ) ) ];
 		if ( ! current_user_can( $s[2] ) ) return [ 403, self::page( $slug, $s[0], $s[1], self::no_access( $slug ) ) ];
-		return [ 200, self::page( $slug, $s[0], $s[1], do_shortcode( $s[4] ) ) ];
+		return [ 200, self::page( $slug, $s[0], $s[1], do_shortcode( $s[4] ) . ( class_exists( 'WB_Guide' ) ? WB_Guide::fold( $slug ) : '' ) ) ];
 	}
 
 	/**
@@ -311,6 +312,7 @@ class WB_Workspace {
 		'payroll'       => '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
 		'setup'         => '<path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 14h4"/><path d="M10 8h4"/><path d="M18 16h4"/>',
 		'settings'      => '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+		'howto'         => '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
 		'signout'       => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
 	];
 

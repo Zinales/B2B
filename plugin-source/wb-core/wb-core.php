@@ -2,7 +2,7 @@
 /**
  * Plugin Name: B2BGro — Core
  * Description: The engine for a B2B wholesale business: hash-chained audit ledger, gapless document numbering, roles by dashboard, the two pricing checks, stock as a ledger, the quote → order → invoice → payment → delivery state machine, bank-statement matching, demand and cashflow forecasting, staff time/leave/KPIs, private document storage, the Setup screen (brand + first-run checklist), bank CSV mapping, the customer portal and South African payroll. Serves its own screens at /workspace/ and /portal/ (no pages to create). Business data lives in JetEngine CCTs (wp_jet_cct_wb_*); engine records in plugin tables (wp_wb_*).
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: GroB2B
  * Requires PHP: 8.0
  * Requires at least: 6.4
@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WB_VERSION', '1.2.0' );
+define( 'WB_VERSION', '1.3.0' );
 define( 'WB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WB_PLUGIN_FILE', __FILE__ );
 
@@ -49,6 +49,7 @@ require_once WB_PLUGIN_DIR . 'includes/class-wb-demo.php';          // demo seed
 require_once WB_PLUGIN_DIR . 'includes/class-wb-tables.php';        // 0.3.0 creates the JetEngine business tables from the schema
 require_once WB_PLUGIN_DIR . 'includes/class-wb-workspace.php';     // 0.3.0 /workspace/ and /portal/ served by the plugin, with its own frame
 require_once WB_PLUGIN_DIR . 'includes/class-wb-welcome.php';      // 0.3.1 the front page: what the system does, and the way in
+require_once WB_PLUGIN_DIR . 'includes/class-wb-guide.php';        // 1.3.0 the flows and the walkthroughs: the How-to screen, the fold on every screen, the docs
 
 register_activation_hook( __FILE__, 'wb_activate' );
 function wb_activate(): void {
@@ -96,6 +97,7 @@ add_action( 'plugins_loaded', function () {
 	WB_Records::init();
 	WB_Import::init();
 	WB_Docs::init();
+	WB_Guide::init();
 	WB_Setup::init();
 	WB_Portal::init();
 	WB_Payroll::init();

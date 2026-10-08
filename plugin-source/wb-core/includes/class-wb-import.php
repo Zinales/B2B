@@ -185,6 +185,12 @@ class WB_Import {
 	/* ------------------------------------------------------------------ WordPress side */
 
 	/** The fold under a table: template, export, and the upload form. */
+	/** The plural of a table's one-word name, for the fold title (1.3.0: 'categorys' was showing). */
+	public static function plural( string $one ): string {
+		if ( preg_match( '/[^aeiou]y$/', $one ) ) return substr( $one, 0, -1 ) . 'ies';
+		return $one . 's';
+	}
+
 	public static function fold( string $slug ): string {
 		$pol = WB_Records::TABLES[ $slug ] ?? null;
 		if ( ! $pol || ! current_user_can( $pol['cap'] ) ) return '';
@@ -198,7 +204,7 @@ class WB_Import {
 			. WB_Render::form_open( 'record_import', true ) . '<input type="hidden" name="record_cct" value="' . esc_attr( $slug ) . '">'
 			. '<label class="wb-field"><span>File <span class="wb-req" aria-hidden="true">*</span></span><input type="file" name="file" accept=".csv,.txt,.tsv" required><small>CSV, up to 5 MB and ' . number_format( self::MAX_ROWS ) . ' rows. Comma, semicolon or tab.</small></label>'
 			. '<div class="wb-form-acts"><button type="submit" class="wb-btn wb-btn-ghost" name="mode" value="check">Check file (no import)</button><button type="submit" class="wb-btn" name="mode" value="import">Validate and import</button></div></form>';
-		return WB_Render::fold( 'Upload ' . esc_html( $pol['one'] ) . 's from a file', $body, [ 'id' => 'wb-upload-' . substr( $slug, 3 ), 'kind' => 'sibling' ] );
+		return WB_Render::fold( 'Upload ' . esc_html( self::plural( (string) $pol['one'] ) ) . ' from a file', $body, [ 'id' => 'wb-upload-' . substr( $slug, 3 ), 'kind' => 'sibling' ] );
 	}
 
 	public static function file_url( string $what, string $slug ): string {
