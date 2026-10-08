@@ -1,5 +1,20 @@
 # wb-core changelog
 
+## 1.3.2 — 8 October 2026
+Documents, by product (Zina, 8 October: "clicking Datasheets on Products took me to a documents
+list; I would like to view the documents we have uploaded").
+- **The Products table has a Datasheet column**: the current version as a link that opens it, or
+  "none". The ⋯ menu on a product has "Datasheets and documents", which opens the Documents screen
+  narrowed to that product: its name on top, its documents, the datasheet link and the filing form
+  already pointed at it, and "All documents" to widen again.
+- **The Documents screen is in three parts**: the product documents people file (datasheets,
+  certificates of analysis, safety sheets, certificates) lead; the documents the system issued
+  (quote, invoice, credit note and delivery note PDFs, signed copies, contracts) are a fold of their
+  own, so they no longer bury the datasheets; staff documents another.
+- **Open, not Download**: a PDF or an image opens in the browser (the file was already sent inline;
+  the menu now says so); anything else downloads.
+- Tests: regress-documents.php.
+
 ## 1.3.1 — 8 October 2026
 The set-up checklist restyled (Zina, 8 October: "this doesn't look very professional at all").
 - **Getting started** on System Settings is now a progress card in the same anatomy as "Needs

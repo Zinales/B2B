@@ -223,6 +223,8 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-inline-form label{display:inline-flex;align-items:center;gap:.4rem;font-size:var(--wb-fs-md);color:var(--wb-muted)}
 .wb-inline-form input,.wb-inline-form select{font:inherit;padding:.5rem .6rem;min-height:40px;border:1px solid var(--wb-line);border-radius:var(--wb-r);background:var(--wb-card);color:var(--wb-ink)}
 .wb-copy{display:block;width:100%;font-size:var(--wb-fs-sm);margin-top:.4rem;overflow-wrap:anywhere;word-break:break-all;user-select:all;padding:.5rem .6rem;border:1px solid var(--wb-line);border-radius:var(--wb-r);background:var(--wb-canvas);color:var(--wb-ink)}
+.wb-doc-scope{margin:0 0 var(--wb-s4);color:var(--wb-muted)}
+.wb-doc-scope strong{color:var(--wb-ink)}
 /* ---- Getting started: the set-up checklist as a progress card (1.3.1) ---- */
 .wb-checklist{margin:0 0 var(--wb-s5)}
 .wb-checklist-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--wb-s3);flex-wrap:wrap}
