@@ -2,7 +2,7 @@
 /**
  * Plugin Name: B2B Wholesale System — Core
  * Description: The engine for a B2B wholesale business: hash-chained audit ledger, gapless document numbering, roles by dashboard, the two pricing checks, stock as a ledger, the quote → order → invoice → payment → delivery state machine, bank-statement matching, demand and cashflow forecasting, staff time/leave/KPIs, private document storage, the Setup screen (brand + first-run checklist), bank CSV mapping, the customer portal and South African payroll. Serves its own screens at /workspace/ and /portal/ (no pages to create). Business data lives in JetEngine CCTs (wp_jet_cct_wb_*); engine records in plugin tables (wp_wb_*).
- * Version: 0.3.4
+ * Version: 0.3.5
  * Author: GroB2B
  * Requires PHP: 8.0
  * Requires at least: 6.4
@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WB_VERSION', '0.3.4' );
+define( 'WB_VERSION', '0.3.5' );
 define( 'WB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WB_PLUGIN_FILE', __FILE__ );
 
@@ -33,6 +33,7 @@ require_once WB_PLUGIN_DIR . 'includes/class-wb-staff.php';         // timesheet
 require_once WB_PLUGIN_DIR . 'includes/class-wb-payroll.php';       // 0.2.0 SA payroll: PAYE, UIF, SDL, payslips, EMP201 figures
 require_once WB_PLUGIN_DIR . 'includes/class-wb-setup.php';         // 0.2.0 the Setup screen: brand, colours (contrast-checked), checklist
 require_once WB_PLUGIN_DIR . 'includes/class-wb-portal.php';        // 0.2.0 the customer portal
+require_once WB_PLUGIN_DIR . 'includes/class-wb-records.php';       // 0.3.5 add and edit every master record, every field, from the schema
 require_once WB_PLUGIN_DIR . 'includes/class-wb-needs.php';         // 0.3.4 what is waiting on a person: Today, the menu count, the top bar
 require_once WB_PLUGIN_DIR . 'includes/class-wb-integrity.php';     // the monthly Integrity report (§8)
 require_once WB_PLUGIN_DIR . 'includes/class-wb-render.php';        // tables, chips, notices (primitives, never hand markup)
@@ -88,6 +89,7 @@ add_action( 'plugins_loaded', function () {
 	WB_Render::init();
 	WB_RowActions::init();
 	WB_Screens::init();
+	WB_Records::init();
 	WB_Setup::init();
 	WB_Portal::init();
 	WB_Payroll::init();

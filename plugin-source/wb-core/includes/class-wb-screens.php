@@ -52,6 +52,12 @@ class WB_Screens {
 		return WB_Render::fold( $title, $body, [ 'open' => $open, 'id' => $id, 'kind' => $kind, 'hint' => $hint ] );
 	}
 
+	/** The row of $slug being edited on this request (?cct=&edit=), else null. */
+	private static function editing( string $slug ): ?array {
+		if ( empty( $_GET['edit'] ) || sanitize_key( (string) ( $_GET['cct'] ?? '' ) ) !== $slug ) return null;
+		return WB_CCT::get( $slug, absint( $_GET['edit'] ) ) ?: null;
+	}
+
 	private static function p( string $k, $default = '' ) {
 		return isset( $_POST[ $k ] ) ? wp_unslash( $_POST[ $k ] ) : $default;
 	}
@@ -496,15 +502,8 @@ class WB_Screens {
 		if ( $g = self::gate( 'wb_view_customers' ) ) return $g;
 		$h    = WB_RowActions::notice();
 		$rows = WB_CCT::find( 'wb_customers', [], [ 'orderby' => 'name', 'order' => 'ASC', 'limit' => 500 ] );
-		$h   .= WB_Render::render_table( $rows, [ 'name', 'account_status', 'journey_stage', 'payment_terms_days', [ 'key' => 'credit_limit', 'type' => 'money' ], 'region' ], [ 'cct' => 'wb_customers', 'actions' => [ 'archive_wb_customers' ], 'empty' => 'No customers yet.' ] );
-		if ( current_user_can( 'wb_manage_customers' ) ) {
-			$f = WB_Render::form_open( 'customer_add' )
-				. WB_Render::field( 'name', 'Company name', 'text', '', [ 'required' => true, 'placeholder' => 'Karoo Agri (Pty) Ltd' ] ) . WB_Render::field( 'trading_name', 'Trading as', 'text', '', [ 'placeholder' => 'Karoo Agri' ] ) . WB_Render::field( 'vat_number', 'VAT number', 'text', '', [ 'placeholder' => '4123456789' ] )
-				. WB_Render::field( 'payment_terms_days', 'Days to pay', 'number', 0, [ 'note' => '0 = pays before collection (cash). More than 0 also needs a credit limit.' ] )
-				. WB_Render::field( 'credit_limit', 'Credit limit', 'number', 0 ) . WB_Render::field( 'price_tier_id', 'Price tier', 'select', '', [ 'options' => WB_Render::options( 'wb_price_tiers', 'name' ) ] )
-				. WB_Render::field( 'region', 'Region', 'text', '', [ 'placeholder' => 'Western Cape' ] ) . WB_Render::field( 'industry', 'Industry', 'text', '', [ 'placeholder' => 'Agriculture' ] ) . WB_Render::form_close( 'Add customer' );
-			$h .= self::fold( 'Add a customer', $f, ! $rows, 'wb-add' );   // first run: open
-		}
+		$h   .= WB_Render::render_table( $rows, [ 'name', 'account_status', 'journey_stage', 'payment_terms_days', [ 'key' => 'credit_limit', 'type' => 'money' ], 'region' ], [ 'cct' => 'wb_customers', 'actions' => [ 'edit_wb_customers', 'archive_wb_customers' ], 'empty' => 'No customers yet.' ] );
+		$h .= WB_Records::fold( 'wb_customers', ! $rows );   // first run: open
 		return $h . WB_Portal::staff_panel();
 	}
 
@@ -519,17 +518,15 @@ class WB_Screens {
 		if ( current_user_can( 'wb_manage_pricing' ) ) { $cols[] = [ 'key' => 'cost_price', 'type' => 'money' ]; $cols[] = 'min_margin_pct'; }
 		if ( $seeing_stock ) $cols[] = 'available';
 		$cols[] = 'status';
-		$h .= WB_Render::render_table( $rows, $cols, [ 'cct' => 'wb_products', 'actions' => [ 'archive_wb_products' ], 'empty' => 'No products yet.' ] );
+		$h .= WB_Render::render_table( $rows, $cols, [ 'cct' => 'wb_products', 'actions' => [ 'edit_wb_products', 'archive_wb_products' ], 'empty' => 'No products yet.' ] );
+		$h .= WB_Records::fold( 'wb_products', ! $rows );   // first run: open
 		if ( current_user_can( 'wb_manage_products' ) ) {
-			$f = WB_Render::form_open( 'product_add' ) . WB_Render::field( 'sku', 'Product code', 'text', '', [ 'required' => true, 'placeholder' => 'ADH-EP200' ] ) . WB_Render::field( 'name', 'Name', 'text', '', [ 'required' => true, 'placeholder' => 'Epoxy adhesive 200 ml' ] )
-				. WB_Render::field( 'category_id', 'Category', 'select', '', [ 'options' => WB_Render::options( 'wb_product_categories', 'name' ) ] )
-				. WB_Render::field( 'unit', 'Sold per', 'select', 'each', [ 'options' => [ 'each' => 'each', 'kg' => 'kg', 'm' => 'metre', 'box' => 'box' ] ] ) . WB_Render::field( 'pack_size', 'Pack size', 'number', 1 )
-				. WB_Render::field( 'cost_price', 'Cost price', 'number', '', [ 'placeholder' => '84.50' ] ) . WB_Render::field( 'list_price', 'List price', 'number', '', [ 'placeholder' => '129.00' ] )
-				. WB_Render::field( 'min_margin_pct', 'Lowest margin %', 'number', '', [ 'note' => 'Leave blank to use the category or company default.' ] )
-				. WB_Render::field( 'price_valid_from', 'Price valid from', 'date' ) . WB_Render::field( 'price_valid_to', 'Price valid until', 'date' )
-				. WB_Render::field( 'reorder_point', 'Reorder when available falls to', 'number' ) . WB_Render::field( 'reorder_qty', 'Reorder quantity', 'number' )
-				. WB_Render::field( 'batch_tracked', 'Tracked by batch?', 'select', 'no', [ 'options' => [ 'no' => 'No', 'yes' => 'Yes' ] ] ) . WB_Render::form_close( 'Add product' );
-			$h .= self::fold( 'Add a product', $f, ! $rows, 'wb-add' );   // first run: open
+			$cats = WB_CCT::find( 'wb_product_categories', [], [ 'orderby' => 'name', 'order' => 'ASC', 'limit' => 500 ] );
+			$h   .= self::fold( 'Categories', WB_Render::render_table( $cats, [ 'name', [ 'key' => 'parent_id', 'label' => 'Inside', 'render' => fn( $v ) => esc_html( $v ? (string) ( WB_CCT::get( 'wb_product_categories', (int) $v )['name'] ?? '' ) : '' ) ], 'min_margin_pct' ], [ 'cct' => 'wb_product_categories', 'actions' => [ 'edit_wb_product_categories' ], 'empty' => 'No categories yet.', 'empty_note' => 'A category carries a lowest margin and the specification rows every product in it shares.' ] ) . WB_Records::form( 'wb_product_categories', self::editing( 'wb_product_categories' ) ), (bool) self::editing( 'wb_product_categories' ), 'wb-add-product_categories', 'sibling', count( $cats ) . ( 1 === count( $cats ) ? ' category' : ' categories' ) );
+		}
+		if ( current_user_can( 'wb_manage_pricing' ) ) {
+			$tiers = WB_CCT::find( 'wb_price_tiers', [], [ 'orderby' => 'name', 'order' => 'ASC', 'limit' => 100 ] );
+			$h    .= self::fold( 'Price tiers', WB_Render::render_table( $tiers, [ 'name', [ 'key' => 'discount_pct', 'label' => '% off list' ], [ 'key' => 'is_default', 'label' => 'New customers start here', 'render' => fn( $v ) => wb_truthy( $v ) ? 'Yes' : '' ] ], [ 'cct' => 'wb_price_tiers', 'actions' => [ 'edit_wb_price_tiers' ], 'empty' => 'No price tiers yet.', 'empty_note' => 'Trade, Distributor, Project: each is a % off the list price.' ] ) . WB_Records::form( 'wb_price_tiers', self::editing( 'wb_price_tiers' ) ), (bool) self::editing( 'wb_price_tiers' ), 'wb-add-price_tiers', 'sibling', count( $tiers ) . ( 1 === count( $tiers ) ? ' tier' : ' tiers' ) );
 		}
 		if ( current_user_can( 'wb_manage_pricing' ) ) {
 			$rules = WB_CCT::find( 'wb_price_rules', [], [ 'limit' => 500 ] );
@@ -728,6 +725,8 @@ class WB_Screens {
 		$h      = WB_RowActions::notice();
 		$alerts = WB_Stock::open_alerts();
 		$h     .= '<h3>To reorder</h3>' . WB_Render::render_table( $alerts, [ [ 'key' => 'product_id', 'render' => fn( $v ) => esc_html( self::product_name( $v ) ) ], 'qty_on_hand', 'qty_reserved', 'qty_on_order', 'suggested_qty', 'raised_at' ], [ 'empty' => 'Nothing needs reordering.' ] );
+		$sup    = WB_CCT::find( 'wb_suppliers', [], [ 'orderby' => 'name', 'order' => 'ASC', 'limit' => 500 ] );
+		$h     .= self::fold( 'Suppliers', WB_Render::render_table( $sup, [ 'name', 'contact_name', 'email', 'phone', 'lead_time_days', 'payment_terms_days' ], [ 'cct' => 'wb_suppliers', 'actions' => [ 'edit_wb_suppliers', 'archive_wb_suppliers' ], 'empty' => 'No suppliers yet.', 'empty_note' => 'A purchase order needs a supplier to go to.' ] ) . WB_Records::form( 'wb_suppliers', self::editing( 'wb_suppliers' ) ), ! $sup || (bool) self::editing( 'wb_suppliers' ), 'wb-add-suppliers', 'sibling', count( $sup ) . ( 1 === count( $sup ) ? ' supplier' : ' suppliers' ) );
 		$pos    = WB_CCT::find( 'wb_purchase_orders', [], [ 'limit' => 200 ] );
 		$h     .= '<h3>Purchase orders</h3>' . WB_Render::render_table( $pos, [ 'po_number', [ 'key' => 'supplier_id', 'label' => 'Supplier', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_suppliers', (int) $v )['name'] ?? '' ) ) ], 'status', 'expected_at', [ 'key' => 'total', 'type' => 'money' ] ], [ 'cct' => 'wb_purchase_orders', 'actions' => [ 'po_send', 'po_cancel' ], 'empty' => 'No purchase orders yet.' ] );
 		$h     .= self::fold( 'New purchase order', WB_Render::form_open( 'po_new' ) . WB_Render::field( 'supplier_id', 'Supplier', 'select', '', [ 'options' => WB_Render::options( 'wb_suppliers', 'name' ) ] ) . WB_Render::field( 'lines', 'Lines: product code, quantity, cost each (optional)', 'textarea', '', [ 'rows' => 4 ] ) . WB_Render::field( 'expected_at', 'Expected', 'date' ) . WB_Render::form_close( 'Create draft' ), false, 'wb-add' );
@@ -817,7 +816,16 @@ class WB_Screens {
 		if ( current_user_can( 'wb_approve_timesheets' ) ) $h .= self::fold( 'Timesheets to approve', WB_Render::render_table( WB_CCT::find( 'wb_timesheets', [ 'status' => 'submitted' ], [ 'limit' => 300 ] ), [ [ 'key' => 'staff_id', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_staff', (int) $v )['first_name'] ?? '' ) ) ], 'work_date', 'hours', 'activity' ], [ 'cct' => 'wb_timesheets', 'actions' => [ 'ts_approve', 'ts_query' ], 'empty' => 'Nothing waiting.' ] ) );
 		if ( current_user_can( 'wb_approve_leave' ) ) $h .= self::fold( 'Leave to approve', WB_Render::render_table( WB_CCT::find( 'wb_leave', [ 'status' => 'requested' ], [ 'limit' => 300 ] ), [ [ 'key' => 'staff_id', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_staff', (int) $v )['first_name'] ?? '' ) ) ], 'from_date', 'to_date', 'days', 'note' ], [ 'cct' => 'wb_leave', 'actions' => [ 'leave_approve', 'leave_decline' ], 'empty' => 'Nothing waiting.' ] ) );
 		if ( current_user_can( 'wb_view_staff' ) ) {
-			$h .= self::fold( 'Staff', WB_Render::render_table( WB_CCT::find( 'wb_staff', [], [ 'limit' => 500 ] ), [ 'first_name', 'last_name', 'job_title', 'department', 'started_at', 'status' ], [ 'empty' => 'No staff files yet.' ] ) );
+			$people = WB_CCT::find( 'wb_staff', [], [ 'orderby' => 'last_name', 'order' => 'ASC', 'limit' => 500 ] );
+			$h .= self::fold( 'Staff', WB_Render::render_table( $people, [ 'first_name', 'last_name', 'job_title', 'department', 'started_at', 'status' ], [ 'cct' => 'wb_staff', 'actions' => [ 'edit_wb_staff' ], 'empty' => 'No staff files yet.', 'empty_note' => 'Every login that approves, adjusts or counts needs a staff file.' ] ) . WB_Records::form( 'wb_staff', self::editing( 'wb_staff' ) ), (bool) self::editing( 'wb_staff' ), 'wb-add-staff', '', count( $people ) . ( 1 === count( $people ) ? ' person' : ' people' ) );
+			if ( current_user_can( 'wb_manage_staff' ) ) {
+				$lt = WB_CCT::find( 'wb_leave_types', [], [ 'orderby' => 'name', 'order' => 'ASC', 'limit' => 50 ] );
+				$h .= self::fold( 'Leave types', WB_Render::render_table( $lt, [ 'name', 'code', [ 'key' => 'days_per_year', 'label' => 'Days per cycle' ], [ 'key' => 'cycle_months', 'label' => 'Cycle (months)' ], 'accrual', [ 'key' => 'carry_over_max', 'label' => 'Carries over' ] ], [ 'cct' => 'wb_leave_types', 'actions' => [ 'edit_wb_leave_types' ], 'empty' => 'No leave types yet.', 'empty_note' => 'Press the button below for the South African defaults, then edit them to your policy.' ] ) . WB_Records::form( 'wb_leave_types', self::editing( 'wb_leave_types' ) ), (bool) self::editing( 'wb_leave_types' ), 'wb-add-leave_types', 'sibling' );
+			}
+			if ( current_user_can( 'wb_run_reviews' ) ) {
+				$kp = WB_CCT::find( 'wb_kpis', [], [ 'orderby' => 'name', 'order' => 'ASC', 'limit' => 100 ] );
+				$h .= self::fold( 'KPI definitions', WB_Render::render_table( $kp, [ 'name', 'applies_to', 'measure', 'target', 'unit', 'period' ], [ 'cct' => 'wb_kpis', 'actions' => [ 'edit_wb_kpis' ], 'empty' => 'No KPIs defined yet.', 'empty_note' => 'A KPI measured from the records (quotes sent, win rate, on-time delivery) scores itself every month.' ] ) . WB_Records::form( 'wb_kpis', self::editing( 'wb_kpis' ) ), (bool) self::editing( 'wb_kpis' ), 'wb-add-kpis', 'sibling' );
+			}
 			$scores = WB_CCT::find( 'wb_kpi_scores', [ 'period_start' => current_time( 'Y-m-01' ) ], [ 'limit' => 500 ] );
 			$h .= self::fold( 'KPIs this month', WB_Render::render_table( $scores, [ [ 'key' => 'staff_id', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_staff', (int) $v )['first_name'] ?? '' ) ) ], [ 'key' => 'kpi_id', 'label' => 'KPI', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_kpis', (int) $v )['name'] ?? '' ) ) ], 'target', 'actual', 'source' ], [ 'empty' => 'Not measured yet.' ] )
 				. ( current_user_can( 'wb_run_reviews' ) ? WB_Render::form_open( 'kpis' ) . WB_Render::form_close( 'Measure this month now' ) : '' ) );

@@ -37,7 +37,7 @@ class WB_Needs {
 			[ 'leave',          'waiting', 'Leave requests to approve',              fn() => WB_CCT::count( 'wb_leave', [ 'status' => 'requested' ] ),                               'wb_approve_leave',       'staff',    [ 'leave' => 1 ] ],
 			[ 'stocktakes',     'waiting', 'Stocktakes counted, waiting for a check', fn() => WB_CCT::count( 'wb_stocktakes', [ 'status' => 'counted' ] ),                            'wb_run_stocktake',       'stock',    [] ],
 			[ 'pay_run',        'waiting', 'Pay runs waiting for a check',           fn() => WB_CCT::count( 'wb_pay_runs', [ 'status' => 'draft' ] ),                                'wb_check_payroll',       'payroll',  [] ],
-			[ 'portal',         'waiting', 'Customer requests to answer',            fn() => WB_CCT::count( 'wb_portal_requests', [ 'status' => 'pending' ] ),                       'wb_manage_customers',    'customers',[] ],
+			[ 'portal',         'waiting', 'Customer requests to answer',            fn() => WB_CCT::count( 'wb_portal_requests', [ 'status' => 'requested' ] ),                       'wb_manage_customers',    'customers',[] ],
 			[ 'ledger',         'waiting', 'Audit entries waiting to be chained',    fn() => WB_Ledger::pending_count(),                                                             'wb_view_integrity',      'integrity',[] ],
 			[ 'overdue',        'open',    'Invoices overdue',                       fn() => WB_CCT::count( 'wb_invoices', [ 'status' => 'overdue' ] ),                              'wb_match_payments',      'invoices', [] ],
 			[ 'reorder',        'open',    'Products below their reorder point',     fn() => count( WB_Stock::open_alerts() ),                                                       'wb_manage_purchasing',   'purchasing',[] ],

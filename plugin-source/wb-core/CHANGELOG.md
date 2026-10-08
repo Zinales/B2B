@@ -1,5 +1,36 @@
 # wb-core changelog
 
+## 0.3.5 — 8 October 2026
+"Upload all data points" (Zina, 8 October), half one: every master record can now be added and
+edited, every field. Before this the add forms captured a fraction of each table (customers 10 of
+17 fields, staff 2 of 15, price tiers without the discount, suppliers 4 of 9) and nothing could be
+edited at all; staff, suppliers, categories, tiers, leave types and KPIs had no form.
+- **One form per table, drawn from the schema.** New `WB_Records` reads `schema/wb-ccts.json`
+  (field types, choices, defaults) plus a short policy per table: which columns a person types,
+  in what order, with what words, which are required, which point at another table, and the
+  natural key that may not repeat. Nine tables: customers, contacts, products, categories, price
+  tiers, suppliers, staff, leave types, KPIs. Columns the engines own (journey stage, portal login,
+  the date marketing consent was given, the current datasheet) are never typed.
+- **Edit, not only add.** Every master table's ⋯ menu has Edit beside Archive; it opens the same
+  fold prefilled, titled "Edit Karoo Agri", and a line says the change is recorded with your name.
+- **Typed values are checked with words:** a number with spaces or a comma is read, an "R" in
+  front is refused with the fix in the sentence; a choice off the list names the choices; a date
+  typed in words is read; a bad email is refused; a duplicate code, name, email or employee number
+  names the record already on file. Encrypted columns (ID numbers, emergency contacts, supplier
+  bank details) are typed in plain, stored through `wb_enc()`, shown as "On file — type to
+  replace" and never printed back; blank on edit keeps what is on file.
+- Specification rows are typed one per line as "label | value | unit" and stored as the JSON the
+  datasheets read. A product's usual supplier, lead time, barcode and shelf life are on the form.
+  Setting a price tier as the one new customers start on clears it from the others. Switching a
+  contact's marketing consent on records the date once.
+- Screens: Categories and Price tiers are "Also here" folds on Products; Suppliers on Purchasing;
+  Staff (with the form), Leave types and KPI definitions on Staff; Contacts on Customers.
+- The 0.3.6 CSV import will read the same policy, so what can be typed can be uploaded and
+  nothing else.
+- Tests: regress-records.php (47): every typed field is a real column, engine-owned columns never
+  leak into a form, type resolution, cleaning (numbers, choices, dates, emails, encryption, keep on
+  edit, defaults on add only), the form's markup, anchors.
+
 ## 0.3.4 — 8 October 2026
 The screens get their look and their anatomy (Zina, 8 October: "the screens need a lot of visual
 styling"; benchmark Kaycie, look from the Brandzgro design system v2). Nothing that stores data

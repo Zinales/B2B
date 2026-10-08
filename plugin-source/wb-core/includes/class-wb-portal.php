@@ -424,18 +424,17 @@ class WB_Portal {
 			[ 'key' => 'portal_wp_user_id', 'label' => 'Portal', 'render' => function ( $v ) { $u = (int) $v ? get_userdata( (int) $v ) : false; return WB_Render::chip( $u ? ( in_array( 'wb_customer', (array) $u->roles, true ) ? 'active' : 'inactive' ) : 'none' ); } ] ],
 			[ 'action_html' => function ( $r ) use ( $can ) {
 				if ( ! $can ) return '';
+				$edit = WB_RowActions::menuitem( 'edit', 'Edit', [ 'href' => WB_Records::edit_url( 'wb_contacts', (int) $r['_ID'] ) ] );
 				$hid = '<input type="hidden" name="contact_id" value="' . (int) $r['_ID'] . '">';
 				$u   = (int) $r['portal_wp_user_id'] ? get_userdata( (int) $r['portal_wp_user_id'] ) : false;
-				if ( ! $u ) return WB_Render::form_open( 'portal_provision' ) . $hid . WB_RowActions::menuitem( 'approve', 'Give a portal login (sends the set-password email now)', [ 'submit' => true ] ) . '</form>';
-				return WB_Render::form_open( 'portal_resend' ) . $hid . WB_RowActions::menuitem( 'remind', 'Send the set-password email again', [ 'submit' => true ] ) . '</form>'
+				if ( ! $u ) return $edit . WB_Render::form_open( 'portal_provision' ) . $hid . WB_RowActions::menuitem( 'approve', 'Give a portal login (sends the set-password email now)', [ 'submit' => true ] ) . '</form>';
+				return $edit . WB_Render::form_open( 'portal_resend' ) . $hid . WB_RowActions::menuitem( 'remind', 'Send the set-password email again', [ 'submit' => true ] ) . '</form>'
 					. WB_Render::form_open( 'portal_revoke' ) . $hid . WB_RowActions::menuitem( 'withdraw', 'Turn the portal login off', [ 'submit' => true, 'danger' => true ] ) . '</form>';
 			}, 'empty' => 'No contacts yet.' ] );
-		if ( $can ) {
-			$body .= WB_Render::form_open( 'contact_add' ) . WB_Render::field( 'customer_id', 'Customer', 'select', '', [ 'options' => WB_Render::options( 'wb_customers', 'name' ), 'required' => true ] )
-				. WB_Render::field( 'first_name', 'First name', 'text', '', [ 'required' => true ] ) . WB_Render::field( 'last_name', 'Last name' ) . WB_Render::field( 'role_title', 'Job title' )
-				. WB_Render::field( 'email', 'Email', 'email' ) . WB_Render::field( 'phone', 'Phone' ) . WB_Render::form_close( 'Add contact' );
-		}
-		return $h . self::fold( 'Contacts and portal logins', $body );
+		$editing = null;
+		if ( $can && ! empty( $_GET['edit'] ) && 'wb_contacts' === sanitize_key( (string) ( $_GET['cct'] ?? '' ) ) ) $editing = WB_CCT::get( 'wb_contacts', absint( $_GET['edit'] ) ) ?: null;
+		if ( $can ) $body .= ( $editing ? '<h3>Edit ' . esc_html( trim( $editing['first_name'] . ' ' . $editing['last_name'] ) ) . '</h3>' : '<h3>Add a contact</h3>' ) . WB_Records::form( 'wb_contacts', $editing );
+		return $h . WB_Render::fold( 'Contacts and portal logins', $body, [ 'open' => (bool) $editing, 'id' => 'wb-add-contacts', 'kind' => 'sibling' ] );
 	}
 
 	private static function fold( string $title, string $body, bool $open = false ): string {
