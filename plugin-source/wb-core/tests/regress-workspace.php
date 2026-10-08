@@ -6,6 +6,9 @@
  *  2. The menu and the "Next" links show only what the person can open.
  *  3. The JetEngine tables: every schema CCT maps to a request, money keeps its decimals
  *     (a number field with no step is a whole-number column in JetEngine), references stay whole.
+ *  4. 0.3.2 (BUILD-PATTERNS §2.1): every address comes from WB_Workspace::url() by slug, nothing
+ *     types '/workspace/', every slug used in code is a screen, and every dashboard tick in
+ *     WB_Roles::catalog() opens at least one screen of its own.
  *
  *   php tests/regress-workspace.php
  *
@@ -16,7 +19,7 @@ define( 'ABSPATH', __DIR__ . '/' );
 define( 'WB_PLUGIN_DIR', dirname( __DIR__ ) . '/' );
 
 $base = dirname( __DIR__ ) . '/includes/';
-foreach ( [ 'tables', 'workspace', 'setup' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
+foreach ( [ 'tables', 'workspace', 'setup', 'roles' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
 
 $pass = 0;
 $fail = 0;
@@ -128,6 +131,70 @@ foreach ( $schema as $slug => $def ) {
 	}
 }
 eq( 'every table: unique field ids, record_status, money with cents', $bad, [] );
+
+/* ============================================================ 4. one list drives the addresses (0.3.2) */
+section( 'addresses by slug' );
+function home_url( $p = '' ) { return 'https://b2b.test' . $p; }
+function add_query_arg( $args, $url ) { return $url . '?' . http_build_query( $args ); }
+eq( 'home is the workspace root', WB_Workspace::url( 'home' ), 'https://b2b.test/workspace/' );
+eq( 'empty slug is home', WB_Workspace::url( '' ), 'https://b2b.test/workspace/' );
+eq( 'a screen', WB_Workspace::url( 'quotes' ), 'https://b2b.test/workspace/quotes/' );
+eq( 'view state as a query string', WB_Workspace::url( 'quotes', [ 'quote' => 12 ] ), 'https://b2b.test/workspace/quotes/?quote=12' );
+eq( 'the portal', WB_Workspace::url( 'portal' ), 'https://b2b.test/portal/' );
+eq( 'portal_url agrees', WB_Workspace::portal_url(), WB_Workspace::url( 'portal' ) );
+eq( 'an unknown slug lands on Today, never a dead address', WB_Workspace::url( 'wp-admin' ), 'https://b2b.test/workspace/' );
+foreach ( array_keys( WB_Workspace::SCREENS ) as $slug ) {
+	if ( WB_Workspace::url( $slug ) !== 'https://b2b.test/workspace/' . ( 'home' === $slug ? '' : $slug . '/' ) ) eq( "url({$slug}) matches the rewrite rule", false, true );
+}
+
+section( 'nothing types a workspace address' );
+$typed = [];
+$used  = [];
+$files = array_merge( glob( WB_PLUGIN_DIR . 'includes/*.php' ), [ WB_PLUGIN_DIR . 'wb-core.php' ] );
+foreach ( $files as $file ) {
+	$src  = (string) file_get_contents( $file );
+	$name = basename( $file );
+	foreach ( explode( "\n", $src ) as $i => $line ) {
+		if ( ( false !== strpos( $line, "'/workspace" ) || false !== strpos( $line, "'/portal/" ) ) && ! ( 'class-wb-workspace.php' === $name && ( false !== strpos( $line, 'home_url(' ) || false !== strpos( $line, '* ' ) ) ) ) $typed[] = $name . ':' . ( $i + 1 );
+	}
+	preg_match_all( "/(?:WB_Workspace::url|self::url|wb_return_url)\\( '([a-z_-]+)'/", $src, $m );
+	foreach ( $m[1] as $slug ) $used[ $slug ][] = $name;
+}
+eq( 'no typed /workspace/ or /portal/ outside WB_Workspace::url()', $typed, [] );
+$unknown = array_filter( array_keys( $used ), fn( $s ) => null === WB_Workspace::screen( $s ) );
+eq( 'every slug used in code is a screen', array_values( $unknown ), [] );
+eq( 'the engines do use it (a regex that matched nothing would pass the test above for free)', count( $used ) >= 10, true );
+
+section( 'every dashboard tick does something' );
+// A tick either opens a screen of its own (its cap is a screen gate) or opens a fold on a screen
+// every login can reach (Staff, Payroll: the screen is open, the folds are gated). Either way
+// some code must check the cap; a cap nobody checks is a tick that does nothing.
+$everyone = [ 'home', 'notifications', 'staff', 'payroll' ];
+$no_screen_yet = [ 'export' ];   // wb_export_data: nothing checks it yet (0.3.2). A decision to make, not an accident.
+$checked = [];
+foreach ( $files as $file ) {
+	if ( 'class-wb-roles.php' === basename( $file ) ) continue;   // granting is not checking
+	preg_match_all( "/'(wb_[a-z_]+)'/", (string) file_get_contents( $file ), $m );
+	foreach ( $m[1] as $cap ) $checked[ $cap ] = true;
+}
+$idle = [];
+$no_screen = [];
+foreach ( WB_Roles::catalog() as $key => $tick ) {
+	if ( ! empty( $tick['modifier'] ) ) continue;
+	$opens = false;
+	foreach ( $tick['caps'] as $cap ) {
+		if ( ! isset( $checked[ $cap ] ) ) $idle[] = $key . ':' . $cap;
+		foreach ( WB_Workspace::SCREENS as $slug => $s ) if ( ! in_array( $slug, $everyone, true ) && $s[2] === $cap ) $opens = true;
+	}
+	if ( ! $opens ) $no_screen[] = $key;
+}
+eq( 'every cap a tick grants is checked somewhere (Export is the known gap)', $idle, [ 'export:wb_export_data' ] );
+eq( 'ticks with no screen of their own are exactly the fold-gated ones', $no_screen, [ 'staff', 'reviews', 'export', 'payroll' ] );
+foreach ( WB_Workspace::SCREENS as $slug => $s ) {
+	$granted = 'wb_access_workspace' === $s[2];
+	foreach ( WB_Roles::catalog() as $tick ) if ( in_array( $s[2], $tick['caps'], true ) ) $granted = true;
+	if ( ! $granted ) eq( "screen {$slug}: some tick grants its gate {$s[2]}", false, true );
+}
 
 echo "\n{$pass} passed, {$fail} failed\n";
 exit( $fail ? 1 : 0 );

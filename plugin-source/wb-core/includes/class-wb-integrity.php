@@ -138,7 +138,7 @@ class WB_Integrity {
 		update_option( 'wb_integrity_last_month', $month, false );
 		$counts = [ count( $r['adjustments'] ), count( $r['write_offs'] ), count( $r['credit_notes'] ), count( $r['manual_matches'] ), count( $r['below_floor'] ) ];
 		wb_ledger_write( 'integrity_report', 'wb_integrity', 0, null, [ 'month' => $month, 'adjustments' => $counts[0], 'write_offs' => $counts[1], 'credit_notes' => $counts[2], 'manual_matches' => $counts[3], 'below_floor' => $counts[4] ] );
-		WB_Notifications::notify_owners( 'integrity', vsprintf( 'The Integrity report for ' . $month . ' is ready: %d adjustments, %d write-offs, %d credit notes, %d payments matched by hand, %d prices below the floor.', $counts ), home_url( '/workspace/integrity/?month=' . $month ) );
+		WB_Notifications::notify_owners( 'integrity', vsprintf( 'The Integrity report for ' . $month . ' is ready: %d adjustments, %d write-offs, %d credit notes, %d payments matched by hand, %d prices below the floor.', $counts ), WB_Workspace::url( 'integrity', [ 'month' => $month ] ) );
 	}
 
 	/** What each audit-trail break means, in words a person reads (0.2.1). */

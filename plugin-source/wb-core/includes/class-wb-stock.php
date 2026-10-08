@@ -264,7 +264,7 @@ class WB_Stock {
 		$id = (int) $wpdb->insert_id;
 		wb_ledger_write( 'stock_request_' . $type, 'wb_stock_requests', $id, null, $row );
 		WB_Notifications::notify_cap( 'wb_approve_adjustments', 'stock', sprintf( 'A stock %s of %s on product #%d needs your approval.', str_replace( '_', '-', $type ), $row['qty'], $product_id ),
-			home_url( '/workspace/stock/?requests=1' ), 'wb_stock_requests', $id, [ get_current_user_id() ] );
+			WB_Workspace::url( 'stock', [ 'requests' => 1 ] ), 'wb_stock_requests', $id, [ get_current_user_id() ] );
 		return $id;
 	}
 
@@ -305,7 +305,7 @@ class WB_Stock {
 		wb_ledger_write( 'stock_request_' . $upd['decision'], 'wb_stock_requests', $request_id, [ 'decision' => 'pending' ], $upd );
 		WB_Notifications::resolve( 'wb_stock_requests', $request_id );
 		$asker = WB_Staff::user_for_staff( (int) $r['requested_by_staff_id'] );
-		if ( $asker ) WB_Notifications::notify( $asker, 'stock', sprintf( 'Your stock %s request #%d was %s.', str_replace( '_', '-', (string) $r['type'] ), $request_id, $upd['decision'] ), home_url( '/workspace/stock/' ), 'wb_stock_requests', $request_id );
+		if ( $asker ) WB_Notifications::notify( $asker, 'stock', sprintf( 'Your stock %s request #%d was %s.', str_replace( '_', '-', (string) $r['type'] ), $request_id, $upd['decision'] ), WB_Workspace::url( 'stock' ), 'wb_stock_requests', $request_id );
 		return true;
 	}
 
@@ -334,7 +334,7 @@ class WB_Stock {
 			wb_ledger_write( 'reorder_alert_raised', 'wb_reorder_alerts', $aid, null, $row );
 			WB_Notifications::notify_cap( 'wb_manage_purchasing', 'stock',
 				sprintf( '%s (%s) is at its reorder point: %s available, %s on order. Suggest ordering %s.', (string) $p['name'], (string) $p['sku'], $on_hand - $reserved, $on_order, $s['suggested_qty'] ),
-				home_url( '/workspace/purchasing/' ), 'wb_reorder_alerts', $aid );
+				WB_Workspace::url( 'purchasing' ), 'wb_reorder_alerts', $aid );
 			return 'raised';
 		}
 		if ( ! $s['raise'] && $open ) {
@@ -459,7 +459,7 @@ class WB_Stock {
 		if ( WB_Staff::current_staff_id() !== (int) $st['counted_by_staff_id'] ) return new WP_Error( 'wb_not_counter', 'Only the person counting can hand the count over.' );
 		$v = self::count_variance( array_values( WB_CCT::json( $st['lines_json'] ) ) );
 		$res = WB_CCT::update( 'wb_stocktakes', $stocktake_id, [ 'status' => 'submitted', 'variance_total' => $v['variance_value'] ], 'stocktake_submitted' );
-		if ( true === $res ) WB_Notifications::notify_cap( 'wb_run_stocktake', 'stock', sprintf( 'Stocktake #%d is counted and needs a second person to check it (%d lines differ).', $stocktake_id, $v['lines'] ), home_url( '/workspace/stock/?stocktake=' . $stocktake_id ), 'wb_stocktakes', $stocktake_id, [ get_current_user_id() ] );
+		if ( true === $res ) WB_Notifications::notify_cap( 'wb_run_stocktake', 'stock', sprintf( 'Stocktake #%d is counted and needs a second person to check it (%d lines differ).', $stocktake_id, $v['lines'] ), WB_Workspace::url( 'stock', [ 'stocktake' => $stocktake_id ] ), 'wb_stocktakes', $stocktake_id, [ get_current_user_id() ] );
 		return $res;
 	}
 

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: B2B Wholesale System — Core
  * Description: The engine for a B2B wholesale business: hash-chained audit ledger, gapless document numbering, roles by dashboard, the two pricing checks, stock as a ledger, the quote → order → invoice → payment → delivery state machine, bank-statement matching, demand and cashflow forecasting, staff time/leave/KPIs, private document storage, the Setup screen (brand + first-run checklist), bank CSV mapping, the customer portal and South African payroll. Serves its own screens at /workspace/ and /portal/ (no pages to create). Business data lives in JetEngine CCTs (wp_jet_cct_wb_*); engine records in plugin tables (wp_wb_*).
- * Version: 0.3.1
+ * Version: 0.3.2
  * Author: GroB2B
  * Requires PHP: 8.0
  * Requires at least: 6.4
@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WB_VERSION', '0.3.1' );
+define( 'WB_VERSION', '0.3.2' );
 define( 'WB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WB_PLUGIN_FILE', __FILE__ );
 
@@ -149,10 +149,15 @@ function wb_return_field(): string {
 	return '<input type="hidden" name="_wb_return" value="' . $uri . '">';
 }
 
-/** Where a handler redirects: the posted return address, else the dashboard the panel lives on. */
-function wb_return_url( string $fallback = '/workspace/' ): string {
+/**
+ * Where a handler redirects: the posted return address, else $fallback (a screen slug for
+ * WB_Workspace::url(), default Today). One-shot message parameters (wbmsg, wbra) are stripped so a
+ * notice shows once; a new message parameter must be added to that list or it re-fires on every
+ * reload. View-state parameters (?month=, ?quote=) are never stripped.
+ */
+function wb_return_url( string $fallback = 'home' ): string {
 	$ret = isset( $_POST['_wb_return'] ) ? wp_validate_redirect( wp_unslash( (string) $_POST['_wb_return'] ), '' ) : '';
-	if ( '' === $ret ) $ret = home_url( $fallback );
+	if ( '' === $ret ) $ret = WB_Workspace::url( $fallback );
 	return remove_query_arg( [ 'wbmsg', 'wbra' ], $ret );
 }
 

@@ -1,5 +1,23 @@
 # wb-core changelog
 
+## 0.3.2 — 8 October 2026
+The first of the method changes from `docs/BUILD-PATTERNS.md` (§2.1, Kaycie's registry pattern):
+one list drives every address.
+- **Every workspace address comes from one function.** `WB_Workspace::url( $slug, $args )` is now
+  the only place that knows the shape of `/workspace/<screen>/`; the 40 typed addresses in the
+  engines, the home tiles, the Setup checklist, the notification links and the login redirects
+  all ask it by screen slug. View state (`?quote=12`, `?month=`) goes through it too. The portal
+  has `WB_Workspace::portal_url()`. An unknown slug lands on Today rather than a dead address.
+  `wb_return_url()` takes a slug for its fallback and its docblock carries the strip-list rule
+  (§2.8: a new one-shot message parameter must be added to the list or it re-fires on reload).
+- Tests: regress-workspace.php +12. Every slug used in code is a screen; no file types
+  `/workspace/` or `/portal/` outside the one function; every capability a dashboard tick grants
+  is checked somewhere in the code; every screen's gate is granted by some tick.
+- Found by the new test, left as is and recorded here: the **Export** tick grants
+  `wb_export_data`, which nothing checks yet. The tick does nothing until an export exists.
+  Staff, Performance reviews and Payroll open no screen of their own by design: their screens
+  are open to every login and the folds inside are gated.
+
 ## 0.3.1 — 8 October 2026
 The user-ready pass, after the first look at 0.3.0 on staging (Zina: "a lot of styling help and UX
 support", a home page, no Brandzgro, simple words).

@@ -339,10 +339,10 @@ class WB_Setup {
 			'company'  => [ 'Company details (legal name and address)', '' !== $b['legal_name'] && '' !== trim( $b['physical_address'] ), '#wb-setup-company' ],
 			'colours'  => [ 'Colours and logo', '' !== (string) $b['colors_saved_at'], '#wb-setup-look' ],
 			'vat'      => [ 'VAT', 'no' === $b['vat_registered'] || '' !== $b['vat_number'], '#wb-setup-company' ],
-			'bank'     => [ 'Bank statement layout', (bool) array_filter( $maps, fn( $m ) => is_array( $m ) && isset( $m['columns'] ) ), home_url( '/workspace/payments/' ) ],
-			'product'  => [ 'First product', WB_CCT::count( 'wb_products', [], false ) > 0, home_url( '/workspace/products/' ) ],
-			'customer' => [ 'First customer', WB_CCT::count( 'wb_customers', [], false ) > 0, home_url( '/workspace/customers/' ) ],
-			'payroll'  => [ 'Payroll settings', wb_truthy( $pay['configured'] ?? '' ), home_url( '/workspace/payroll/' ) ],
+			'bank'     => [ 'Bank statement layout', (bool) array_filter( $maps, fn( $m ) => is_array( $m ) && isset( $m['columns'] ) ), WB_Workspace::url( 'payments' ) ],
+			'product'  => [ 'First product', WB_CCT::count( 'wb_products', [], false ) > 0, WB_Workspace::url( 'products' ) ],
+			'customer' => [ 'First customer', WB_CCT::count( 'wb_customers', [], false ) > 0, WB_Workspace::url( 'customers' ) ],
+			'payroll'  => [ 'Payroll settings', wb_truthy( $pay['configured'] ?? '' ), WB_Workspace::url( 'payroll' ) ],
 		];
 	}
 

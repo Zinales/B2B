@@ -281,7 +281,7 @@ class WB_Pricing {
 			'above_list' === $reason
 				? sprintf( 'Price approval needed on quote %s: %s asked, above the list price of %s.', (string) $quote['quote_number'], number_format( $price, 2 ), number_format( (float) ( $line['list_price'] ?? 0 ), 2 ) )
 				: sprintf( 'Price approval needed on quote %s: %s asked, floor %s.', (string) $quote['quote_number'], number_format( $price, 2 ), number_format( (float) $line['floor_price'], 2 ) ),
-			home_url( '/workspace/quotes/?approvals=1' ), 'wb_pricing_approvals', $id, [ get_current_user_id() ] );
+			WB_Workspace::url( 'quotes', [ 'approvals' => 1 ] ), 'wb_pricing_approvals', $id, [ get_current_user_id() ] );
 		return $id;
 	}
 
@@ -310,7 +310,7 @@ class WB_Pricing {
 		if ( 1 !== (int) $n ) return new WP_Error( 'wb_decided', 'Someone else decided that request a moment ago.' );
 		wb_ledger_write( 'pricing_approval_' . $upd['decision'], 'wb_pricing_approvals', $approval_id, [ 'decision' => 'pending' ], $upd );
 		self::refresh_quote_status( (int) $row['quote_id'] );
-		WB_Notifications::notify( (int) $row['requested_by'], 'orders', sprintf( 'Your price request on quote line #%d was %s.', (int) $row['quote_line_id'], $upd['decision'] ), home_url( '/workspace/quotes/' ), 'wb_pricing_approvals', $approval_id );
+		WB_Notifications::notify( (int) $row['requested_by'], 'orders', sprintf( 'Your price request on quote line #%d was %s.', (int) $row['quote_line_id'], $upd['decision'] ), WB_Workspace::url( 'quotes' ), 'wb_pricing_approvals', $approval_id );
 		return true;
 	}
 

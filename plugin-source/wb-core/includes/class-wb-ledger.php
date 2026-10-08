@@ -422,7 +422,7 @@ class WB_Ledger {
 	private static function alert( string $msg, string $record_type ): void {
 		if ( ! class_exists( 'WB_Notifications' ) || ! function_exists( 'home_url' ) ) return;
 		try {
-			WB_Notifications::notify_owners( 'integrity', $msg, home_url( '/workspace/integrity/' ), $record_type, 0 );
+			WB_Notifications::notify_owners( 'integrity', $msg, WB_Workspace::url( 'integrity' ), $record_type, 0 );
 		} catch ( Throwable $e ) {
 			error_log( 'WB_Ledger: could not notify the owners: ' . $e->getMessage() );
 		}
@@ -521,7 +521,7 @@ class WB_Ledger {
 		if ( true === $res ) return;
 		$id  = (int) ( $res['entry_id'] ?? 0 );
 		$msg = sprintf( 'The audit trail check found a break at entry #%d (%s). Records may have been changed outside the system. Open the Integrity page.', $id, (string) ( $res['broken'] ?? '' ) );
-		WB_Notifications::notify_owners( 'integrity', $msg, home_url( '/workspace/integrity/' ), 'wb_ledger', $id );
+		WB_Notifications::notify_owners( 'integrity', $msg, WB_Workspace::url( 'integrity' ), 'wb_ledger', $id );
 		// The break itself is witnessed (appending is safe: the new row chains to the current tail).
 		self::write( 'ledger_break_detected', 'wb_ledger', $id, null, [ 'reason' => (string) ( $res['broken'] ?? '' ) ] );
 	}

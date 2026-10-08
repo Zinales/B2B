@@ -457,16 +457,16 @@ class WB_Screens {
 		$h = WB_RowActions::notice();
 		if ( current_user_can( 'wb_manage_settings' ) && in_array( false, array_column( WB_Setup::checklist(), 1 ), true ) ) $h .= WB_Setup::checklist_card();
 		$h .= '<div class="wb-stats">';
-		if ( current_user_can( 'wb_create_quotes' ) ) $h .= WB_Render::stat( 'Quotes out', WB_CCT::count( 'wb_quotes', [ 'status' => 'sent' ] ), home_url( '/workspace/quotes/' ) );
-		if ( current_user_can( 'wb_manage_orders' ) ) $h .= WB_Render::stat( 'Orders waiting for payment', WB_CCT::count( 'wb_orders', [ 'status' => 'awaiting_payment' ] ), home_url( '/workspace/orders/' ) );
-		if ( current_user_can( 'wb_issue_delivery_notes' ) ) $h .= WB_Render::stat( 'Ready to go out', WB_CCT::count( 'wb_orders', [ 'status' => [ 'ready', 'part_delivered' ] ] ), home_url( '/workspace/deliveries/' ) );
+		if ( current_user_can( 'wb_create_quotes' ) ) $h .= WB_Render::stat( 'Quotes out', WB_CCT::count( 'wb_quotes', [ 'status' => 'sent' ] ), WB_Workspace::url( 'quotes' ) );
+		if ( current_user_can( 'wb_manage_orders' ) ) $h .= WB_Render::stat( 'Orders waiting for payment', WB_CCT::count( 'wb_orders', [ 'status' => 'awaiting_payment' ] ), WB_Workspace::url( 'orders' ) );
+		if ( current_user_can( 'wb_issue_delivery_notes' ) ) $h .= WB_Render::stat( 'Ready to go out', WB_CCT::count( 'wb_orders', [ 'status' => [ 'ready', 'part_delivered' ] ] ), WB_Workspace::url( 'deliveries' ) );
 		if ( current_user_can( 'wb_match_payments' ) ) {
-			$h .= WB_Render::stat( 'Overdue invoices', WB_CCT::count( 'wb_invoices', [ 'status' => 'overdue' ] ), home_url( '/workspace/invoices/' ) );
-			$h .= WB_Render::stat( 'Payments to match', WB_CCT::count( 'wb_payments', [ 'match_status' => [ 'unmatched', 'suggested' ] ] ), home_url( '/workspace/payments/' ) );
+			$h .= WB_Render::stat( 'Overdue invoices', WB_CCT::count( 'wb_invoices', [ 'status' => 'overdue' ] ), WB_Workspace::url( 'invoices' ) );
+			$h .= WB_Render::stat( 'Payments to match', WB_CCT::count( 'wb_payments', [ 'match_status' => [ 'unmatched', 'suggested' ] ] ), WB_Workspace::url( 'payments' ) );
 		}
-		if ( current_user_can( 'wb_manage_purchasing' ) ) $h .= WB_Render::stat( 'Products to reorder', count( WB_Stock::open_alerts() ), home_url( '/workspace/purchasing/' ) );
-		if ( current_user_can( 'wb_approve_pricing' ) ) $h .= WB_Render::stat( 'Prices to approve', count( WB_Pricing::pending() ), home_url( '/workspace/quotes/' ) );
-		if ( current_user_can( 'wb_approve_adjustments' ) ) $h .= WB_Render::stat( 'Stock changes to approve', count( WB_Stock::pending_requests() ), home_url( '/workspace/stock/' ) );
+		if ( current_user_can( 'wb_manage_purchasing' ) ) $h .= WB_Render::stat( 'Products to reorder', count( WB_Stock::open_alerts() ), WB_Workspace::url( 'purchasing' ) );
+		if ( current_user_can( 'wb_approve_pricing' ) ) $h .= WB_Render::stat( 'Prices to approve', count( WB_Pricing::pending() ), WB_Workspace::url( 'quotes' ) );
+		if ( current_user_can( 'wb_approve_adjustments' ) ) $h .= WB_Render::stat( 'Stock changes to approve', count( WB_Stock::pending_requests() ), WB_Workspace::url( 'stock' ) );
 		return $h . '</div>' . WB_Notifications::panel();
 	}
 
@@ -788,7 +788,7 @@ class WB_Screens {
 			$body .= WB_Render::render_table( WB_CCT::find( 'wb_leave', [ 'staff_id' => $me ], [ 'limit' => 50 ] ), [ 'from_date', 'to_date', 'days', 'status' ], [ 'cct' => 'wb_leave', 'actions' => [ 'leave_cancel' ] ] );
 			$body .= WB_Render::form_open( 'leave' ) . WB_Render::field( 'leave_type_id', 'Kind', 'select', '', [ 'options' => WB_Render::options( 'wb_leave_types', 'name' ) ] ) . WB_Render::field( 'from_date', 'From', 'date' ) . WB_Render::field( 'to_date', 'To', 'date' ) . WB_Render::field( 'note', 'Note' ) . WB_Render::form_close( 'Ask for leave' );
 			$h .= self::fold( 'My leave', $body );
-			$h .= '<p class="wb-muted"><a href="' . esc_url( home_url( '/workspace/payroll/' ) ) . '">My payslips</a></p>';
+			$h .= '<p class="wb-muted"><a href="' . esc_url( WB_Workspace::url( 'payroll' ) ) . '">My payslips</a></p>';
 		} else {
 			$h .= wb_notice( 'warn', 'Your login is not linked to a staff record yet, so timesheets and leave are not available.' );
 		}

@@ -219,7 +219,7 @@ class WB_Demo {
 		if ( ! wp_verify_nonce( (string) ( $_POST['_wbd'] ?? '' ), 'wb_demo' ) ) return;
 		$res = 'wipe' === $_POST['wb_demo'] ? self::wipe() : self::seed();
 		WB_RowActions::flash_result( $res, 'wipe' === $_POST['wb_demo'] ? 'Demo removed. Numbered demo documents are kept as void so no number is missing.' : 'Demo loaded.' );
-		wp_safe_redirect( wb_return_url( '/workspace/settings/' ) );
+		wp_safe_redirect( wb_return_url( 'settings' ) );
 		exit;
 	}
 

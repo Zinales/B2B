@@ -185,7 +185,7 @@ class WB_Invoices {
 			WB_CCT::update( 'wb_invoices', $invoice_id, [ 'status' => $s ], 'invoice_status_' . $s );
 			if ( in_array( $s, [ 'paid', 'credited' ], true ) ) WB_Orders::on_invoice_settled( (int) $inv['order_id'] );
 			if ( 'overdue' === $s ) {
-				WB_Notifications::notify_cap( 'wb_match_payments', 'money', sprintf( 'Invoice %s is overdue: %s outstanding.', (string) $inv['invoice_number'], number_format( self::outstanding( $inv ), 2 ) ), home_url( '/workspace/invoices/' ), 'wb_invoices', $invoice_id );
+				WB_Notifications::notify_cap( 'wb_match_payments', 'money', sprintf( 'Invoice %s is overdue: %s outstanding.', (string) $inv['invoice_number'], number_format( self::outstanding( $inv ), 2 ) ), WB_Workspace::url( 'invoices' ), 'wb_invoices', $invoice_id );
 			}
 		}
 		return $s;
@@ -277,7 +277,7 @@ class WB_Invoices {
 		], 'credit_note_requested' );
 		if ( ! is_wp_error( $id ) ) {
 			WB_Notifications::notify_cap( 'wb_approve_credit_notes', 'money', sprintf( 'A credit note of %s against %s needs approval (%s).', number_format( $tot['total'], 2 ), (string) $inv['invoice_number'], $reason ),
-				home_url( '/workspace/invoices/?credits=1' ), 'wb_credit_notes', $id, [ get_current_user_id() ] );
+				WB_Workspace::url( 'invoices', [ 'credits' => 1 ] ), 'wb_credit_notes', $id, [ get_current_user_id() ] );
 		}
 		return $id;
 	}
@@ -365,7 +365,7 @@ class WB_Invoices {
 		if ( $back > 0.004 ) {
 			wb_ledger_write( 'customer_owed_back', 'wb_invoices', (int) $inv['_ID'], null, [ 'amount' => $back, 'credit_note_id' => $credit_id, 'customer_id' => (int) $inv['customer_id'] ] );
 			WB_Notifications::notify_cap( 'wb_match_payments', 'money', sprintf( 'After the credit note on %s the customer has paid %s more than they owe. Refund it or keep it as credit on their account.', (string) $inv['invoice_number'], number_format( $back, 2 ) ),
-				home_url( '/workspace/invoices/' ), 'wb_invoices', (int) $inv['_ID'] );
+				WB_Workspace::url( 'invoices' ), 'wb_invoices', (int) $inv['_ID'] );
 		}
 		return $credit_id;
 	}

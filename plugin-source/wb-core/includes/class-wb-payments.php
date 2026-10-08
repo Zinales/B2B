@@ -677,7 +677,7 @@ class WB_Payments {
 		$wpdb->update( self::table(), [ 'matched' => $sum['matched'], 'suggested' => $sum['suggested'], 'unmatched' => $sum['unmatched'] ], [ 'id' => $batch ] );
 		wb_ledger_write( 'bank_imported', 'wb_bank_imports', $batch, null, $sum + [ 'profile' => $profile, 'file' => $file_name ] );
 		if ( $sum['suggested'] || $sum['unmatched'] ) {
-			WB_Notifications::notify_cap( 'wb_match_payments', 'money', sprintf( 'Bank import: %d matched, %d to confirm, %d to match by hand.', $sum['matched'], $sum['suggested'], $sum['unmatched'] ), home_url( '/workspace/payments/' ), 'wb_bank_imports', $batch );
+			WB_Notifications::notify_cap( 'wb_match_payments', 'money', sprintf( 'Bank import: %d matched, %d to confirm, %d to match by hand.', $sum['matched'], $sum['suggested'], $sum['unmatched'] ), WB_Workspace::url( 'payments' ), 'wb_bank_imports', $batch );
 		}
 		return $sum;
 	}

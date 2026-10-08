@@ -130,7 +130,7 @@ class WB_Orders {
 		$cust = WB_CCT::get( 'wb_customers', $customer_id );
 		self::touchpoint( $customer_id, 'quote_requested', 'Asked for a quote in the portal' . ( '' !== trim( $note ) ? ': ' . $note : '' ), 'quote:' . $qid, $contact_id );
 		$msg  = sprintf( '%s at %s asked for a quote in the portal. Draft %s is ready to check and send.', trim( $c['first_name'] . ' ' . $c['last_name'] ), (string) ( $cust['name'] ?? '' ), (string) ( $q['quote_number'] ?? '' ) );
-		$link = add_query_arg( 'quote', (int) $qid, home_url( '/workspace/quotes/' ) );
+		$link = WB_Workspace::url( 'quotes', [ 'quote' => (int) $qid ] );
 		$rep  = (int) ( $q['rep_staff_id'] ?? 0 ) ? WB_Staff::user_for_staff( (int) $q['rep_staff_id'] ) : 0;
 		if ( ! $rep || ! WB_Notifications::notify( $rep, 'orders', $msg, $link, 'wb_quotes', (int) $qid ) ) WB_Notifications::notify_cap( 'wb_create_quotes', 'orders', $msg, $link, 'wb_quotes', (int) $qid );
 		return (int) $qid;
@@ -340,7 +340,7 @@ class WB_Orders {
 		if ( is_wp_error( $res ) ) return $res;
 		self::touchpoint( (int) $q['customer_id'], 'quote_declined', 'Quote ' . $q['quote_number'] . ' declined in the portal' . ( '' !== trim( $why ) ? ': ' . sanitize_text_field( $why ) : '' ), 'quote:' . $quote_id, $contact_id );
 		$rep = (int) $q['rep_staff_id'] ? WB_Staff::user_for_staff( (int) $q['rep_staff_id'] ) : 0;
-		if ( $rep ) WB_Notifications::notify( $rep, 'orders', sprintf( 'Quote %s was declined in the portal.', (string) $q['quote_number'] ), add_query_arg( 'quote', $quote_id, home_url( '/workspace/quotes/' ) ), 'wb_quotes', $quote_id );
+		if ( $rep ) WB_Notifications::notify( $rep, 'orders', sprintf( 'Quote %s was declined in the portal.', (string) $q['quote_number'] ), WB_Workspace::url( 'quotes', [ 'quote' => $quote_id ] ), 'wb_quotes', $quote_id );
 		return true;
 	}
 
@@ -384,7 +384,7 @@ class WB_Orders {
 
 		self::reserve( (int) $order_id );
 		self::touchpoint( (int) $q['customer_id'], 'quote_accepted', 'Quote ' . $q['quote_number'] . ' accepted by ' . ( '' !== $who ? $who : $accepted_by ), 'order:' . $order_id, $contact_id ?: (int) $q['contact_id'] );
-		WB_Notifications::notify_cap( 'wb_manage_orders', 'orders', sprintf( 'Quote %s was accepted: new order for %s.', (string) $q['quote_number'], (string) $customer['name'] ), home_url( '/workspace/orders/' ), 'wb_orders', (int) $order_id );
+		WB_Notifications::notify_cap( 'wb_manage_orders', 'orders', sprintf( 'Quote %s was accepted: new order for %s.', (string) $q['quote_number'], (string) $customer['name'] ), WB_Workspace::url( 'orders' ), 'wb_orders', (int) $order_id );
 
 		if ( 'acceptance' === (string) get_option( 'wb_invoice_trigger', 'acceptance' ) || (int) ( $customer['payment_terms_days'] ?? 0 ) <= 0 ) {
 			self::invoice_now( (int) $order_id );
@@ -396,7 +396,7 @@ class WB_Orders {
 	private static function invoice_now( int $order_id ) {
 		$inv = WB_Invoices::issue_for_order( $order_id, true );
 		if ( is_wp_error( $inv ) ) {
-			WB_Notifications::notify_cap( 'wb_issue_invoices', 'money', sprintf( 'Order #%d could not be invoiced automatically: %s', $order_id, $inv->get_error_message() ), home_url( '/workspace/orders/' ), 'wb_orders', $order_id );
+			WB_Notifications::notify_cap( 'wb_issue_invoices', 'money', sprintf( 'Order #%d could not be invoiced automatically: %s', $order_id, $inv->get_error_message() ), WB_Workspace::url( 'orders' ), 'wb_orders', $order_id );
 			return $inv;
 		}
 		return $inv;   // issue_for_order moved the order on (mark_invoiced)
@@ -614,7 +614,7 @@ class WB_Orders {
 	private static function invoice_on_dispatch( int $order_id ): void {
 		$inv = WB_Invoices::issue_for_order( $order_id, true );
 		if ( is_wp_error( $inv ) ) {
-			WB_Notifications::notify_cap( 'wb_issue_invoices', 'money', sprintf( 'Order #%d was dispatched but could not be invoiced: %s', $order_id, $inv->get_error_message() ), home_url( '/workspace/invoices/' ), 'wb_orders', $order_id );
+			WB_Notifications::notify_cap( 'wb_issue_invoices', 'money', sprintf( 'Order #%d was dispatched but could not be invoiced: %s', $order_id, $inv->get_error_message() ), WB_Workspace::url( 'invoices' ), 'wb_orders', $order_id );
 		}
 	}
 

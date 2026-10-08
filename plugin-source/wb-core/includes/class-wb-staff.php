@@ -303,7 +303,7 @@ class WB_Staff {
 		if ( ! $approve && '' === trim( $query_note ) ) return new WP_Error( 'wb_no_note', 'Say what needs checking.' );
 		$res = WB_CCT::update( 'wb_timesheets', $id, $approve ? [ 'status' => 'approved', 'approved_by_staff_id' => $me ] : [ 'status' => 'queried', 'query_note' => sanitize_text_field( $query_note ) ], $approve ? 'timesheet_approved' : 'timesheet_queried' );
 		$uid = self::user_for_staff( (int) $t['staff_id'] );
-		if ( true === $res && ! $approve && $uid ) WB_Notifications::notify( $uid, 'staff', sprintf( 'Your timesheet for %s was queried: %s', $t['work_date'], $query_note ), home_url( '/workspace/staff/' ), 'wb_timesheets', $id );
+		if ( true === $res && ! $approve && $uid ) WB_Notifications::notify( $uid, 'staff', sprintf( 'Your timesheet for %s was queried: %s', $t['work_date'], $query_note ), WB_Workspace::url( 'staff' ), 'wb_timesheets', $id );
 		return $res;
 	}
 
@@ -353,7 +353,7 @@ class WB_Staff {
 		if ( is_wp_error( $bal ) ) return $bal;
 		if ( null !== $bal['balance'] && $days > $bal['balance'] + 0.001 ) return new WP_Error( 'wb_no_balance', sprintf( 'That is %d days; the balance is %s.', $days, $bal['balance'] ) );
 		$id = WB_CCT::insert( 'wb_leave', [ 'staff_id' => $staff_id, 'leave_type_id' => $leave_type_id, 'from_date' => $from, 'to_date' => $to, 'days' => $days, 'status' => 'requested', 'note' => sanitize_textarea_field( $note ), 'doc_id' => $doc_id ], 'leave_requested' );
-		if ( ! is_wp_error( $id ) ) WB_Notifications::notify_cap( 'wb_approve_leave', 'staff', sprintf( '%s %s asked for %d days of %s from %s.', $staff['first_name'], $staff['last_name'], $days, strtolower( (string) $type['name'] ), $from ), home_url( '/workspace/staff/?leave=1' ), 'wb_leave', (int) $id, [ get_current_user_id() ] );
+		if ( ! is_wp_error( $id ) ) WB_Notifications::notify_cap( 'wb_approve_leave', 'staff', sprintf( '%s %s asked for %d days of %s from %s.', $staff['first_name'], $staff['last_name'], $days, strtolower( (string) $type['name'] ), $from ), WB_Workspace::url( 'staff', [ 'leave' => 1 ] ), 'wb_leave', (int) $id, [ get_current_user_id() ] );
 		return $id;
 	}
 
@@ -372,7 +372,7 @@ class WB_Staff {
 		$res = WB_CCT::update( 'wb_leave', $leave_id, [ 'status' => $approve ? 'approved' : 'declined', 'approved_by_staff_id' => $me ], $approve ? 'leave_approved' : 'leave_declined' );
 		WB_Notifications::resolve( 'wb_leave', $leave_id );
 		$uid = self::user_for_staff( (int) $l['staff_id'] );
-		if ( true === $res && $uid ) WB_Notifications::notify( $uid, 'staff', sprintf( 'Your leave from %s was %s.', $l['from_date'], $approve ? 'approved' : 'declined' ), home_url( '/workspace/staff/' ), 'wb_leave', $leave_id );
+		if ( true === $res && $uid ) WB_Notifications::notify( $uid, 'staff', sprintf( 'Your leave from %s was %s.', $l['from_date'], $approve ? 'approved' : 'declined' ), WB_Workspace::url( 'staff' ), 'wb_leave', $leave_id );
 		return $res;
 	}
 

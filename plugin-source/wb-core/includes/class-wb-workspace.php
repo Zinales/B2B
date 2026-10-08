@@ -145,7 +145,7 @@ class WB_Workspace {
 		$slug = self::requested();
 		if ( '' === $slug ) return;
 		if ( ! is_user_logged_in() && 'welcome' !== $slug ) {
-			wp_safe_redirect( wp_login_url( home_url( 'portal' === $slug ? '/portal/' : '/workspace/' . ( 'home' === $slug ? '' : $slug . '/' ) ) ) );
+			wp_safe_redirect( wp_login_url( self::url( $slug ) ) );
 			exit;
 		}
 		nocache_headers();
@@ -186,7 +186,7 @@ class WB_Workspace {
 		$who  = $names ? implode( ' or ', array_map( 'esc_html', $names ) ) : 'the owner';
 		$back = current_user_can( 'wb_access_workspace' )
 			? '<p><a href="' . esc_url( self::url( 'home' ) ) . '">Back to Today</a></p>'
-			: ( current_user_can( 'wb_portal' ) ? '<p><a href="' . esc_url( home_url( '/portal/' ) ) . '">Go to your account</a></p>' : '' );
+			: ( current_user_can( 'wb_portal' ) ? '<p><a href="' . esc_url( self::portal_url() ) . '">Go to your account</a></p>' : '' );
 		return wb_notice( 'warn', 'This screen is not part of your work at the moment.' )
 			. '<p>If you need it, ask ' . $who . ' to tick it for you under Settings › Who can do what. The menu on the left shows everything you can open.</p>' . $back;
 	}
@@ -195,16 +195,30 @@ class WB_Workspace {
 	private static function welcome_page(): string {
 		$in    = is_user_logged_in();
 		$links = [
-			'signin'    => wp_login_url( home_url( '/workspace/' ) ),
+			'signin'    => wp_login_url( self::url( 'home' ) ),
 			'workspace' => $in && current_user_can( 'wb_access_workspace' ) ? self::url( 'home' ) : '',
-			'portal'    => $in && current_user_can( 'wb_portal' ) ? home_url( '/portal/' ) : '',
+			'portal'    => $in && current_user_can( 'wb_portal' ) ? self::portal_url() : '',
 			'setup'     => self::url( 'setup' ),
 		];
 		return self::page( 'welcome', '', '', WB_Welcome::content( WB_Setup::display_name(), $links, $in && current_user_can( 'wb_manage_settings' ) ) );
 	}
 
-	private static function url( string $slug ): string {
-		return home_url( 'home' === $slug ? '/workspace/' : '/workspace/' . $slug . '/' );
+	/**
+	 * The address of a screen, by slug (0.3.2, BUILD-PATTERNS §2.1): the one place that knows the
+	 * shape of a workspace address. Nothing else types '/workspace/'. An unknown slug lands on Today
+	 * rather than on a dead address; regress-workspace.php checks that every slug used in code exists.
+	 * $args are added as a query string (?quote=12) — view state the screen reads, never a message.
+	 */
+	public static function url( string $slug, array $args = [] ): string {
+		if ( 'portal' === $slug ) return self::portal_url();
+		if ( '' === $slug || ! isset( self::SCREENS[ $slug ] ) ) $slug = 'home';
+		$url = home_url( 'home' === $slug ? '/workspace/' : '/workspace/' . $slug . '/' );
+		return $args ? add_query_arg( $args, $url ) : $url;
+	}
+
+	/** The customer portal's address. */
+	public static function portal_url(): string {
+		return home_url( '/portal/' );
 	}
 
 	/** The whole document: frame + header + content. Returned, not printed. */
@@ -233,7 +247,7 @@ class WB_Workspace {
 
 		$me  = is_user_logged_in()
 			? esc_html( $user->display_name ) . ' · <a href="' . esc_url( wp_logout_url( home_url( '/' ) ) ) . '">Sign out</a>'
-			: '<a href="' . esc_url( wp_login_url( home_url( '/workspace/' ) ) ) . '">Sign in</a>';
+			: '<a href="' . esc_url( wp_login_url( self::url( 'home' ) ) ) . '">Sign in</a>';
 		$top = '<header class="wb-top">'
 			. ( $portal ? '<a class="wb-top-brand" href="' . esc_url( home_url( '/' ) ) . '"><span class="wb-side-mark">' . $mark . '</span>' . esc_html( $name ) . '</a>' : '<button type="button" class="wb-top-menu" aria-controls="wb-side" aria-expanded="false">Menu</button>' )
 			. '<span class="wb-top-me">' . $me . '</span></header>';

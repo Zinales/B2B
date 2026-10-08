@@ -459,7 +459,7 @@ class WB_Payroll {
 		$name  = $staff ? trim( (string) ( $staff['first_name'] ?? '' ) . ' ' . (string) ( $staff['last_name'] ?? '' ) ) : '';
 		$left  = $staff && ( '' !== (string) ( $staff['ended_at'] ?? '' ) || in_array( (string) ( $staff['status'] ?? '' ), [ 'inactive', 'ended', 'left' ], true ) );
 		$msg   = self::access_message( $name, $left, $deleting );
-		WB_Notifications::notify_owners( 'staff', $msg, home_url( '/workspace/payroll/' ), 'wb_staff', (int) $staff_ids[0] );
+		WB_Notifications::notify_owners( 'staff', $msg, WB_Workspace::url( 'payroll' ), 'wb_staff', (int) $staff_ids[0] );
 		wb_ledger_write( 'payslip_access_lost_notice', 'wb_staff', (int) $staff_ids[0], null, [ 'user_id' => $uid, 'left' => $left, 'login_removed' => $deleting ] );
 		if ( ! $deleting ) update_user_meta( $uid, self::ACCESS_FLAG, current_time( 'mysql' ) );
 	}
@@ -873,7 +873,7 @@ class WB_Payroll {
 		if ( is_wp_error( $res ) ) return $res;
 		foreach ( self::payslips( $run_id ) as $p ) {
 			$uid = WB_Staff::user_for_staff( (int) $p['staff_id'] );
-			if ( $uid ) WB_Notifications::notify( $uid, 'staff', sprintf( 'Your payslip for %s is ready.', $run['period'] ), home_url( '/workspace/payroll/' ), 'wb_payslips', (int) $p['_ID'] );
+			if ( $uid ) WB_Notifications::notify( $uid, 'staff', sprintf( 'Your payslip for %s is ready.', $run['period'] ), WB_Workspace::url( 'payroll' ), 'wb_payslips', (int) $p['_ID'] );
 		}
 		return true;
 	}

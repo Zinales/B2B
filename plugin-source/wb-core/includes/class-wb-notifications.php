@@ -137,7 +137,7 @@ class WB_Notifications {
 		$col = 'dismiss' === $_POST['wb_notif_action'] ? 'dismissed_at' : 'read_at';
 		$where = $id ? $wpdb->prepare( 'id = %d AND recipient_user_id = %d', $id, $uid ) : $wpdb->prepare( 'recipient_user_id = %d', $uid );   // own rows only
 		$wpdb->query( $wpdb->prepare( 'UPDATE ' . self::table() . " SET {$col} = %s WHERE {$where} AND {$col} IS NULL", current_time( 'mysql' ) ) );
-		wp_safe_redirect( wb_return_url( '/workspace/' ) );
+		wp_safe_redirect( wb_return_url( 'home' ) );
 		exit;
 	}
 
@@ -158,7 +158,7 @@ class WB_Notifications {
 			$h .= '<li>' . WB_Render::chip( self::GROUPS[ $r['ngroup'] ] ?? '' ) . ' ' . esc_html( (string) $r['message'] )
 				. ( '' !== $r['link'] ? ' <a href="' . esc_url( (string) $r['link'] ) . '">Open</a>' : '' ) . '</li>';
 		}
-		return $h . '</ul><a href="' . esc_url( home_url( '/workspace/notifications/' ) ) . '">See all</a></div>';
+		return $h . '</ul><a href="' . esc_url( WB_Workspace::url( 'notifications' ) ) . '">See all</a></div>';
 	}
 
 	public static function panel( $atts = [] ): string {
