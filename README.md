@@ -1,8 +1,8 @@
-# B2B Wholesale System — project map
+# B2BGro — project map
 
 *Started 2 October 2026. A sample system. Not part of FindGro. Kaycie is the STYLING guide only;
 the engines, rules and data design are our own and are decided here.*
-*Working name only. Code prefix `wb_`. Pick the real name before the first live client.*
+*The product is **B2BGro** (Zina, 8 October 2026). The code prefix stays `wb_`: an internal name, like Kaycie's `kc_`.*
 
 ## Who it is for
 Companies that sell technical products wholesale to other businesses: each product carries a

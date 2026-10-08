@@ -1,5 +1,13 @@
 # wb-core changelog
 
+## 1.0.1 — 8 October 2026
+- **The product is B2BGro** (Zina, 8 October). The plugin, the documents and the front page footer
+  ("built on B2BGro") say so. The code prefix stays `wb_` — an internal name, like Kaycie's `kc_`;
+  renaming 35 tables on a site with data buys nothing a person can see.
+- **Categories, price tiers and customer pricing explained** where they are set: a read-only fold
+  on Products, "How a price is worked out", says what each is for and how check one and check two
+  use them. The same words are in the plugin README.
+
 ## 1.0.0 — 8 October 2026
 Version one (Zina, 8 October: "ready to go to market with this as v1 for customisation by
 clients"). The working name, code prefix `wb_` and table names stay as they are until the real

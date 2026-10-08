@@ -1,4 +1,4 @@
-/* B2B Wholesale System — dashboard stylesheet (v1, wb-core 0.1.0).
+/* B2BGro — dashboard stylesheet (v1, wb-core 0.1.0).
    One file, enqueued site-wide by WB_Render. Colours are tokens; tables never scroll sideways;
    under 640px every table becomes cards (each cell carries data-label). Inputs are 16px on
    phones so iOS does not zoom. Bare <button>s are reset inside .wb-* components (themes style them). */

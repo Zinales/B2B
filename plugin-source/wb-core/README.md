@@ -1,4 +1,8 @@
-# B2B Wholesale System — Core (`wb-core`) 0.3.1
+# B2BGro — Core (`wb-core`) 1.0.1
+
+**B2BGro** is the product (Zina, 8 October 2026). `wb_` stays as the code prefix for tables, options,
+capabilities and classes: a prefix is an internal name, like Kaycie's `kc_`, and changing it on a site that
+has data means a one-time migration of 35 tables. Nothing a person reads says `wb`.
 
 The engine for a B2B wholesale business. Business data in JetEngine CCTs
 (`wp_jet_cct_wb_*`), engine records in plugin tables (`wp_wb_*`), settings in `wp_options`
@@ -6,8 +10,7 @@ The engine for a B2B wholesale business. Business data in JetEngine CCTs
 [`System Integrity Framework/DATA-ARCHITECTURE.md`](../../System%20Integrity%20Framework/DATA-ARCHITECTURE.md)
 (in the project root, two folders up); this plugin follows it, and the few additions are listed below.
 
-Working name only. Code prefix `wb_`, classes `WB_*`, text domain `wb`. Pick the real name before
-the first live tenant (table names would need a one-time migration after that).
+Code prefix `wb_`, classes `WB_*`, text domain `wb`.
 
 ## Install
 1. Upload and activate. Activation creates the engine tables, the roles, the private file folder
@@ -41,6 +44,17 @@ same shortcodes on ordinary pages.
 | Two names on adjustments, write-offs, stocktakes, credit notes, below-floor prices, timesheets, leave | each engine checks the approver is a different person and is the one recording the approval |
 | Prices frozen onto lines | `WB_Orders::insert_quote_line()` → order lines → invoice `lines_json` |
 | No automatic emails | `WB_Notifications` is in-app; a group emails only if `wb_notify_<group>_email` is switched on. Quotes, invoices, datasheet links are never sent by the system |
+
+## Categories, price tiers and customer pricing
+- **Categories** group products. A category carries the lowest margin allowed and the specification rows
+  every product in it shares. It never sets a selling price.
+- **Price tiers** are the standard discount levels (Trade, Distributor, Project), each a % off list. Every
+  customer sits on one; new customers start on the default tier.
+- **Customer price rules** are for one customer: fixed, % off list or % on cost, for a product or a whole
+  category, between two dates, approved by a second person.
+- **Check one** finds the most specific answer (customer + product rule → customer + category rule → tier →
+  list). **Check two** makes sure it is allowed (not below cost + lowest margin from the product or its
+  category; not past valid-until). Both are frozen onto the quote line.
 
 ## Engines
 - `WB_Pricing` — check one (product rule → category rule up the tree → tier → list) and check two

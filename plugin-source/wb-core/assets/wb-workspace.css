@@ -1,4 +1,4 @@
-/* B2B Wholesale System — workspace frame and screen anatomy (wb-core 0.3.4).
+/* B2BGro — workspace frame and screen anatomy (wb-core 0.3.4).
    Loaded only on the plugin's own routes (/workspace/…, /portal/), after wb-dashboard.css; the
    theme's stylesheets are left off those routes.
 
@@ -332,6 +332,7 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-welcome-foot{padding:var(--wb-s5) 0}
 .wb-welcome-foot .wb-wrap{display:flex;justify-content:space-between;gap:1rem;align-items:center;font-size:var(--wb-fs-md);color:var(--wb-canvas-82)}
 .wb-app .wb-welcome-foot a{color:var(--wb-canvas);text-decoration:underline;text-underline-offset:.15em}
+.wb-builton{color:var(--wb-canvas-82)}
 .wb-demo-ribbon{background:var(--wb-tint);border-bottom:1px solid var(--wb-line);color:var(--wb-ink);font-size:var(--wb-fs-sm);padding:.45rem var(--wb-s5);text-align:center}
 @media (max-width:640px){
  .wb-sec{padding:var(--wb-s5) 0}

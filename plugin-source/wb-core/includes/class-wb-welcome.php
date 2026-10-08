@@ -127,7 +127,7 @@ class WB_Welcome {
 			$h .= '</ol>' . $btn( $demo, 'Try the demo' ) . '</div></section>';
 		}
 
-		$h .= '<footer class="wb-sec wb-sec--sink wb-welcome-foot"><div class="wb-wrap"><span>' . esc_html( $name ) . '</span>' . ( $in ? '' : '<a href="' . esc_url( $signin ) . '">Sign in</a>' ) . '</div></footer>';
+		$h .= '<footer class="wb-sec wb-sec--sink wb-welcome-foot"><div class="wb-wrap"><span>' . esc_html( $name ) . ' <span class="wb-builton">· built on B2BGro</span></span>' . ( $in ? '' : '<a href="' . esc_url( $signin ) . '">Sign in</a>' ) . '</div></footer>';
 		return $h;
 	}
 }

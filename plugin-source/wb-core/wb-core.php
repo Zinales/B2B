@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: B2B Wholesale System — Core
+ * Plugin Name: B2BGro — Core
  * Description: The engine for a B2B wholesale business: hash-chained audit ledger, gapless document numbering, roles by dashboard, the two pricing checks, stock as a ledger, the quote → order → invoice → payment → delivery state machine, bank-statement matching, demand and cashflow forecasting, staff time/leave/KPIs, private document storage, the Setup screen (brand + first-run checklist), bank CSV mapping, the customer portal and South African payroll. Serves its own screens at /workspace/ and /portal/ (no pages to create). Business data lives in JetEngine CCTs (wp_jet_cct_wb_*); engine records in plugin tables (wp_wb_*).
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: GroB2B
  * Requires PHP: 8.0
  * Requires at least: 6.4
@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WB_VERSION', '1.0.0' );
+define( 'WB_VERSION', '1.0.1' );
 define( 'WB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WB_PLUGIN_FILE', __FILE__ );
 

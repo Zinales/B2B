@@ -1,8 +1,8 @@
 # DATA ARCHITECTURE — where everything is saved
 
-*Created 2 October 2026. Working name for the product: **B2B Wholesale System** (code prefix `wb_`).
-The real name is Zina's decision; every key below is regenerated from code or is a table name that
-would need a one-time migration, so pick the name before the first live tenant.*
+*Created 2 October 2026. The product is **B2BGro** (named 8 October 2026; the working name was B2B Wholesale System).
+The code prefix stays `wb_`: every key below is an internal name, and the table names would need a
+one-time migration to change, which buys nothing a person can see.*
 
 Kaycie is the styling reference only. These rules are this product's own.
 

@@ -459,6 +459,12 @@ class WB_Screens {
 
 	/* ================================================================== dashboards */
 
+	/** Categories, price tiers and customer pricing, in plain words (Zina, 8 October 2026). Shown on Products. */
+	const PRICING_WORDS = '<p><strong>Categories</strong> group products (Adhesives, Fasteners, Coatings). A category carries two things its products inherit: the lowest margin allowed, and the specification rows every product in it shares. A category never sets a selling price.</p>'
+		. '<p><strong>Price tiers</strong> are the standard discount levels (Trade, Distributor, Project), each a percentage off the list price. Every customer sits on one tier, and that tier is their price unless something more specific says otherwise. New customers start on the default tier.</p>'
+		. '<p><strong>Customer price rules</strong> are for one customer: a fixed price, a percentage off list, or a percentage on cost, for one product or a whole category, between two dates, approved by someone other than the person who set it.</p>'
+		. '<p><strong>Check one</strong> finds the most specific answer: a rule for this customer and this product, then a rule for this customer and the product\'s category, then the customer\'s tier, then the list price. <strong>Check two</strong> makes sure that price is allowed: not below cost plus the lowest margin (the product\'s, or its category\'s), and not past the price\'s valid-until date. Both answers are frozen onto the quote line, so a later change to a rule, a tier or a cost never rewrites an old quote.</p>';
+
 	/** Quick actions on Today: [ cap, screen, fold anchor, words, note ]. At most six show. */
 	const QUICK = [
 		[ 'wb_create_quotes', 'quotes', '#wb-add', 'Write a quote', 'both price checks run as you type' ],
@@ -540,6 +546,9 @@ class WB_Screens {
 				. WB_Render::field( 'rule_type', 'Price is', 'select', 'pct_off_list', [ 'options' => [ 'fixed_price' => 'a fixed price', 'pct_off_list' => '% off the list price', 'pct_on_cost' => '% on top of cost' ] ] )
 				. WB_Render::field( 'value', 'Amount or %', 'number', '', [ 'placeholder' => '12.5' ] ) . WB_Render::field( 'valid_from', 'From', 'date' ) . WB_Render::field( 'valid_to', 'Until', 'date' ) . WB_Render::form_close( 'Save rule (draft)' );
 			$h .= self::fold( 'Customer price rules', $body, false, '', 'sibling' );
+		}
+		if ( current_user_can( 'wb_view_products' ) ) {
+			$h .= self::fold( 'How a price is worked out', self::PRICING_WORDS, false, 'wb-pricing-words', 'reference' );
 		}
 		return $h;
 	}
