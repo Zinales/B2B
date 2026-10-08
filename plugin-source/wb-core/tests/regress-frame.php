@@ -51,14 +51,15 @@ function wp_head() { echo '<!--head-->'; }
 function wp_body_open() {}
 function wp_footer() { echo '<!--foot-->'; }
 function do_shortcode( $s ) { return '<div data-shortcodes="' . esc_attr( $s ) . '">rendered</div>'; }
-function get_option( $k, $d = false ) { return $d; }
+function get_option( $k, $d = false ) { return $GLOBALS['T']['options'][ $k ] ?? $d; }
+function get_user_meta( $id, $k, $single = false ) { return ''; }
 function get_query_var( $k, $d = '' ) { return $d; }
 function add_action( ...$a ) {} function add_filter( ...$a ) {} function add_shortcode( ...$a ) {}
 function wb_notice( string $kind, string $msg ): string { return '<div class="wb-notice wb-' . $kind . '" role="status">' . $msg . '</div>'; }
 class WB_Storage { public static function exists( $k ) { return false; } }
 
 $base = WB_PLUGIN_DIR . 'includes/';
-foreach ( [ 'roles', 'setup', 'workspace', 'welcome', 'render', 'needs' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
+foreach ( [ 'roles', 'setup', 'workspace', 'welcome', 'render', 'needs', 'demo' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
 function date_i18n( $f ) { return date( $f, 1789982000 ); }   // Monday 21 September 2026, 09:13 UTC: a morning
 function wp_nonce_field( ...$a ) { return ''; }
 function sanitize_html_class( $s ) { return $s; }
@@ -157,6 +158,16 @@ ok( 'signed out: a way in', substr_count( $html, 'wp-login.php' ) >= 2 && false 
 ok( 'signed out: no workspace or account buttons', false === strpos( $html, 'Open the workspace' ) && false === strpos( $html, 'Your account' ) );
 ok( 'signed out: no staff menu, no sign out', false === strpos( $html, '<aside class="wb-side"' ) && false === strpos( $html, 'Sign out' ) );
 ok( 'signed out: no getting-started block', false === strpos( $html, 'Getting started' ) );
+ok( 'demo closed: no demo button', false === strpos( $html, 'Try the demo' ) );
+ok( 'the one hand-drawn underline, once, in the H1', 1 === substr_count( $html, '<span class="wb-pen">' ) && false !== strpos( $html, '<h1 class="wb-display">' ) );
+ok( 'the page rhythm: dark, light, light, dark, (light,) dark', preg_match_all( '/wb-sec--(navy|cream|white|tint|sink)/', $html, $mm ) >= 5 && 'navy' === $mm[1][0] && 'cream' === $mm[1][1] && 'white' === $mm[1][2] && 'navy' === $mm[1][3] && 'sink' === end( $mm[1] ) );
+$GLOBALS['T']['options'] = [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ] ];
+[ , $html ] = WB_Workspace::render( 'welcome' );
+ok( 'demo open, signed out: Try the demo is the primary and links to the demo address', false !== strpos( $html, '<a class="wb-btn wb-btn-lg wb-btn-on-dark" href="https://b2b.test/workspace/demo/">Try the demo</a>' ) );
+ok( 'demo open: Sign in stays as the secondary', false !== strpos( $html, 'wb-btn-ghost wb-btn-ghost-on-dark" href="https://b2b.test/wp-login.php' ) );
+ok( 'demo open: the five-minute tour', false !== strpos( $html, 'Five minutes in the demo.' ) && 5 === substr_count( $html, '<li><strong>' ) );
+ok( 'the demo is open when the switch is on and the login exists', WB_Demo::is_open( [ 'enabled' => 'yes', 'user_id' => 7 ], true ) && ! WB_Demo::is_open( [ 'enabled' => 'yes', 'user_id' => 7 ], false ) && ! WB_Demo::is_open( [ 'enabled' => 'no', 'user_id' => 7 ], true ) && ! WB_Demo::is_open( [ 'enabled' => 'yes', 'user_id' => 0 ], true ) );
+$GLOBALS['T']['options'] = [];
 ok( 'welcome may be indexed; it holds no business data', false === strpos( $html, 'noindex' ) );
 ok( 'what it does: six areas', 6 === substr_count( $html, '<div class="wb-area">' ) );
 ok( 'how it keeps you safe: four points', 4 === substr_count( $html, '<div class="wb-safe">' ) );
@@ -165,6 +176,10 @@ $GLOBALS['T']['logged_in'] = true;
 $GLOBALS['T']['caps'] = caps_of( 'wb_owner' );
 [ , $html ] = WB_Workspace::render( 'welcome' );
 ok( 'owner: workspace button and getting started', false !== strpos( $html, 'Open the workspace' ) && false !== strpos( $html, 'Getting started' ) && false !== strpos( $html, 'Go to System Settings' ) );
+$GLOBALS['T']['options'] = [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ] ];
+[ , $html ] = WB_Workspace::render( 'welcome' );
+ok( 'owner with the demo open: no demo button (they are already in)', false === strpos( $html, 'Try the demo' ) );
+$GLOBALS['T']['options'] = [];
 $GLOBALS['T']['caps'] = caps_of( 'wb_sales' );
 [ , $html ] = WB_Workspace::render( 'welcome' );
 ok( 'sales: workspace button, no getting started', false !== strpos( $html, 'Open the workspace' ) && false === strpos( $html, 'Getting started' ) );

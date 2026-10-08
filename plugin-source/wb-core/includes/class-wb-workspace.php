@@ -144,6 +144,7 @@ class WB_Workspace {
 	public static function serve(): void {
 		$slug = self::requested();
 		if ( '' === $slug ) return;
+		if ( 'demo' === $slug ) WB_Demo::enter();   // signs in and leaves; falls through to the 404 when the demo is closed
 		if ( ! is_user_logged_in() && 'welcome' !== $slug ) {
 			wp_safe_redirect( wp_login_url( self::url( $slug ) ) );
 			exit;
@@ -199,6 +200,7 @@ class WB_Workspace {
 			'workspace' => $in && current_user_can( 'wb_access_workspace' ) ? self::url( 'home' ) : '',
 			'portal'    => $in && current_user_can( 'wb_portal' ) ? self::portal_url() : '',
 			'setup'     => self::url( 'setup' ),
+			'demo'      => class_exists( 'WB_Demo' ) && WB_Demo::demo_open() ? home_url( '/workspace/demo/' ) : '',
 		];
 		return self::page( 'welcome', '', '', WB_Welcome::content( WB_Setup::display_name(), $links, $in && current_user_can( 'wb_manage_settings' ) ) );
 	}
@@ -351,6 +353,7 @@ class WB_Workspace {
 <body class="wb-app<?php echo $welcome ? ' wb-app--welcome' : ( $portal ? ' wb-app--portal' : '' ); ?>">
 <?php wp_body_open(); ?>
 <a class="wb-skip" href="#wb-content">Skip to the content</a>
+<?php if ( class_exists( 'WB_Demo' ) ) echo WB_Demo::ribbon(); ?>
 <div class="wb-shell"><?php echo $side; // built above from escaped parts ?><div class="wb-main"><?php echo $top . $main; // built above from escaped parts; $content is shortcode output ?></div></div>
 <script>(function(){var b=document.body,m=document.querySelector(".wb-top-menu");function set(o){b.classList.toggle("wb-side-open",o);if(m)m.setAttribute("aria-expanded",o?"true":"false");}if(m)m.addEventListener("click",function(){set(!b.classList.contains("wb-side-open"));});document.addEventListener("click",function(e){if(e.target.closest("[data-wb-side-close]"))set(false);});document.addEventListener("keydown",function(e){if("Escape"===e.key)set(false);});})();</script>
 <?php wp_footer(); ?>

@@ -52,8 +52,9 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-app .wb-btn-danger{background:var(--wb-card);border-color:var(--wb-bad);color:var(--wb-bad)}
 .wb-app .wb-btn-danger:hover{background:var(--wb-bad);color:#fff}
 .wb-app .wb-btn[disabled],.wb-app .wb-btn-off{background:var(--wb-line);border-color:transparent;color:var(--wb-muted);cursor:not-allowed}
-.wb-app .wb-btn-on-dark{background:var(--wb-accent);color:var(--wb-ink)}
-.wb-app .wb-btn-on-dark:hover{background:var(--wb-canvas);color:var(--wb-ink)}
+/* on navy the primary is rose accent with navy text, lifting to cream; deep rose is never a fill on navy */
+.wb-app .wb-btn-on-dark,.wb-app a.wb-btn-on-dark{background:var(--wb-accent);color:var(--wb-ink)}
+.wb-app .wb-btn-on-dark:hover,.wb-app a.wb-btn-on-dark:hover{background:var(--wb-canvas);color:var(--wb-ink)}
 .wb-app .wb-btn svg{width:1.1em;height:1.1em}
 .wb-app .wb-top-me a,.wb-app .wb-welcome-foot a{display:inline-flex;align-items:center;min-height:24px;padding:.35rem .5rem;margin:-.35rem -.5rem;border-radius:var(--wb-r)}
 
@@ -266,29 +267,59 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
  body.wb-app{background:#fff}
 }
 
-/* ---------- 0.3.1: the welcome page ---------- */
+/* ---------- 0.3.7: the welcome page in the Brandzgro page rhythm ---------- */
 .wb-app--welcome .wb-top{background:var(--wb-card);padding:.8rem 1.5rem}
-.wb-welcome{max-width:66rem;margin:0 auto;padding:2rem 1.5rem 4rem}
-.wb-welcome h2{font-size:var(--wb-fs-xl);margin:0 0 1rem}
-.wb-welcome h3{font-size:var(--wb-fs-lg);margin:0 0 .35rem}
-.wb-hero{padding:2rem 0 2.5rem;max-width:44rem}
-.wb-hero h1{font-size:clamp(2rem,4.2vw,3.2rem);margin:0 0 1rem;line-height:1.05;letter-spacing:-.025em}
-.wb-lead{font-size:var(--wb-fs-lg);margin:0 0 1.5rem;color:var(--wb-muted)}
-.wb-hero-actions{display:flex;flex-wrap:wrap;gap:.6rem}
-.wb-hero-actions .wb-btn{padding:14px 26px;font-size:var(--wb-fs-base);min-height:52px}
-.wb-areas,.wb-safety,.wb-start{padding:1.5rem 0;border-top:1px solid var(--wb-line)}
-.wb-area-grid,.wb-safety-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,17rem),1fr));gap:1rem}
-.wb-area,.wb-safe{background:var(--wb-card);border:1px solid var(--wb-line);border-radius:var(--wb-r);padding:1.1rem 1.2rem}
-.wb-area{border-top:3px solid var(--wb-primary)}
-.wb-area>p{color:var(--wb-muted);margin:0 0 .6rem}
-.wb-area ul{margin:0;padding-left:1.1rem;font-size:var(--wb-fs-md)}
-.wb-area li{margin:0 0 .3rem}
-.wb-safe p{margin:0;color:var(--wb-muted);font-size:var(--wb-fs-md)}
-.wb-start ol{margin:0 0 1.2rem;padding-left:1.3rem;max-width:44rem}
-.wb-start li{margin:0 0 .6rem}
-.wb-welcome-foot{display:flex;justify-content:space-between;gap:1rem;padding:1.5rem 0 0;border-top:1px solid var(--wb-line);color:var(--wb-muted);font-size:var(--wb-fs-md)}
+.wb-app--welcome .wb-dash{max-width:none;padding:0}
+.wb-wrap{max-width:73.75rem;margin:0 auto;padding:0 var(--wb-s5)}
+.wb-sec{padding:var(--wb-s6) 0}
+.wb-sec--cream{background:var(--wb-canvas);color:var(--wb-ink)}
+.wb-sec--white{background:var(--wb-card);color:var(--wb-ink);border-top:1px solid var(--wb-line);border-bottom:1px solid var(--wb-line)}
+.wb-sec--tint{background:var(--wb-tint);color:var(--wb-ink)}
+.wb-sec--navy{background:var(--wb-ink);color:var(--wb-canvas)}
+.wb-sec--sink{background:#060F1D;color:var(--wb-canvas)}
+.wb-sec--navy h1,.wb-sec--navy h2,.wb-sec--sink h2{color:var(--wb-canvas)}
+.wb-sec--navy .wb-lede,.wb-sec--navy .wb-small{color:var(--wb-canvas-82)}
+.wb-kicker{display:block;font-weight:600;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--wb-primary);margin:0 0 var(--wb-s3)}
+.wb-kicker--on-dark{color:var(--wb-accent)}
+.wb-sec h2{font-size:clamp(1.6rem,3.2vw,2.4rem);font-weight:700;letter-spacing:-.025em;line-height:1.05;margin:0 0 var(--wb-s5);max-width:40rem}
+.wb-hero2{padding:var(--wb-s7,68px) 0}
+.wb-display{font-size:clamp(2.2rem,5.2vw,4rem);font-weight:700;letter-spacing:-.03em;line-height:1.02;margin:0 0 var(--wb-s4);max-width:48rem}
+.wb-lede{font-size:var(--wb-fs-lg);margin:0 0 var(--wb-s5);max-width:42rem;color:var(--wb-muted)}
+.wb-small{font-size:var(--wb-fs-sm);margin:var(--wb-s3) 0 0}
+.wb-hero-actions{display:flex;flex-wrap:wrap;gap:var(--wb-s3)}
+.wb-app .wb-btn-ghost-on-dark,.wb-app a.wb-btn-ghost-on-dark{border-color:rgba(247,243,238,.4);color:var(--wb-canvas)}
+.wb-app .wb-btn-ghost-on-dark:hover,.wb-app a.wb-btn-ghost-on-dark:hover{border-color:var(--wb-accent);color:var(--wb-accent)}
+.wb-pen{position:relative;display:inline-block;white-space:nowrap}
+.wb-pen svg{position:absolute;left:-2%;bottom:-.16em;width:104%;height:.24em;overflow:visible}
+.wb-pen path{stroke:var(--wb-accent);stroke-width:5;stroke-linecap:round;stroke-dasharray:200;stroke-dashoffset:200;animation:wb-pen .6s cubic-bezier(.22,.61,.36,1) .3s forwards}
+@keyframes wb-pen{to{stroke-dashoffset:0}}
+.wb-area-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr));gap:var(--wb-s4)}
+.wb-area{position:relative;overflow:hidden;background:var(--wb-card);border:1px solid var(--wb-line);border-radius:var(--wb-r);padding:var(--wb-s5);display:flex;flex-direction:column;gap:var(--wb-s3)}
+.wb-area h3{font-size:var(--wb-fs-2xl);font-weight:600;letter-spacing:-.015em;margin:0}
+.wb-area>p{color:var(--wb-muted);margin:0}
+.wb-ghost{position:absolute;right:-.1em;top:-.35em;font-size:7rem;font-weight:700;letter-spacing:-.05em;line-height:1;color:rgba(138,59,82,.08);pointer-events:none;user-select:none}
+.wb-dash-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--wb-s2);font-size:var(--wb-fs-md);color:var(--wb-muted)}
+.wb-dash-list li{display:flex;align-items:baseline;gap:var(--wb-s3)}
+.wb-dash-list li::before{content:"";flex:none;width:14px;height:2px;background:var(--wb-primary);transform:translateY(-.35em)}
+.wb-safety-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:var(--wb-s5) var(--wb-s4)}
+.wb-safe h3{font-size:var(--wb-fs-lg);font-weight:600;margin:0 0 .35rem;padding-top:var(--wb-s3);border-top:2px solid var(--wb-primary);display:inline-block}
+.wb-safe p{margin:0;color:var(--wb-muted)}
+.wb-band{text-align:left}
+.wb-statement{font-size:clamp(1.6rem,3.6vw,2.6rem);font-weight:700;letter-spacing:-.025em;line-height:1.05;margin:0 0 var(--wb-s4);max-width:44rem;color:var(--wb-canvas)}
+.wb-steps{margin:0 0 var(--wb-s5);padding-left:1.3rem;max-width:44rem;display:flex;flex-direction:column;gap:var(--wb-s3)}
+.wb-steps li{padding-left:.3rem}
+.wb-steps strong{color:var(--wb-ink)}
+.wb-welcome-foot{padding:var(--wb-s5) 0}
+.wb-welcome-foot .wb-wrap{display:flex;justify-content:space-between;gap:1rem;align-items:center;font-size:var(--wb-fs-md);color:var(--wb-canvas-82)}
+.wb-app .wb-welcome-foot a{color:var(--wb-canvas);text-decoration:underline;text-underline-offset:.15em}
+.wb-demo-ribbon{background:var(--wb-tint);border-bottom:1px solid var(--wb-line);color:var(--wb-ink);font-size:var(--wb-fs-sm);padding:.45rem var(--wb-s5);text-align:center}
 @media (max-width:640px){
- .wb-welcome{padding:1rem 1rem 3rem}
- .wb-hero{padding:1rem 0 1.5rem}
+ .wb-sec{padding:var(--wb-s5) 0}
+ .wb-hero2{padding:var(--wb-s6) 0}
+ .wb-wrap{padding:0 var(--wb-s4)}
  .wb-hero-actions .wb-btn{width:100%}
+ .wb-ghost{font-size:5rem}
+}
+@media (prefers-reduced-motion:reduce){
+ .wb-pen path{animation:none;stroke-dashoffset:0}
 }

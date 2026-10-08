@@ -34,7 +34,7 @@ const MEASURE = () => {
   const out = { contrast: [], names: [], labels: [], targets: [], overflow: false, counted: 0 };
   out.overflow = document.documentElement.scrollWidth > window.innerWidth + 1;
   for (const el of document.body.querySelectorAll('*')) {
-    if (!visible(el)) continue;
+    if (!visible(el) || el.closest('[aria-hidden="true"]')) continue;   // decorative text (ghost numerals) is not read
     const own = Array.from(el.childNodes).some(n => n.nodeType === 3 && n.textContent.trim());
     if (own) {
       const cs = getComputedStyle(el); const fg = parse(cs.color); if (!fg) continue;

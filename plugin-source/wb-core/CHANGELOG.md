@@ -1,5 +1,26 @@
 # wb-core changelog
 
+## 0.3.7 — 8 October 2026
+The front page gets a proper introduction, and a way into a demo (Zina, 8 October).
+- **The front page in the Brandzgro page rhythm:** a navy hero with display type and the one
+  hand-drawn underline (drawn in once, off under reduced motion), six feature cards on cream with
+  ghost numerals, "how it keeps you safe" on white, the one statement band, a five-step first
+  visit on the tint, the footer. One primary button per screen: **Try the demo** when the demo is
+  open, else Sign in. On navy the primary is rose accent with navy text; deep rose is never a fill
+  on navy.
+- **A shared demo login** (Kaycie's demo site, Zina's rule: click anything, break nothing).
+  Under Settings an administrator opens or closes the demo. Opening it creates a `demo` login
+  (a manager: everything but settings, staff files and pay; a random password nobody knows; its
+  own staff record so it can approve) and "Try the demo" on the front page signs the visitor in
+  and lands on Today. A ribbon on every screen says it is the shared demo and asks for no real
+  names or numbers. The login never reaches wp-admin, and the panels that would change the
+  tenant for everyone (System Settings, who can do what, business tables, uploads) bounce with
+  a notice; everything else works. Every night while the demo is open the data goes back to the
+  seed. Opening, closing, every entry and every reset are in the audit trail.
+- Tests: regress-frame.php +8 (demo closed and open, signed out and as the owner; the underline
+  once; the page rhythm; the open/closed rule). The browser check covers the dark bands: 923
+  text elements, 0 problems.
+
 ## 0.3.6 — 8 October 2026
 "Upload all data points", half two: every master table can be uploaded from a CSV, and exported
 back out in the same layout (Kaycie's import, with wb-core's own reader).
