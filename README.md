@@ -54,6 +54,14 @@ Kaycie supplies the look: the dashboard stylesheet, the table pattern, the side 
 Everything else (data design, controls, engines) is designed for this product on its own
 merits and recorded in `System Integrity Framework/`.
 
+## Where we are (8 October 2026)
+wb-core 1.0.0 is version one: the engines, the screens in the Brandzgro look with Kaycie's
+anatomy, every master record typed or uploaded, a public front page with a shared demo, and the
+system's own sign-in page. It is ready for a client's own name, colours and data. Still open:
+the real product name (table names need a one-time migration after the first live client), PDFs
+for documents and payslips, IRP5/EMP501 figures, and the items in `docs/BUILD-PATTERNS.md` §5
+not yet ticked (2.5, 2.6, 2.10; 2.4 only partly).
+
 ## Decisions (Zina, 2 October 2026)
 1. **Name, colours and logo are set on a Setup screen** and stored per client. Brandzgro colours
    are the default (navy #0B1F3A, rose #8A3B52, cream #F7F3EE, slate #47586D; Poppins).

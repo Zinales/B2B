@@ -50,7 +50,7 @@ const MEASURE = () => {
       const r = el.getBoundingClientRect();
       if ((r.width < 24 || r.height < 24) && !el.closest('p, li, td, .wb-next')) out.targets.push({ el: desc(el), w: Math.round(r.width), h: Math.round(r.height) });
     }
-    if (el.matches('input:not([type=hidden]),select,textarea')) {
+    if (el.matches('input:not([type=hidden]):not([type=submit]):not([type=button]):not([type=reset]),select,textarea')) {
       const id = el.id; const lab = (id && document.querySelector(`label[for="${CSS.escape(id)}"]`)) || el.closest('label') || el.getAttribute('aria-label') || el.getAttribute('aria-labelledby');
       if (!lab) out.labels.push(desc(el));
     }

@@ -267,6 +267,26 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
  body.wb-app{background:#fff}
 }
 
+/* ---------- 1.0.0: the sign-in page ---------- */
+.wb-app--signin .wb-top{background:var(--wb-card)}
+.wb-app--signin .wb-dash{max-width:60rem;margin:0 auto}
+.wb-signin{display:grid;grid-template-columns:1fr;gap:var(--wb-s4);max-width:28rem}
+.wb-signin--two{max-width:none;grid-template-columns:1fr 1fr}
+.wb-signin .wb-card{padding:var(--wb-s5)}
+.wb-signin .wb-card h2{font-size:var(--wb-fs-xl);margin:0 0 var(--wb-s4)}
+#wb-login p{margin:0 0 var(--wb-s3)}
+#wb-login label{display:block;font-weight:600;color:var(--wb-ink);font-size:var(--wb-fs-base);margin:0 0 .3rem}
+#wb-login .login-remember label{font-weight:400;color:var(--wb-muted);display:flex;align-items:center;gap:.5rem;font-size:var(--wb-fs-md)}
+#wb-login input[type=text],#wb-login input[type=password]{width:100%;font:inherit;font-size:var(--wb-fs-base);padding:.6rem .75rem;border:1px solid var(--wb-line);border-radius:var(--wb-r);color:var(--wb-ink);background:var(--wb-card);min-height:44px}
+#wb-login input[type=text]:focus,#wb-login input[type=password]:focus{outline:none;border-color:var(--wb-primary);box-shadow:0 0 0 3px rgba(138,59,82,.18)}
+#wb-login input[type=checkbox]{accent-color:var(--wb-primary);width:1.1rem;height:1.1rem}
+#wb-login input[type=submit]{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-weight:600;font-size:var(--wb-fs-md);padding:10px 18px;min-height:40px;border-radius:var(--wb-r);border:1.5px solid transparent;background:var(--wb-primary);color:var(--wb-on-primary,#F7F3EE);transition:background var(--wb-speed) var(--wb-ease)}
+#wb-login input[type=submit]:hover{background:var(--wb-ink)}
+#wb-login input[type=submit]:focus-visible{box-shadow:var(--wb-focus)}
+.wb-signin input[readonly]{background:var(--wb-canvas);color:var(--wb-ink)}
+@media (max-width:760px){.wb-signin--two{grid-template-columns:1fr}}
+@media (max-width:480px){#wb-login input[type=submit],.wb-signin .wb-btn{width:100%}}
+
 /* ---------- 0.3.7: the welcome page in the Brandzgro page rhythm ---------- */
 .wb-app--welcome .wb-top{background:var(--wb-card);padding:.8rem 1.5rem}
 .wb-app--welcome .wb-dash{max-width:none;padding:0}

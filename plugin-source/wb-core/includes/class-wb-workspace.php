@@ -63,6 +63,8 @@ class WB_Workspace {
 		add_action( 'wp_loaded', [ __CLASS__, 'maybe_flush' ] );
 		add_filter( 'query_vars', fn( array $v ): array => array_merge( $v, [ self::QV ] ) );
 		add_filter( 'redirect_canonical', fn( $url ) => self::requested() ? false : $url );
+		add_filter( 'login_url', [ __CLASS__, 'login_url' ], 10, 3 );
+		add_action( 'wp_login_failed', function () { if ( 0 === strpos( (string) wp_get_referer(), self::url( 'sign-in' ) ) ) { wp_safe_redirect( self::url( 'sign-in', [ 'login' => 'failed' ] ) ); exit; } } );
 		add_filter( 'pre_get_document_title', fn( $t ) => self::requested() ? self::document_title() : $t, 99 );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'assets' ], 999 );
 		add_action( 'template_redirect', [ __CLASS__, 'serve' ], 20 );   // after every POST handler (5 and 10)
@@ -71,8 +73,12 @@ class WB_Workspace {
 	/* ================================================================== pure */
 
 	/** The screen definition for a route value ('portal', a staff slug, '' = home), or null. */
+	/** 1.0.0: the system's own sign-in page (no menu, public). */
+	const SIGNIN = [ 'Sign in', 'Your own login, or the shared demo.', '', '', '', [] ];
+
 	public static function screen( string $slug ): ?array {
 		if ( 'portal' === $slug ) return self::PORTAL;
+		if ( 'sign-in' === $slug ) return self::SIGNIN;
 		$slug = '' === $slug ? 'home' : $slug;
 		return self::SCREENS[ $slug ] ?? null;
 	}
@@ -96,6 +102,12 @@ class WB_Workspace {
 	}
 
 	/* ================================================================== WordPress side */
+
+	/** wp_login_url() → the system's page, except for wp-admin's own needs (re-auth, interim logins). */
+	public static function login_url( $url, $redirect, $force_reauth ) {
+		if ( $force_reauth || is_admin() || ( '' !== (string) $redirect && false !== strpos( (string) $redirect, '/wp-admin' ) ) ) return $url;
+		return self::signin_url( (string) $redirect );
+	}
 
 	public static function rewrite(): void {
 		add_rewrite_rule( '^workspace/?$', 'index.php?' . self::QV . '=home', 'top' );
@@ -145,8 +157,8 @@ class WB_Workspace {
 		$slug = self::requested();
 		if ( '' === $slug ) return;
 		if ( 'demo' === $slug ) WB_Demo::enter();   // signs in and leaves; falls through to the 404 when the demo is closed
-		if ( ! is_user_logged_in() && 'welcome' !== $slug ) {
-			wp_safe_redirect( wp_login_url( self::url( $slug ) ) );
+		if ( ! is_user_logged_in() && ! in_array( $slug, [ 'welcome', 'sign-in' ], true ) ) {
+			wp_safe_redirect( self::signin_url( self::url( $slug ) ) );
 			exit;
 		}
 		nocache_headers();
@@ -163,6 +175,7 @@ class WB_Workspace {
 	 */
 	public static function render( string $slug ): array {
 		if ( 'welcome' === $slug ) return [ 200, self::welcome_page() ];
+		if ( 'sign-in' === $slug ) return [ 200, self::page( 'sign-in', self::SIGNIN[0], self::SIGNIN[1], self::signin_content() ) ];
 		$s = self::screen( $slug );
 		if ( ! $s ) return [ 404, self::page( $slug, 'Not found', '', wb_notice( 'warn', 'There is no screen at this address.' ) ) ];
 		if ( ! current_user_can( $s[2] ) ) return [ 403, self::page( $slug, $s[0], $s[1], self::no_access( $slug ) ) ];
@@ -196,13 +209,51 @@ class WB_Workspace {
 	private static function welcome_page(): string {
 		$in    = is_user_logged_in();
 		$links = [
-			'signin'    => wp_login_url( self::url( 'home' ) ),
+			'signin'    => self::signin_url( self::url( 'home' ) ),
 			'workspace' => $in && current_user_can( 'wb_access_workspace' ) ? self::url( 'home' ) : '',
 			'portal'    => $in && current_user_can( 'wb_portal' ) ? self::portal_url() : '',
 			'setup'     => self::url( 'setup' ),
 			'demo'      => class_exists( 'WB_Demo' ) && WB_Demo::demo_open() ? home_url( '/workspace/demo/' ) : '',
 		];
 		return self::page( 'welcome', '', '', WB_Welcome::content( WB_Setup::display_name(), $links, $in && current_user_can( 'wb_manage_settings' ) ) );
+	}
+
+	/** The sign-in page, with where to go afterwards. */
+	public static function signin_url( string $redirect = '' ): string {
+		return self::url( 'sign-in', '' !== $redirect ? [ 'redirect_to' => $redirect ] : [] );
+	}
+
+	/**
+	 * The sign-in page (1.0.0, Zina: "sign in should lead to a demo sign-in page with a demo user
+	 * signed in"). Two cards: the person's own login (WordPress's form, posted to wp-login.php, so
+	 * passwords, lockouts and resets stay WordPress's), and, while the demo is open, the demo
+	 * visitor, already filled in, one button to go in, and the words that say what happens to
+	 * what they save. Someone already signed in sees where they can go instead.
+	 */
+	private static function signin_content(): string {
+		$to  = isset( $_GET['redirect_to'] ) ? wp_validate_redirect( wp_unslash( (string) $_GET['redirect_to'] ), '' ) : '';
+		$to  = '' !== $to ? $to : self::url( 'home' );
+		if ( is_user_logged_in() ) {
+			$h = '<div class="wb-signin"><section class="wb-card wb-card--lead"><h2>You are signed in</h2><p>' . esc_html( wp_get_current_user()->display_name ) . '</p><p class="wb-form-acts">'
+				. ( current_user_can( 'wb_access_workspace' ) ? '<a class="wb-btn" href="' . esc_url( self::url( 'home' ) ) . '">Open the workspace</a>' : '' )
+				. ( current_user_can( 'wb_portal' ) ? '<a class="wb-btn' . ( current_user_can( 'wb_access_workspace' ) ? ' wb-btn-ghost' : '' ) . '" href="' . esc_url( self::portal_url() ) . '">Your account</a>' : '' )
+				. '<a class="wb-btn wb-btn-ghost" href="' . esc_url( wp_logout_url( home_url( '/' ) ) ) . '">Sign out</a></p></section></div>';
+			return $h;
+		}
+		$failed = isset( $_GET['login'] ) && 'failed' === $_GET['login'];
+		$demo   = class_exists( 'WB_Demo' ) && WB_Demo::demo_open();
+		$form   = function_exists( 'wp_login_form' ) ? wp_login_form( [ 'echo' => false, 'redirect' => $to, 'form_id' => 'wb-login', 'label_username' => 'Login name or email', 'label_password' => 'Password', 'label_remember' => 'Keep me signed in on this device', 'label_log_in' => 'Sign in', 'remember' => true ] ) : '';
+		$h  = '<div class="wb-signin' . ( $demo ? ' wb-signin--two' : '' ) . '">';
+		$h .= '<section class="wb-card wb-card--lead" aria-labelledby="wb-own"><h2 id="wb-own">Your login</h2>'
+			. ( $failed ? wb_notice( 'err', 'That login name or password is not right. Try again, or reset your password below.' ) : '' )
+			. $form . '<p class="wb-small"><a href="' . esc_url( wp_lostpassword_url( $to ) ) . '">Forgotten your password?</a></p></section>';
+		if ( $demo ) {
+			$h .= '<section class="wb-card wb-card--quiet" aria-labelledby="wb-demo-h"><span class="wb-kicker">Just looking?</span><h2 id="wb-demo-h">The demo</h2>'
+				. '<label class="wb-field"><span>Signed in as</span><input type="text" value="Demo visitor (demo)" readonly aria-readonly="true"></label>'
+				. '<p class="wb-muted">A shared sample company with customers, products, quotes and a bank statement already in it. Click anything, break nothing. <strong>Whatever you save is kept for the day and cleared every night.</strong> Please do not enter real names or numbers.</p>'
+				. '<p class="wb-form-acts"><a class="wb-btn" href="' . esc_url( home_url( '/workspace/demo/' ) ) . '">Enter the demo</a></p></section>';
+		}
+		return $h . '</div>';
 	}
 
 	/**
@@ -213,6 +264,7 @@ class WB_Workspace {
 	 */
 	public static function url( string $slug, array $args = [] ): string {
 		if ( 'portal' === $slug ) return self::portal_url();
+		if ( 'sign-in' === $slug ) return $args ? add_query_arg( $args, home_url( '/workspace/sign-in/' ) ) : home_url( '/workspace/sign-in/' );
 		if ( '' === $slug || ! isset( self::SCREENS[ $slug ] ) ) $slug = 'home';
 		$url = home_url( 'home' === $slug ? '/workspace/' : '/workspace/' . $slug . '/' );
 		return $args ? add_query_arg( $args, $url ) : $url;
@@ -271,7 +323,8 @@ class WB_Workspace {
 	private static function page( string $slug, string $title, string $sub, string $content ): string {
 		$can     = fn( string $cap ): bool => current_user_can( $cap );
 		$welcome = 'welcome' === $slug;
-		$portal  = 'portal' === $slug || $welcome;   // no staff menu on either
+		$signin  = 'sign-in' === $slug;
+		$portal  = 'portal' === $slug || $welcome || $signin;   // no staff menu on any of these
 		$name   = WB_Setup::display_name();
 		$logo   = WB_Setup::logo_data_uri();
 		$mark   = '' !== $logo ? '<img src="' . esc_attr( $logo ) . '" alt="">' : esc_html( strtoupper( substr( $name, 0, 1 ) ) ) /* first letter; no mbstring dependency */;
@@ -298,7 +351,7 @@ class WB_Workspace {
 
 		$me  = is_user_logged_in()
 			? esc_html( $user->display_name ) . ' · <a href="' . esc_url( wp_logout_url( home_url( '/' ) ) ) . '">Sign out</a>'
-			: '<a href="' . esc_url( wp_login_url( self::url( 'home' ) ) ) . '">Sign in</a>';
+			: '<a href="' . esc_url( self::signin_url( self::url( 'home' ) ) ) . '">Sign in</a>';
 		$crumb = '';
 		if ( ! $portal ) {
 			$crumb = '<nav aria-label="Breadcrumb"><ol class="wb-crumb"><li>' . ( 'home' === $slug ? '<span aria-current="page">Today</span>' : '<a href="' . esc_url( self::url( 'home' ) ) . '">Today</a>' ) . '</li>'
@@ -323,7 +376,7 @@ class WB_Workspace {
 		$head = '';
 		if ( ! $welcome ) {
 			$s       = self::screen( $slug );
-			$eyebrow = $s && '' !== (string) ( self::GROUPS[ $s[3] ] ?? '' ) ? self::GROUPS[ $s[3] ] : ( 'portal' === $slug ? 'Your account' : '' );
+			$eyebrow = $s && '' !== (string) ( self::GROUPS[ $s[3] ] ?? '' ) ? self::GROUPS[ $s[3] ] : ( 'portal' === $slug ? 'Your account' : ( $signin ? WB_Setup::display_name() : '' ) );
 			$h1      = $title;
 			if ( 'home' === $slug && class_exists( 'WB_Needs' ) ) {
 				$eyebrow = date_i18n( 'l j F' );
@@ -350,7 +403,7 @@ class WB_Workspace {
 <?php if ( ! $welcome ) echo '<meta name="robots" content="noindex, nofollow">' . "\n"; // the welcome page may be found; the screens never ?>
 <?php wp_head(); ?>
 </head>
-<body class="wb-app<?php echo $welcome ? ' wb-app--welcome' : ( $portal ? ' wb-app--portal' : '' ); ?>">
+<body class="wb-app<?php echo $welcome ? ' wb-app--welcome' : ( $signin ? ' wb-app--signin' : ( $portal ? ' wb-app--portal' : '' ) ); ?>">
 <?php wp_body_open(); ?>
 <a class="wb-skip" href="#wb-content">Skip to the content</a>
 <?php if ( class_exists( 'WB_Demo' ) ) echo WB_Demo::ribbon(); ?>

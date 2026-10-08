@@ -41,6 +41,13 @@ function get_userdata( $id ) { return (object) [ 'ID' => $id, 'display_name' => 
 function get_users( $args = [] ) { return [ 1, 2 ]; }
 function wp_logout_url( $r = '' ) { return 'https://b2b.test/logout'; }
 function wp_login_url( $r = '' ) { return 'https://b2b.test/wp-login.php?redirect_to=' . rawurlencode( (string) $r ); }
+function wp_login_form( $a = [] ) { return '<form id="' . $a['form_id'] . '" class="login-form"><p><label for="u">' . $a['label_username'] . '</label><input id="u" type="text" name="log"></p><p><label for="p">' . $a['label_password'] . '</label><input id="p" type="password" name="pwd"></p><p class="login-remember"><label><input type="checkbox" name="rememberme"> ' . $a['label_remember'] . '</label></p><p><input type="submit" value="' . $a['label_log_in'] . '"><input type="hidden" name="redirect_to" value="' . esc_attr( $a['redirect'] ) . '"></p></form>'; }
+function wp_lostpassword_url( $r = '' ) { return 'https://b2b.test/wp-login.php?action=lostpassword'; }
+function wp_validate_redirect( $u, $d = '' ) { return 0 === strpos( (string) $u, 'https://b2b.test/' ) ? $u : $d; }
+function wp_unslash( $v ) { return $v; }
+function wp_get_referer() { return ''; }
+function is_admin() { return false; }
+function add_query_arg( $args, $url ) { return $url . ( false === strpos( $url, '?' ) ? '?' : '&' ) . http_build_query( $args ); }
 function language_attributes() { echo 'lang="en"'; }
 function bloginfo( $k ) { echo 'UTF-8'; }
 function get_bloginfo( $k ) { return 'Demo Technical Supplies'; }
@@ -88,6 +95,8 @@ function caps_of( string $role ): array {
 $pages = [
 	[ 'welcome-signed-out', 'welcome', null ],
 	[ 'welcome-demo-open', 'welcome', null, [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ] ] ],
+	[ 'sign-in', 'sign-in', null ],
+	[ 'sign-in-demo-open', 'sign-in', null, [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ] ] ],
 	[ 'welcome-owner', 'welcome', 'wb_owner' ],
 	[ 'welcome-customer', 'welcome', 'wb_customer' ],
 	[ 'home-owner', 'home', 'wb_owner' ],

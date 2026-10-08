@@ -44,6 +44,13 @@ function get_userdata( $id ) { return (object) [ 'ID' => $id, 'display_name' => 
 function get_users( $args = [] ) { return [ 1, 2 ]; }   // owner_ids(): two owners
 function wp_logout_url( $r = '' ) { return 'https://b2b.test/logout'; }
 function wp_login_url( $r = '' ) { return 'https://b2b.test/wp-login.php?redirect_to=' . rawurlencode( (string) $r ); }
+function wp_login_form( $a = [] ) { return '<form id="' . $a['form_id'] . '" class="login-form"><p><label for="u">' . $a['label_username'] . '</label><input id="u" type="text" name="log"></p><p><label for="p">' . $a['label_password'] . '</label><input id="p" type="password" name="pwd"></p><p class="login-remember"><label><input type="checkbox" name="rememberme"> ' . $a['label_remember'] . '</label></p><p><input type="submit" value="' . $a['label_log_in'] . '"><input type="hidden" name="redirect_to" value="' . esc_attr( $a['redirect'] ) . '"></p></form>'; }
+function wp_lostpassword_url( $r = '' ) { return 'https://b2b.test/wp-login.php?action=lostpassword'; }
+function wp_validate_redirect( $u, $d = '' ) { return 0 === strpos( (string) $u, 'https://b2b.test/' ) ? $u : $d; }
+function wp_unslash( $v ) { return $v; }
+function wp_get_referer() { return ''; }
+function is_admin() { return false; }
+function add_query_arg( $args, $url ) { return $url . ( false === strpos( $url, '?' ) ? '?' : '&' ) . http_build_query( $args ); }
 function language_attributes() { echo 'lang="en"'; }
 function bloginfo( $k ) { echo 'UTF-8'; }
 function get_bloginfo( $k ) { return 'Demo Technical Supplies'; }
@@ -154,7 +161,7 @@ section( 'welcome page' );
 $GLOBALS['T']['logged_in'] = false; $GLOBALS['T']['caps'] = [];
 [ $status, $html ] = WB_Workspace::render( 'welcome' );
 ok( 'signed out: 200', 200 === $status );
-ok( 'signed out: a way in', substr_count( $html, 'wp-login.php' ) >= 2 && false !== strpos( $html, '>Sign in</a>' ) );
+ok( 'signed out: a way in, to the system\'s own sign-in page', substr_count( $html, 'https://b2b.test/workspace/sign-in/?redirect_to=' ) >= 2 && false !== strpos( $html, '>Sign in</a>' ) && false === strpos( $html, 'wp-login.php' ) );
 ok( 'signed out: no workspace or account buttons', false === strpos( $html, 'Open the workspace' ) && false === strpos( $html, 'Your account' ) );
 ok( 'signed out: no staff menu, no sign out', false === strpos( $html, '<aside class="wb-side"' ) && false === strpos( $html, 'Sign out' ) );
 ok( 'signed out: no getting-started block', false === strpos( $html, 'Getting started' ) );
@@ -164,7 +171,40 @@ ok( 'the page rhythm: dark, light, light, dark, (light,) dark', preg_match_all( 
 $GLOBALS['T']['options'] = [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ] ];
 [ , $html ] = WB_Workspace::render( 'welcome' );
 ok( 'demo open, signed out: Try the demo is the primary and links to the demo address', false !== strpos( $html, '<a class="wb-btn wb-btn-lg wb-btn-on-dark" href="https://b2b.test/workspace/demo/">Try the demo</a>' ) );
-ok( 'demo open: Sign in stays as the secondary', false !== strpos( $html, 'wb-btn-ghost wb-btn-ghost-on-dark" href="https://b2b.test/wp-login.php' ) );
+ok( 'demo open: Sign in stays as the secondary', false !== strpos( $html, 'wb-btn-ghost wb-btn-ghost-on-dark" href="https://b2b.test/workspace/sign-in/?redirect_to=' ) );
+section( 'the sign-in page (1.0.0)' );
+$GLOBALS['T']['logged_in'] = false; $GLOBALS['T']['caps'] = []; $GLOBALS['T']['options'] = [];
+[ $status, $html ] = WB_Workspace::render( 'sign-in' );
+ok( 'signed out: 200, the system\'s own page, no menu', 200 === $status && false !== strpos( $html, 'wb-app--signin' ) && false === strpos( $html, '<aside class="wb-side"' ) );
+ok( 'the title and the company as the eyebrow', false !== strpos( $html, '<h1>Sign in</h1>' ) && false !== strpos( $html, '<span class="wb-eyebrow">Demo Technical Supplies</span>' ) );
+ok( 'WordPress\'s own form, posted to wp-login.php, lands on Today after', false !== strpos( $html, '<form id="wb-login"' ) && false !== strpos( $html, 'name="redirect_to" value="https://b2b.test/workspace/"' ) );
+ok( 'a way to reset a password', false !== strpos( $html, 'action=lostpassword' ) && false !== strpos( $html, 'Forgotten your password?' ) );
+ok( 'demo closed: one card, no demo', false === strpos( $html, 'wb-signin--two' ) && false === strpos( $html, 'Enter the demo' ) );
+$_GET['redirect_to'] = 'https://b2b.test/workspace/quotes/';
+[ , $html ] = WB_Workspace::render( 'sign-in' );
+ok( 'a redirect to a screen is kept', false !== strpos( $html, 'name="redirect_to" value="https://b2b.test/workspace/quotes/"' ) );
+$_GET['redirect_to'] = 'https://evil.test/';
+[ , $html ] = WB_Workspace::render( 'sign-in' );
+ok( 'a redirect off the site is dropped', false !== strpos( $html, 'name="redirect_to" value="https://b2b.test/workspace/"' ) );
+unset( $_GET['redirect_to'] );
+$_GET['login'] = 'failed';
+[ , $html ] = WB_Workspace::render( 'sign-in' );
+ok( 'a failed attempt is said in words', false !== strpos( $html, 'That login name or password is not right.' ) );
+unset( $_GET['login'] );
+$GLOBALS['T']['options'] = [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ] ];
+[ , $html ] = WB_Workspace::render( 'sign-in' );
+ok( 'demo open: two cards, the demo visitor filled in, one button, the words about what is saved', false !== strpos( $html, 'wb-signin--two' ) && false !== strpos( $html, 'value="Demo visitor (demo)" readonly' ) && false !== strpos( $html, 'href="https://b2b.test/workspace/demo/">Enter the demo</a>' ) && false !== strpos( $html, 'kept for the day and cleared every night' ) );
+$GLOBALS['T']['options'] = [];
+$GLOBALS['T']['logged_in'] = true; $GLOBALS['T']['caps'] = caps_of( 'wb_owner' );
+[ , $html ] = WB_Workspace::render( 'sign-in' );
+ok( 'already signed in: where to go, and Sign out', false !== strpos( $html, 'You are signed in' ) && false !== strpos( $html, '>Open the workspace</a>' ) && false !== strpos( $html, '>Sign out</a>' ) && false === strpos( $html, '<form id="wb-login"' ) );
+$GLOBALS['T']['caps'] = caps_of( 'wb_customer' );
+[ , $html ] = WB_Workspace::render( 'sign-in' );
+ok( 'a customer who is signed in is sent to their account', false !== strpos( $html, '>Your account</a>' ) && false === strpos( $html, 'Open the workspace' ) );
+ok( 'the login address WordPress hands out is the system\'s page, except for wp-admin', [ WB_Workspace::login_url( 'https://b2b.test/wp-login.php', 'https://b2b.test/workspace/', false ), WB_Workspace::login_url( 'https://b2b.test/wp-login.php', 'https://b2b.test/wp-admin/', false ), WB_Workspace::login_url( 'https://b2b.test/wp-login.php', '', true ) ] === [ 'https://b2b.test/workspace/sign-in/?redirect_to=https%3A%2F%2Fb2b.test%2Fworkspace%2F', 'https://b2b.test/wp-login.php', 'https://b2b.test/wp-login.php' ] );
+$GLOBALS['T']['logged_in'] = false; $GLOBALS['T']['caps'] = [];
+$GLOBALS['T']['options'] = [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ] ];
+[ , $html ] = WB_Workspace::render( 'welcome' );
 ok( 'demo open: the five-minute tour', false !== strpos( $html, 'Five minutes in the demo.' ) && 5 === substr_count( $html, '<li><strong>' ) );
 ok( 'the demo is open when the switch is on and the login exists', WB_Demo::is_open( [ 'enabled' => 'yes', 'user_id' => 7 ], true ) && ! WB_Demo::is_open( [ 'enabled' => 'yes', 'user_id' => 7 ], false ) && ! WB_Demo::is_open( [ 'enabled' => 'no', 'user_id' => 7 ], true ) && ! WB_Demo::is_open( [ 'enabled' => 'yes', 'user_id' => 0 ], true ) );
 $GLOBALS['T']['options'] = [];

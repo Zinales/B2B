@@ -1,5 +1,21 @@
 # wb-core changelog
 
+## 1.0.0 — 8 October 2026
+Version one (Zina, 8 October: "ready to go to market with this as v1 for customisation by
+clients"). The working name, code prefix `wb_` and table names stay as they are until the real
+name is chosen; the README says what that costs later.
+- **The system's own sign-in page** at `/workspace/sign-in/`. Every "Sign in" on the front page,
+  the top bar and every signed-out redirect lands here, and so does the address WordPress hands
+  out (except for wp-admin's own needs). Two cards: **Your login**, WordPress's own form posted to
+  wp-login.php so passwords, lockouts and resets stay WordPress's, with a failed attempt said in
+  words and a way to reset; and, while the demo is open, **The demo**, the demo visitor already
+  filled in, one button to enter, and the words that say what happens to what they save: kept for
+  the day and cleared every night, so please no real names or numbers. Someone already signed in
+  sees where they can go instead. A redirect off the site is dropped.
+- Tests: regress-frame.php +12 (signed out, redirects kept and dropped, a failed attempt, the demo
+  card when open, signed-in owner and customer, the login address rule). The browser check now
+  covers the sign-in page too: 983 text elements, 0 problems.
+
 ## 0.3.7 — 8 October 2026
 The front page gets a proper introduction, and a way into a demo (Zina, 8 October).
 - **The front page in the Brandzgro page rhythm:** a navy hero with display type and the one
