@@ -1,5 +1,34 @@
 # wb-core changelog
 
+## 0.3.6 — 8 October 2026
+"Upload all data points", half two: every master table can be uploaded from a CSV, and exported
+back out in the same layout (Kaycie's import, with wb-core's own reader).
+- **Under every master table** (customers, contacts, products, categories, price tiers,
+  suppliers, staff, leave types, KPIs) an "Upload … from a file" fold: download a blank template
+  (the typed columns, `_ID` first, one example row), export what is there now (same layout, so a
+  round trip is a plain edit), choose a file, then **Check file (no import)** or **Validate and
+  import**. The columns and the ones that must be filled are listed on the fold.
+- **Every row is checked before anything is written.** Headers may be the column names or the
+  words on the form, any case and order; an unknown column refuses the file and lists the columns;
+  a missing required column is named. Values are cleaned exactly as the form cleans them (numbers
+  with spaces or commas, choices, dates in words, emails, encrypted columns typed in plain). A
+  reference (customer, price tier, category, supplier, manager, login) may be its `_ID` or its
+  exact name. The natural key (code, name, email, employee number) may not repeat in the file or
+  on file: a known name without its `_ID` is refused with the `_ID` to use, so a re-upload can
+  never make a twin. Every problem says its row and the fix; 25 are shown, then "and N more".
+  One bad row refuses the whole file and nothing changes.
+- **All or nothing.** Rows are written in one transaction through `WB_CCT`, so each is ledgered
+  with the audit trail deferred until COMMIT; a failure rolls everything back and says which row.
+  One audit entry per upload says how many were created and updated and by whom; every export
+  is ledgered too. The file is never kept. Generated cells are formula-guarded. Up to 5 MB and
+  5,000 rows (split larger files).
+- Engine-owned columns are never in a file; what can be typed can be uploaded and nothing else
+  (the import reads the same policy as the forms). Stock opening balances are not a table upload:
+  they are stock movements, which stay append-only and two-named.
+- Tests: regress-import.php (39): the layout, header words, the formula guard, CSV out, a good
+  file (comma, semicolon, BOM, blank lines, references by name and by number), every refusal with
+  its row and fix, the result words.
+
 ## 0.3.5 — 8 October 2026
 "Upload all data points" (Zina, 8 October), half one: every master record can now be added and
 edited, every field. Before this the add forms captured a fraction of each table (customers 10 of

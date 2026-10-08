@@ -434,7 +434,7 @@ class WB_Portal {
 		$editing = null;
 		if ( $can && ! empty( $_GET['edit'] ) && 'wb_contacts' === sanitize_key( (string) ( $_GET['cct'] ?? '' ) ) ) $editing = WB_CCT::get( 'wb_contacts', absint( $_GET['edit'] ) ) ?: null;
 		if ( $can ) $body .= ( $editing ? '<h3>Edit ' . esc_html( trim( $editing['first_name'] . ' ' . $editing['last_name'] ) ) . '</h3>' : '<h3>Add a contact</h3>' ) . WB_Records::form( 'wb_contacts', $editing );
-		return $h . WB_Render::fold( 'Contacts and portal logins', $body, [ 'open' => (bool) $editing, 'id' => 'wb-add-contacts', 'kind' => 'sibling' ] );
+		return $h . WB_Render::fold( 'Contacts and portal logins', $body, [ 'open' => (bool) $editing, 'id' => 'wb-add-contacts', 'kind' => 'sibling' ] ) . WB_Import::fold( 'wb_contacts' );
 	}
 
 	private static function fold( string $title, string $body, bool $open = false ): string {

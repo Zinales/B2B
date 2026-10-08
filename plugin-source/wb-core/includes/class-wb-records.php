@@ -232,6 +232,7 @@ class WB_Records {
 					$row[ $name ] = '_json' === substr( $name, -5 ) ? self::lines_to_json( $raw ) : sanitize_textarea_field( $raw );
 					break;
 				default:
+					if ( '' === $raw && ! $editing && '' !== (string) $f['default'] ) { $row[ $name ] = (string) $f['default']; break; }
 					$row[ $name ] = 'email' === $name ? sanitize_email( $raw ) : sanitize_text_field( $raw );
 					if ( 'email' === $name && '' !== $raw && ! is_email( $row[ $name ] ) ) $bad[] = 'Check the email address.';
 					if ( 'sku' === $name ) $row[ $name ] = strtoupper( $row[ $name ] );
