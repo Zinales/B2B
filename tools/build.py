@@ -16,12 +16,18 @@ The gates, in order. Any failure stops the build and nothing is written.
   4. Versions:   the plugin header, WB_VERSION and the top CHANGELOG entry agree.
   5. Source:     the git working tree is clean, so every zip maps to one commit.
   6. No reuse:   a zip for this version must not already exist. A change means a new version.
+  2b. Pages:     tools/a11y-pages.php + tools/a11y-check.js render the plugin-served pages in
+                 Chromium and measure them (contrast, names, labels, tap targets, no sideways
+                 scroll). Runs when node and Playwright are installed; otherwise reported as
+                 skipped, so a machine without a browser can still build.
 """
 import json
 import os
 import re
 import subprocess
 import sys
+import shutil
+import tempfile
 import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -74,6 +80,29 @@ def gate_tests():
         if code != 0:
             fail(f'{t} failed:\n{out[-3000:]}')
         print(f'2. Tests       {t}: {last[0].strip()}')
+
+
+def gate_pages():
+    node = shutil.which('node')
+    if not node:
+        print('2b. Pages      skipped (node not installed)')
+        return
+    code, out = run([node, '-e', "require('playwright')"], cwd=ROOT)
+    if code != 0:
+        print('2b. Pages      skipped (playwright not installed for node)')
+        return
+    tmp = tempfile.mkdtemp(prefix='wb-a11y-')
+    try:
+        code, out = run([PHP, os.path.join(ROOT, 'tools', 'a11y-pages.php'), tmp])
+        if code != 0:
+            fail('pages could not be rendered:\n' + out[-2000:])
+        code, out = run([node, os.path.join(ROOT, 'tools', 'a11y-check.js'), tmp], cwd=ROOT)
+        if code != 0:
+            fail('accessibility check failed:\n' + out[-4000:])
+        last = [l for l in out.strip().splitlines() if l.strip()][-1:] or ['']
+        print('2b. Pages      ' + last[0].strip())
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def current_inventory():
@@ -161,6 +190,7 @@ def main():
     args = set(sys.argv[1:])
     gate_syntax()
     gate_tests()
+    gate_pages()
     gate_inventory('--accept-inventory' in args)
     version = gate_versions()
     if '--check' in args or '--accept-inventory' in args:

@@ -1,5 +1,22 @@
 # wb-core changelog
 
+## 0.3.3 — 8 October 2026
+Buttons you could not read (Zina, 8 October: "the button text doesn't render").
+- **Link-buttons painted their words in the button's own colour.** The workspace sheet colours every
+  link, and that rule outranked `.wb-btn`, so "Sign in", "Open the workspace", "Your account", "Go to
+  System Settings" and every other link styled as a button showed rose text on a rose button (1:1).
+  Buttons that were real `<button>`s were fine, which is why the forms worked and the welcome page
+  did not. Link-buttons now keep the button's text colour.
+- The "Sign in" and "Sign out" links on the top bar and the welcome footer were 17px tall; they now
+  meet the 24px tap-target minimum.
+- **A browser now measures the pages before a build.** `tools/a11y-pages.php` renders the welcome
+  page, the frame for several logins, a refusal, the portal shell and the 404 with the real
+  stylesheets; `tools/a11y-check.js` opens each in Chromium at 1280px and 375px and checks every
+  text element's painted contrast (WCAG AA), accessible names on buttons and links, labels on
+  fields, tap-target size and sideways scroll. It is build gate 7 and runs wherever Node and
+  Playwright are installed (skipped with a note elsewhere). This is the regression test for the
+  bug above: the check found it at 1:1 on nine pages before the fix and nothing after.
+
 ## 0.3.2 — 8 October 2026
 The first of the method changes from `docs/BUILD-PATTERNS.md` (§2.1, Kaycie's registry pattern):
 one list drives every address.

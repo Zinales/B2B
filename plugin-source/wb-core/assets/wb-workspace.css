@@ -11,6 +11,12 @@ html{-webkit-text-size-adjust:100%}
 body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-family:var(--wb-font,system-ui,sans-serif);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
 .wb-app a{color:var(--wb-primary)}
 .wb-app a:hover{color:var(--wb-primary-dark)}
+/* 0.3.3: a link styled as a button keeps the button's text colour (the link rule above outranked .wb-btn,
+   so link-buttons painted rose on rose and their words could not be seen) */
+.wb-app a.wb-btn,.wb-app a.wb-btn:hover{color:var(--wb-on-primary,#fff)}
+.wb-app a.wb-btn-ghost,.wb-app a.wb-btn-ghost:hover{color:var(--wb-ink)}
+/* 0.3.3: the small links on the top bar and the welcome footer are tap targets (24px minimum, WCAG 2.5.8) */
+.wb-app .wb-top-me a,.wb-app .wb-welcome-foot a{display:inline-block;padding:.35rem .5rem;margin:-.35rem -.5rem;border-radius:6px;min-height:24px;line-height:1.2}
 .wb-app :focus-visible{outline:3px solid var(--wb-primary);outline-offset:2px}
 .wb-app h1,.wb-app h2,.wb-app h3,.wb-app h4{font-family:var(--wb-font-head,var(--wb-font));color:var(--wb-ink);line-height:1.25}
 .wb-app img{max-width:100%;height:auto}

@@ -76,9 +76,13 @@ The system holds money, stock and pay, so every change goes through the same few
      default option and data field in `tools/inventory-baseline.json` must still be there.
      Removing one is a deliberate decision (`--accept-inventory`, committed with a reason),
      never an accident;
-  4. the plugin header, `WB_VERSION` and the top `CHANGELOG.md` entry show the same version;
-  5. the working tree is committed, so every zip maps to one commit;
-  6. a version is never reused: if its zip already exists, a change needs a new version.
+  4. the pages the plugin serves are rendered in a real browser and measured: every word clears
+     the contrast minimum, every button and link has a name, every field has a label, nothing is
+     too small to tap, nothing scrolls sideways on a phone (`tools/a11y-check.js`; skipped with
+     a note on a machine without Node and Playwright);
+  5. the plugin header, `WB_VERSION` and the top `CHANGELOG.md` entry show the same version;
+  6. the working tree is committed, so every zip maps to one commit;
+  7. a version is never reused: if its zip already exists, a change needs a new version.
 
   `python tools/build.py --check` runs the gates without building.
 - **Every bug gets a regression test.** When something is fixed, a test that would have caught
