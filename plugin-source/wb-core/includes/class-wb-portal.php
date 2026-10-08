@@ -193,7 +193,7 @@ class WB_Portal {
 		}
 		if ( ! $want ) return new WP_Error( 'wb_nothing', 'Nothing was changed.' );
 		if ( WB_CCT::first( 'wb_portal_requests', [ 'contact_id' => (int) $c['_ID'], 'status' => 'requested' ] ) ) return new WP_Error( 'wb_pending', 'You already have a change waiting for us. We will look at it soon.' );
-		$id = WB_CCT::insert( 'wb_portal_requests', [ 'contact_id' => (int) $c['_ID'], 'customer_id' => (int) $c['customer_id'], 'kind' => 'details_change', 'payload_json' => $want, 'status' => 'requested', 'requested_at' => current_time( 'mysql' ) ], 'portal_details_change_requested' );
+		$id = WB_CCT::insert( 'wb_portal_requests', [ 'contact_id' => (int) $c['_ID'], 'customer_id' => (int) $c['customer_id'], 'kind' => 'details_change', 'payload_json' => $want, 'status' => 'requested', 'requested_at' => wb_now() ], 'portal_details_change_requested' );
 		if ( is_wp_error( $id ) ) return $id;
 		WB_Orders::touchpoint( (int) $c['customer_id'], 'details_change', 'Asked to change contact details: ' . implode( ', ', array_keys( $want ) ), 'portal_request:' . (int) $id, (int) $c['_ID'] );
 		WB_Notifications::notify_cap( 'wb_manage_customers', 'marketing', sprintf( '%s at %s asked to change their contact details.', trim( $c['first_name'] . ' ' . $c['last_name'] ), (string) $c['_customer']['name'] ), WB_Workspace::url( 'customers' ), 'wb_portal_requests', (int) $id );
@@ -224,7 +224,7 @@ class WB_Portal {
 			if ( is_wp_error( $res ) ) return $res;
 		}
 		WB_Notifications::resolve( 'wb_portal_requests', $request_id );
-		return WB_CCT::update( 'wb_portal_requests', $request_id, [ 'status' => $approve ? 'approved' : 'declined', 'decided_by_staff_id' => WB_Staff::current_staff_id(), 'decided_at' => current_time( 'mysql' ), 'decision_note' => sanitize_text_field( $note ) ], $approve ? 'portal_request_approved' : 'portal_request_declined' );
+		return WB_CCT::update( 'wb_portal_requests', $request_id, [ 'status' => $approve ? 'approved' : 'declined', 'decided_by_staff_id' => WB_Staff::current_staff_id(), 'decided_at' => wb_now(), 'decision_note' => sanitize_text_field( $note ) ], $approve ? 'portal_request_approved' : 'portal_request_declined' );
 	}
 
 	/* ================================================================== documents on demand */

@@ -193,7 +193,7 @@ class WB_Docs {
 		if ( '' === $key ) return 0;
 		$doc_id = WB_CCT::insert( 'wb_documents', [
 			'type' => $k[2], 'title' => $k[3] . ' ' . $data['doc']['number'], 'customer_id' => (int) ( $row['customer_id'] ?? 0 ), 'order_id' => (int) ( $row['order_id'] ?? ( 'dn' === $kind ? $row['order_id'] : 0 ) ),
-			'version' => 1, 'storage_key' => $key, 'mime' => 'application/pdf', 'size' => strlen( $bytes ), 'issued_at' => current_time( 'mysql' ), 'is_customer_visible' => $k[5] ? 1 : 0,
+			'version' => 1, 'storage_key' => $key, 'mime' => 'application/pdf', 'size' => strlen( $bytes ), 'issued_at' => wb_now(), 'is_customer_visible' => $k[5] ? 1 : 0,
 		], 'document_pdf_made' );
 		if ( is_wp_error( $doc_id ) ) return 0;
 		WB_CCT::update( $k[0], $id, [ 'pdf_key' => $key ], $kind . '_pdf_filed' );

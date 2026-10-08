@@ -245,7 +245,7 @@ class WB_Demand {
 		}
 		global $wpdb;
 		$st  = self::stats_table();
-		$now = current_time( 'mysql' );
+		$now = wb_now();
 		$predictions = [];
 		foreach ( $cp as $cid => $products ) {
 			foreach ( $products as $pid => $hist ) {

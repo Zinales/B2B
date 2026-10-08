@@ -196,7 +196,7 @@ class WB_CCT {
 	public static function insert( string $slug, array $data, string $action = '' ) {
 		$t = self::table( $slug );
 		if ( ! $t ) return new WP_Error( 'wb_missing_table', sprintf( 'The %s table is not set up yet, so nothing was saved.', $slug ) );
-		$now  = current_time( 'mysql' );
+		$now  = wb_now();
 		$data = $data + [
 			'record_status' => 'active',
 			'cct_status'    => 'publish',
@@ -239,7 +239,7 @@ class WB_CCT {
 			$before[ $k ]  = $cur[ $k ] ?? null;
 		}
 		if ( ! $changed ) return true;   // nothing to do is not a failure
-		if ( self::has_column( $slug, 'cct_modified' ) ) $changed['cct_modified'] = current_time( 'mysql' );
+		if ( self::has_column( $slug, 'cct_modified' ) ) $changed['cct_modified'] = wb_now();
 		global $wpdb;
 		if ( false === $wpdb->update( $t, $changed, [ '_ID' => $id ] ) ) {
 			return new WP_Error( 'wb_update_failed', 'Saving failed: ' . (string) $wpdb->last_error );

@@ -162,6 +162,28 @@ class WB_Pricing {
 	}
 
 	/** Does a frozen quote line need a price approval? Below floor, out of date, no cost on file, or above list. */
+	/**
+	 * Why a frozen line broke a rule, in a sentence (1.2.0, Zina: "if a price breaks a rule do we have
+	 * a way to show that?"). '' when nothing is wrong. Pure; shown beside the line and on the approve
+	 * queue, so the person who set the price and the person who decides read the same words.
+	 */
+	public static function explain( array $line ): string {
+		$m     = fn( $v ) => number_format( (float) $v, 2, '.', ' ' );
+		$price = (float) ( $line['unit_price'] ?? 0 );
+		$floor = (float) ( $line['floor_price'] ?? 0 );
+		$cost  = (float) ( $line['cost_price'] ?? 0 );
+		$list  = (float) ( $line['list_price'] ?? 0 );
+		$why   = [];
+		if ( $cost <= 0 ) $why[] = 'The product has no cost price on file, so the lowest allowed price cannot be worked out.';
+		elseif ( 'yes' === (string) ( $line['below_floor'] ?? '' ) ) {
+			$margin = $floor > 0 && $cost > 0 ? round( ( $floor / $cost - 1 ) * 100, 1 ) : 0;
+			$why[]  = 'Below the lowest allowed price: R ' . $m( $price ) . ' is under R ' . $m( $floor ) . ' (cost R ' . $m( $cost ) . ( $margin > 0 ? ' + ' . rtrim( rtrim( number_format( $margin, 1, '.', '' ), '0' ), '.' ) . '% margin' : '' ) . ').';
+		}
+		if ( 'yes' === (string) ( $line['out_of_date'] ?? '' ) ) $why[] = "The product's price is out of date: today is outside its valid-from and valid-to dates.";
+		if ( $list > 0 && $price > $list + 0.004 ) $why[] = 'Above the list price: R ' . $m( $price ) . ' is more than the list price of R ' . $m( $list ) . '.';
+		return implode( ' ', $why );
+	}
+
 	public static function line_flagged( array $line ): bool {
 		return 'yes' === (string) ( $line['below_floor'] ?? '' ) || 'yes' === (string) ( $line['out_of_date'] ?? '' )
 			|| (float) ( $line['cost_price'] ?? 1 ) <= 0 || self::line_above_list( $line );
@@ -270,7 +292,7 @@ class WB_Pricing {
 			'cost_price'    => $cost,
 			'margin_pct'    => $price > 0 ? round( ( $price - $cost ) / $price * 100, 2 ) : 0,
 			'requested_by'  => get_current_user_id(),
-			'requested_at'  => current_time( 'mysql' ),
+			'requested_at'  => wb_now(),
 			'note'          => mb_substr( sanitize_text_field( $note ), 0, 255 ),
 		];
 		if ( false === $wpdb->insert( $t, $row ) ) return new WP_Error( 'wb_insert_failed', 'The approval request could not be saved.' );
@@ -304,7 +326,7 @@ class WB_Pricing {
 		if ( is_wp_error( $cols ) ) return $cols;
 		$line = WB_CCT::get( 'wb_quote_lines', (int) $row['quote_line_id'] );
 		if ( $line && (int) $line['priced_by_user_id'] === get_current_user_id() ) return new WP_Error( 'wb_self_approval', 'You set this price, so someone else must approve it.' );
-		$upd = [ 'decided_by' => get_current_user_id(), 'decision' => $approve ? 'approved' : 'declined', 'decided_at' => current_time( 'mysql' ), 'note' => mb_substr( trim( $row['note'] . ' ' . sanitize_text_field( $note ) ), 0, 255 ) ];
+		$upd = [ 'decided_by' => get_current_user_id(), 'decision' => $approve ? 'approved' : 'declined', 'decided_at' => wb_now(), 'note' => mb_substr( trim( $row['note'] . ' ' . sanitize_text_field( $note ) ), 0, 255 ) ];
 		$n   = $wpdb->update( $t, $upd, [ 'id' => $approval_id, 'decision' => 'pending' ] );   // claims the request: only one decision wins
 		if ( false === $n ) return new WP_Error( 'wb_update_failed', 'The decision could not be saved.' );
 		if ( 1 !== (int) $n ) return new WP_Error( 'wb_decided', 'Someone else decided that request a moment ago.' );

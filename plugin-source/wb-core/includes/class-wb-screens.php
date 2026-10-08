@@ -35,7 +35,7 @@ class WB_Screens {
 				$r = WB_CCT::get( 'wb_price_rules', $id );
 				if ( ! $r || 'draft' !== $r['status'] ) return new WP_Error( 'wb_not_draft', 'That rule is not waiting for approval.' );
 				if ( (int) ( $r['cct_author_id'] ?? 0 ) === get_current_user_id() ) return new WP_Error( 'wb_self_approval', 'Someone else must approve a rule you made.' );
-				return WB_CCT::update( 'wb_price_rules', $id, [ 'status' => 'approved', 'approved_by_staff_id' => WB_Staff::current_staff_id(), 'approved_at' => current_time( 'mysql' ) ], 'price_rule_approved' );
+				return WB_CCT::update( 'wb_price_rules', $id, [ 'status' => 'approved', 'approved_by_staff_id' => WB_Staff::current_staff_id(), 'approved_at' => wb_now() ], 'price_rule_approved' );
 			} ];
 		return $a;
 	}
@@ -378,7 +378,7 @@ class WB_Screens {
 		$type = sanitize_key( (string) self::p( 'type' ) );
 		if ( ! in_array( $type, [ 'call', 'email', 'visit', 'complaint', 'note' ], true ) ) return new WP_Error( 'wb_type', 'Choose what kind of contact it was.' );
 		$id = WB_CCT::insert( 'wb_touchpoints', [
-			'customer_id' => absint( self::p( 'customer_id' ) ), 'type' => $type, 'happened_at' => current_time( 'mysql' ), 'staff_id' => WB_Staff::current_staff_id(),
+			'customer_id' => absint( self::p( 'customer_id' ) ), 'type' => $type, 'happened_at' => wb_now(), 'staff_id' => WB_Staff::current_staff_id(),
 			'summary' => sanitize_textarea_field( (string) self::p( 'summary' ) ), 'next_action' => sanitize_text_field( (string) self::p( 'next_action' ) ),
 			'next_action_date' => sanitize_text_field( (string) self::p( 'next_action_date' ) ),
 		], 'touchpoint_' . $type );
@@ -415,7 +415,7 @@ class WB_Screens {
 
 	private static function do_kpis() {
 		if ( ! current_user_can( 'wb_run_reviews' ) ) return new WP_Error( 'wb_forbidden', 'You cannot measure KPIs.' );
-		$from = current_time( 'Y-m-01' );
+		$from = substr( wb_now(), 0, 7 ) . '-01';
 		$n    = WB_Staff::measure_kpis( $from, gmdate( 'Y-m-t', strtotime( $from ) ) );
 		return [ 'msg' => sprintf( '%d scores measured for this month.', $n ) ];
 	}
@@ -558,7 +558,7 @@ class WB_Screens {
 		$h = WB_RowActions::notice();
 		if ( current_user_can( 'wb_approve_pricing' ) && ( $pending = WB_Pricing::pending() ) ) {
 			$body = WB_Render::render_table( $pending, [ [ 'key' => 'quote_id', 'label' => 'Quote', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_quotes', (int) $v )['quote_number'] ?? '#' . $v ) ) ],
-				[ 'key' => 'product_id', 'render' => fn( $v ) => esc_html( self::product_name( $v ) ) ], 'reason', [ 'key' => 'floor_price', 'type' => 'money' ], [ 'key' => 'asked_price', 'label' => 'Asked', 'type' => 'money' ], 'margin_pct', 'note' ],
+				[ 'key' => 'product_id', 'render' => fn( $v ) => esc_html( self::product_name( $v ) ) ], [ 'key' => 'reason', 'label' => 'Why', 'render' => function ( $v, $r ) { $l = WB_CCT::get( 'wb_quote_lines', (int) ( $r['quote_line_id'] ?? 0 ) ); return esc_html( $l ? ( WB_Pricing::explain( $l ) ?: WB_Render::words( (string) $v ) ) : WB_Render::words( (string) $v ) ); } ], [ 'key' => 'floor_price', 'type' => 'money' ], [ 'key' => 'asked_price', 'label' => 'Asked', 'type' => 'money' ], 'margin_pct', 'note' ],
 				[ 'action_html' => function ( $r ) {
 					if ( (int) $r['requested_by'] === get_current_user_id() ) return '';
 					$m = '';
@@ -573,7 +573,7 @@ class WB_Screens {
 		if ( $qid && ( $q = WB_CCT::get( 'wb_quotes', $qid ) ) ) {
 			$lines = WB_CCT::find( 'wb_quote_lines', [ 'quote_id' => $qid ], [ 'order' => 'ASC' ] );
 			$body  = '<p>' . esc_html( self::customer_name( $q['customer_id'] ) ) . ' · ' . WB_Render::chip( $q['status'] ) . ' · price check ' . WB_Render::chip( $q['pricing_check_status'] ) . ' · total ' . esc_html( WB_Render::money( $q['total'] ) ) . '</p>';
-			$body .= WB_Render::render_table( $lines, [ 'description', 'qty', [ 'key' => 'unit_price', 'type' => 'money' ], 'price_source', [ 'key' => 'floor_price', 'type' => 'money' ], 'below_floor', [ 'key' => 'out_of_date', 'label' => 'Price out of date', 'type' => 'chip' ], [ 'key' => 'line_total', 'type' => 'money' ] ],
+			$body .= WB_Render::render_table( $lines, [ 'description', 'qty', [ 'key' => 'unit_price', 'type' => 'money' ], 'price_source', [ 'key' => 'floor_price', 'type' => 'money' ], 'below_floor', [ 'key' => 'out_of_date', 'label' => 'Price out of date', 'type' => 'chip' ], [ 'key' => 'line_total', 'type' => 'money' ], [ 'key' => '_why', 'label' => 'Why it needs approval', 'render' => fn( $v, $l ) => esc_html( WB_Pricing::explain( $l ) ) ] ],
 				[ 'cct' => 'wb_quote_lines', 'actions' => 'draft' === $q['status'] ? [ 'line_approval', 'line_remove' ] : [] ] );
 			if ( 'draft' === $q['status'] ) {
 				$body .= WB_Render::form_open( 'quote_line' ) . '<input type="hidden" name="quote_id" value="' . $qid . '">' . WB_Render::field( 'lines', 'Add lines', 'textarea', '', [ 'rows' => 3, 'placeholder' => "ABC-100, 20\nXYZ-7, 5, 149.50" ] ) . WB_Render::form_close( 'Add' );
@@ -843,7 +843,7 @@ class WB_Screens {
 				$h .= self::fold( 'KPI definitions', WB_Render::render_table( $kp, [ 'name', 'applies_to', 'measure', 'target', 'unit', 'period' ], [ 'cct' => 'wb_kpis', 'actions' => [ 'edit_wb_kpis' ], 'empty' => 'No KPIs defined yet.', 'empty_note' => 'A KPI measured from the records (quotes sent, win rate, on-time delivery) scores itself every month.' ] ) . WB_Records::form( 'wb_kpis', self::editing( 'wb_kpis' ) ), (bool) self::editing( 'wb_kpis' ), 'wb-add-kpis', 'sibling' );
 				$h .= WB_Import::fold( 'wb_kpis' );
 			}
-			$scores = WB_CCT::find( 'wb_kpi_scores', [ 'period_start' => current_time( 'Y-m-01' ) ], [ 'limit' => 500 ] );
+			$scores = WB_CCT::find( 'wb_kpi_scores', [ 'period_start' => substr( wb_now(), 0, 7 ) . '-01' ], [ 'limit' => 500 ] );
 			$h .= self::fold( 'KPIs this month', WB_Render::render_table( $scores, [ [ 'key' => 'staff_id', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_staff', (int) $v )['first_name'] ?? '' ) ) ], [ 'key' => 'kpi_id', 'label' => 'KPI', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_kpis', (int) $v )['name'] ?? '' ) ) ], 'target', 'actual', 'source' ], [ 'empty' => 'Not measured yet.' ] )
 				. ( current_user_can( 'wb_run_reviews' ) ? WB_Render::form_open( 'kpis' ) . WB_Render::form_close( 'Measure this month now' ) : '' ) );
 		}

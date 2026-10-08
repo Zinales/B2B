@@ -2,7 +2,7 @@
 /**
  * Plugin Name: B2BGro — Core
  * Description: The engine for a B2B wholesale business: hash-chained audit ledger, gapless document numbering, roles by dashboard, the two pricing checks, stock as a ledger, the quote → order → invoice → payment → delivery state machine, bank-statement matching, demand and cashflow forecasting, staff time/leave/KPIs, private document storage, the Setup screen (brand + first-run checklist), bank CSV mapping, the customer portal and South African payroll. Serves its own screens at /workspace/ and /portal/ (no pages to create). Business data lives in JetEngine CCTs (wp_jet_cct_wb_*); engine records in plugin tables (wp_wb_*).
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: GroB2B
  * Requires PHP: 8.0
  * Requires at least: 6.4
@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WB_VERSION', '1.1.0' );
+define( 'WB_VERSION', '1.2.0' );
 define( 'WB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WB_PLUGIN_FILE', __FILE__ );
 
@@ -37,6 +37,7 @@ require_once WB_PLUGIN_DIR . 'includes/class-wb-records.php';       // 0.3.5 add
 require_once WB_PLUGIN_DIR . 'includes/class-wb-pdf.php';           // 1.1.0 HTML → PDF on this server (Dompdf in lib/)
 require_once WB_PLUGIN_DIR . 'includes/class-wb-docs.php';          // 1.1.0 quotes, invoices, credit notes, delivery notes, purchase orders as PDF
 require_once WB_PLUGIN_DIR . 'includes/class-wb-import.php';        // 0.3.6 upload a whole table from a CSV; templates and exports
+require_once WB_PLUGIN_DIR . 'includes/class-wb-demo-seed.php';     // 1.2.0 a year of trading for the demo, through the real engines
 require_once WB_PLUGIN_DIR . 'includes/class-wb-needs.php';         // 0.3.4 what is waiting on a person: Today, the menu count, the top bar
 require_once WB_PLUGIN_DIR . 'includes/class-wb-integrity.php';     // the monthly Integrity report (§8)
 require_once WB_PLUGIN_DIR . 'includes/class-wb-render.php';        // tables, chips, notices (primitives, never hand markup)
@@ -197,12 +198,17 @@ function wb_truthy( $v ): bool {
 	return in_array( strtolower( trim( (string) $v ) ), [ '1', 'true', 'yes', 'on' ], true );
 }
 
+/**
+ * The business clock (1.2.0). Every engine stamps dates from here, never from current_time()
+ * directly, so the demo seed can write a year of history through the real engines by moving one
+ * clock. Live, the filter is never added and this is the site's time. The audit trail keeps its
+ * own real time.
+ */
 function wb_now(): string {
-	return current_time( 'mysql' );
+	return (string) apply_filters( 'wb_now', current_time( 'mysql' ) );
 }
-
 function wb_today(): string {
-	return current_time( 'Y-m-d' );
+	return substr( wb_now(), 0, 10 );
 }
 
 /** Money to 2 decimals, half away from zero. One rounding rule everywhere. */

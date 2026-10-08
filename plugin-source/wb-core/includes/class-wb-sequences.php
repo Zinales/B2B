@@ -77,7 +77,7 @@ class WB_Sequences {
 		$type = strtoupper( $type );
 		if ( ! in_array( $type, self::TYPES, true ) ) return new WP_Error( 'wb_seq_type', 'Unknown document type.' );
 		$t     = self::table();
-		$year  = (int) current_time( 'Y' );
+		$year  = (int) substr( wb_now(), 0, 4 );
 		$outer = 0 === self::$depth;
 
 		if ( $outer ) {
@@ -86,7 +86,7 @@ class WB_Sequences {
 		}
 		self::$depth++;
 		try {
-			$wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO {$t} (doc_type, seq_year, last_value, updated_at) VALUES (%s, %d, 0, %s)", $type, $year, current_time( 'mysql' ) ) );
+			$wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO {$t} (doc_type, seq_year, last_value, updated_at) VALUES (%s, %d, 0, %s)", $type, $year, wb_now() ) );
 			$last = $wpdb->get_var( $wpdb->prepare( "SELECT last_value FROM {$t} WHERE doc_type = %s AND seq_year = %d FOR UPDATE", $type, $year ) );
 			if ( null === $last ) throw new RuntimeException( 'sequence row missing' );   // fail closed
 			$next   = (int) $last + 1;
@@ -98,7 +98,7 @@ class WB_Sequences {
 				if ( $outer ) self::rollback();
 				return $result ?: new WP_Error( 'wb_seq_create', 'The document could not be written, so no number was used.' );
 			}
-			$ok = $wpdb->update( $t, [ 'last_value' => $next, 'updated_at' => current_time( 'mysql' ) ], [ 'doc_type' => $type, 'seq_year' => $year ], [ '%d', '%s' ], [ '%s', '%d' ] );
+			$ok = $wpdb->update( $t, [ 'last_value' => $next, 'updated_at' => wb_now() ], [ 'doc_type' => $type, 'seq_year' => $year ], [ '%d', '%s' ], [ '%s', '%d' ] );
 			if ( false === $ok ) throw new RuntimeException( 'sequence update failed' );
 			wb_ledger_write( 'number_issued', 'wb_sequences', $next, null, [ 'type' => $type, 'number' => $number ] );   // deferred: rolls back with the work
 			self::$depth--;
@@ -130,7 +130,7 @@ class WB_Sequences {
 	public static function peek( string $type ): string {
 		global $wpdb;
 		$type = strtoupper( $type );
-		$year = (int) current_time( 'Y' );
+		$year = (int) substr( wb_now(), 0, 4 );
 		$last = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT last_value FROM ' . self::table() . ' WHERE doc_type = %s AND seq_year = %d', $type, $year ) );
 		return self::format( self::prefix( $type ), $year, $last + 1 );
 	}

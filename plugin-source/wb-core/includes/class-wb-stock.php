@@ -258,7 +258,7 @@ class WB_Stock {
 		$row = [
 			'product_id' => $product_id, 'batch_id' => $batch_id, 'type' => $type, 'qty' => self::normalise_qty( $type, $qty ),
 			'reason' => mb_substr( sanitize_text_field( $reason ), 0, 255 ), 'location' => sanitize_text_field( $location ),
-			'requested_by_staff_id' => $me, 'requested_at' => current_time( 'mysql' ),
+			'requested_by_staff_id' => $me, 'requested_at' => wb_now(),
 		];
 		if ( false === $wpdb->insert( self::requests_table(), $row ) ) return new WP_Error( 'wb_insert_failed', 'The request could not be saved.' );
 		$id = (int) $wpdb->insert_id;
@@ -282,7 +282,7 @@ class WB_Stock {
 		$me = WB_Staff::current_staff_id();
 		if ( ! $me ) return new WP_Error( 'wb_no_staff', 'Your login is not linked to a staff record, so the approval cannot carry your name.' );
 		if ( $me === (int) $r['requested_by_staff_id'] ) return new WP_Error( 'wb_self_approval', 'You cannot approve your own adjustment — someone else must.' );
-		$upd = [ 'decided_by_staff_id' => $me, 'decision' => $approve ? 'approved' : 'declined', 'decided_at' => current_time( 'mysql' ), 'movement_id' => 0, 'note' => mb_substr( sanitize_text_field( $note ), 0, 255 ) ];
+		$upd = [ 'decided_by_staff_id' => $me, 'decision' => $approve ? 'approved' : 'declined', 'decided_at' => wb_now(), 'movement_id' => 0, 'note' => mb_substr( sanitize_text_field( $note ), 0, 255 ) ];
 		// Claim the request first (only while still pending): a second approver, or a double
 		// click, finds nothing to claim and the movement is written once.
 		$claimed = $wpdb->update( $t, $upd, [ 'id' => $request_id, 'decision' => 'pending' ] );
@@ -328,7 +328,7 @@ class WB_Stock {
 		$t    = self::alerts_table();
 		$open = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$t} WHERE product_id = %d AND resolved_at IS NULL ORDER BY id DESC LIMIT 1", $product_id ), ARRAY_A );
 		if ( $s['raise'] && ! $open ) {
-			$row = [ 'product_id' => $product_id, 'qty_on_hand' => $on_hand, 'qty_reserved' => $reserved, 'qty_on_order' => $on_order, 'suggested_qty' => $s['suggested_qty'], 'raised_at' => current_time( 'mysql' ) ];
+			$row = [ 'product_id' => $product_id, 'qty_on_hand' => $on_hand, 'qty_reserved' => $reserved, 'qty_on_order' => $on_order, 'suggested_qty' => $s['suggested_qty'], 'raised_at' => wb_now() ];
 			$wpdb->insert( $t, $row );
 			$aid = (int) $wpdb->insert_id;
 			wb_ledger_write( 'reorder_alert_raised', 'wb_reorder_alerts', $aid, null, $row );
@@ -338,7 +338,7 @@ class WB_Stock {
 			return 'raised';
 		}
 		if ( ! $s['raise'] && $open ) {
-			$wpdb->update( $t, [ 'resolved_at' => current_time( 'mysql' ), 'qty_on_order' => $on_order ], [ 'id' => (int) $open['id'] ] );
+			$wpdb->update( $t, [ 'resolved_at' => wb_now(), 'qty_on_order' => $on_order ], [ 'id' => (int) $open['id'] ] );
 			wb_ledger_write( 'reorder_alert_resolved', 'wb_reorder_alerts', (int) $open['id'], [ 'resolved_at' => null ], [ 'projected' => $s['projected'] ] );
 			WB_Notifications::resolve( 'wb_reorder_alerts', (int) $open['id'], 'stock' );
 			return 'resolved';
@@ -437,7 +437,7 @@ class WB_Stock {
 		if ( ! $me ) return new WP_Error( 'wb_no_staff', 'Your login is not linked to a staff record, so the count cannot carry your name.' );
 		$cols = WB_CCT::require_columns( 'wb_stocktakes', [ 'lines_json', 'counted_by_staff_id', 'checked_by_staff_id' ] );
 		if ( is_wp_error( $cols ) ) return $cols;
-		return WB_CCT::insert( 'wb_stocktakes', [ 'started_at' => current_time( 'mysql' ), 'counted_by_staff_id' => $me, 'status' => 'counting', 'lines_json' => [], 'location' => $location ], 'stocktake_started' );
+		return WB_CCT::insert( 'wb_stocktakes', [ 'started_at' => wb_now(), 'counted_by_staff_id' => $me, 'status' => 'counting', 'lines_json' => [], 'location' => $location ], 'stocktake_started' );
 	}
 
 	/** The counter records what is on the shelf. The system figure is captured at the same moment. */
@@ -449,7 +449,7 @@ class WB_Stock {
 		if ( ! $p || $counted < 0 ) return new WP_Error( 'wb_bad_line', 'Choose a product and enter what you counted.' );
 		$lines = WB_CCT::json( $st['lines_json'] );
 		$key   = $product_id . ':' . $batch_id;
-		$lines[ $key ] = [ 'product_id' => $product_id, 'batch_id' => $batch_id, 'system' => self::on_hand( $product_id, $batch_id ), 'counted' => $counted, 'unit_cost' => (float) $p['cost_price'], 'at' => current_time( 'mysql' ) ];
+		$lines[ $key ] = [ 'product_id' => $product_id, 'batch_id' => $batch_id, 'system' => self::on_hand( $product_id, $batch_id ), 'counted' => $counted, 'unit_cost' => (float) $p['cost_price'], 'at' => wb_now() ];
 		return WB_CCT::update( 'wb_stocktakes', $stocktake_id, [ 'lines_json' => $lines ], 'stocktake_counted' );
 	}
 

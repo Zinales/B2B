@@ -567,7 +567,7 @@ class WB_Payments {
 			'amount_mode' => $mode, 'date_format' => array_key_exists( (string) ( $p['date_format'] ?? 'auto' ), self::DATE_FORMATS ) ? (string) $p['date_format'] : 'auto',
 			'decimal' => array_key_exists( (string) ( $p['decimal'] ?? 'auto' ), self::DECIMALS ) ? (string) $p['decimal'] : 'auto',
 			'delimiter' => in_array( $p['delimiter'] ?? 'auto', [ ',', ';', 'tab', "\t", 'auto' ], true ) ? ( "\t" === $p['delimiter'] ? 'tab' : (string) $p['delimiter'] ) : 'auto',
-			'saved_at' => current_time( 'mysql' ), 'saved_by' => get_current_user_id(),
+			'saved_at' => wb_now(), 'saved_by' => get_current_user_id(),
 		];
 		$all    = (array) get_option( 'wb_bank_mapping', [] );
 		$before = $all[ $key ] ?? null;
@@ -632,7 +632,7 @@ class WB_Payments {
 		$wpdb->insert( self::table(), [
 			'file_name' => mb_substr( sanitize_file_name( $file_name ), 0, 190 ), 'bank' => mb_substr( $profile, 0, 60 ), 'line_count' => count( $p['lines'] ),
 			'credits' => $p['credits'], 'debits' => $p['debits'], 'skipped' => $p['skipped'], 'duplicates' => $split['duplicates'],
-			'imported_by' => get_current_user_id(), 'imported_at' => current_time( 'mysql' ), 'storage_key' => $storage_key,
+			'imported_by' => get_current_user_id(), 'imported_at' => wb_now(), 'storage_key' => $storage_key,
 		] );
 		$batch = (int) $wpdb->insert_id;
 		if ( ! $batch ) return new WP_Error( 'wb_insert_failed', 'The import could not be started.' );
@@ -656,7 +656,7 @@ class WB_Payments {
 			if ( in_array( $m['match_status'], [ 'matched', 'partial' ], true ) ) {
 				$ok = WB_Invoices::apply_payment( $m['invoice_id'], $m['allocate'], (int) $pid, true );
 				if ( true === $ok ) {
-					WB_CCT::update( 'wb_payments', (int) $pid, [ 'invoice_id' => $m['invoice_id'], 'match_status' => $m['match_status'], 'match_method' => 'auto_reference', 'matched_by_staff_id' => 0, 'matched_at' => current_time( 'mysql' ), 'amount_allocated' => $m['allocate'] ], 'payment_matched_auto' );
+					WB_CCT::update( 'wb_payments', (int) $pid, [ 'invoice_id' => $m['invoice_id'], 'match_status' => $m['match_status'], 'match_method' => 'auto_reference', 'matched_by_staff_id' => 0, 'matched_at' => wb_now(), 'amount_allocated' => $m['allocate'] ], 'payment_matched_auto' );
 					$open[ $m['invoice_id'] ]['outstanding'] = round( $open[ $m['invoice_id'] ]['outstanding'] - $m['allocate'], 2 );
 					if ( $open[ $m['invoice_id'] ]['outstanding'] <= 0.004 ) unset( $open[ $m['invoice_id'] ] );
 					$sum['matched']++;
@@ -713,11 +713,11 @@ class WB_Payments {
 		if ( ! $allocs && (int) ( $pay['invoice_id'] ?? 0 ) && (float) ( $pay['amount_allocated'] ?? 0 ) > 0.004 ) {
 			$allocs[] = [ 'invoice_id' => (int) $pay['invoice_id'], 'amount' => wb_money( $pay['amount_allocated'] ) ];
 		}
-		$allocs[] = [ 'invoice_id' => $invoice_id, 'amount' => wb_money( $put ), 'at' => current_time( 'mysql' ), 'by_staff_id' => $staff, 'method' => $method ];
+		$allocs[] = [ 'invoice_id' => $invoice_id, 'amount' => wb_money( $put ), 'at' => wb_now(), 'by_staff_id' => $staff, 'method' => $method ];
 		return WB_CCT::update( 'wb_payments', (int) $pay['_ID'], [
 			'invoice_id' => (int) ( $pay['invoice_id'] ?? 0 ) ?: $invoice_id, 'customer_id' => (int) $inv['customer_id'], 'match_status' => $status, 'match_method' => $method,
 			'allocations_json' => $allocs,
-			'matched_by_staff_id' => $staff, 'matched_at' => current_time( 'mysql' ),
+			'matched_by_staff_id' => $staff, 'matched_at' => wb_now(),
 			'amount_allocated' => wb_money( (float) ( $pay['amount_allocated'] ?? 0 ) + $put ), 'match_note' => mb_substr( $note, 0, 200 ),
 		], 'manual' === $method ? 'payment_matched_manual' : 'payment_suggestion_confirmed' );
 	}
@@ -747,7 +747,7 @@ class WB_Payments {
 		if ( ! WB_CCT::get( 'wb_customers', $customer_id ) ) return new WP_Error( 'wb_no_customer', 'Choose the customer.' );
 		$staff = WB_Staff::current_staff_id();
 		if ( ! $staff ) return new WP_Error( 'wb_no_staff', 'Your login is not linked to a staff record, so this cannot carry your name.' );
-		return WB_CCT::update( 'wb_payments', $payment_id, [ 'customer_id' => $customer_id, 'match_status' => 'unallocated', 'match_method' => 'manual', 'matched_by_staff_id' => $staff, 'matched_at' => current_time( 'mysql' ), 'match_note' => mb_substr( sanitize_text_field( $note ), 0, 200 ) ], 'payment_unallocated' );
+		return WB_CCT::update( 'wb_payments', $payment_id, [ 'customer_id' => $customer_id, 'match_status' => 'unallocated', 'match_method' => 'manual', 'matched_by_staff_id' => $staff, 'matched_at' => wb_now(), 'match_note' => mb_substr( sanitize_text_field( $note ), 0, 200 ) ], 'payment_unallocated' );
 	}
 
 	/**

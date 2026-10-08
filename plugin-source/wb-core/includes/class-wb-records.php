@@ -277,7 +277,7 @@ class WB_Records {
 			$dup = WB_CCT::first( $slug, [ $k => $row[ $k ] ] );
 			if ( $dup && (int) $dup['_ID'] !== $id ) return new WP_Error( 'wb_dup', 'A ' . $pol['one'] . ' with that ' . strtolower( WB_Render::label( $k ) ) . ' is already on file: ' . self::name_of( $slug, $dup ) . '.' );
 		}
-		if ( 'wb_contacts' === $slug && 'true' === ( $row['marketing_optin'] ?? '' ) && 'true' !== (string) ( $cur['marketing_optin'] ?? '' ) ) $row['marketing_optin_at'] = current_time( 'mysql' );
+		if ( 'wb_contacts' === $slug && 'true' === ( $row['marketing_optin'] ?? '' ) && 'true' !== (string) ( $cur['marketing_optin'] ?? '' ) ) $row['marketing_optin_at'] = wb_now();
 		if ( 'wb_price_tiers' === $slug && 'true' === ( $row['is_default'] ?? '' ) ) {
 			foreach ( WB_CCT::find( 'wb_price_tiers', [ 'is_default' => [ 'true', '1', 'yes' ] ] ) as $t ) if ( (int) $t['_ID'] !== $id ) WB_CCT::update( 'wb_price_tiers', (int) $t['_ID'], [ 'is_default' => 'false' ], 'price_tier_default_moved' );
 		}

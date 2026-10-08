@@ -470,7 +470,7 @@ class WB_Staff {
 		if ( 'sign' === $to ) {
 			if ( 'discussed' !== $r['status'] ) return new WP_Error( 'wb_not_ready', 'A review is signed after it has been discussed.' );
 			if ( ! $is_person && ! $is_reviewer ) return new WP_Error( 'wb_forbidden', 'Only the person and their reviewer sign.' );
-			$upd = $is_person ? [ 'signed_at_staff' => current_time( 'mysql' ) ] : [ 'signed_at_manager' => current_time( 'mysql' ) ];
+			$upd = $is_person ? [ 'signed_at_staff' => wb_now() ] : [ 'signed_at_manager' => wb_now() ];
 			$both = ( $is_person ? true : ! empty( $r['signed_at_staff'] ) ) && ( $is_reviewer ? true : ! empty( $r['signed_at_manager'] ) );
 			if ( $both ) $upd['status'] = 'signed';
 			return WB_CCT::update( 'wb_reviews', $review_id, $upd, 'review_signed' );

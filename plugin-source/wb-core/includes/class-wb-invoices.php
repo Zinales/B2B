@@ -136,7 +136,7 @@ class WB_Invoices {
 			'qty' => (float) $l['qty_ordered'], 'unit_price' => (float) $l['unit_price'], 'line_total' => (float) $l['line_total'],
 		], $lines );
 		$tot   = self::totals( $snap, (float) get_option( 'wb_vat_rate', 15 ) );
-		$now   = current_time( 'mysql' );
+		$now   = wb_now();
 		$terms = (int) ( '' !== (string) ( $customer['payment_terms_days'] ?? '' ) ? $customer['payment_terms_days'] : get_option( 'wb_default_terms_days', 30 ) );
 
 		$res = WB_Sequences::issue( 'INV', function ( string $number ) use ( $order, $customer, $snap, $tot, $now, $terms ) {
@@ -210,7 +210,7 @@ class WB_Invoices {
 		global $wpdb;
 		$t        = WB_CCT::table( 'wb_invoices' );
 		$credited = WB_CCT::has_column( 'wb_invoices', 'amount_credited' ) ? 'COALESCE(`amount_credited`,0)' : '0';
-		$set_mod  = WB_CCT::has_column( 'wb_invoices', 'cct_modified' ) ? $wpdb->prepare( ', `cct_modified` = %s', current_time( 'mysql' ) ) : '';
+		$set_mod  = WB_CCT::has_column( 'wb_invoices', 'cct_modified' ) ? $wpdb->prepare( ', `cct_modified` = %s', wb_now() ) : '';
 		$n = $t ? $wpdb->query( $wpdb->prepare(
 			"UPDATE `{$t}` SET `amount_paid` = ROUND(COALESCE(`amount_paid`,0) + %f, 2){$set_mod} WHERE _ID = %d AND `status` NOT IN ('void','credited') AND ROUND(`total` - COALESCE(`amount_paid`,0) - {$credited}, 2) + 0.004 >= %f",
 			$amount, $invoice_id, $amount
@@ -339,7 +339,7 @@ class WB_Invoices {
 			$credited = (float) ( $i['amount_credited'] ?? 0 );
 			if ( (float) $c['total'] > (float) $i['total'] - $credited + 0.004 ) return new WP_Error( 'wb_over_credit', 'The invoice has already been credited past this amount.' );
 			$ok = WB_CCT::update( 'wb_credit_notes', (int) $c['_ID'], [
-				'credit_number' => $number, 'status' => 'approved', 'approved_by_staff_id' => $me, 'approved_at' => current_time( 'mysql' ),
+				'credit_number' => $number, 'status' => 'approved', 'approved_by_staff_id' => $me, 'approved_at' => wb_now(),
 				'payment_id' => $last_payment ? (int) $last_payment['_ID'] : 0,
 			], 'credit_note_approved' );
 			if ( is_wp_error( $ok ) ) return $ok;
@@ -376,7 +376,7 @@ class WB_Invoices {
 		$cn = WB_CCT::get( 'wb_credit_notes', $credit_id );
 		if ( ! $cn || 'requested' !== $cn['status'] ) return new WP_Error( 'wb_not_pending', 'That credit note is not waiting for approval.' );
 		if ( WB_Staff::current_staff_id() === (int) $cn['requested_by_staff_id'] ) return new WP_Error( 'wb_self_approval', 'Someone else must decide your own request.' );
-		$res = WB_CCT::update( 'wb_credit_notes', $credit_id, [ 'status' => 'declined', 'approved_by_staff_id' => WB_Staff::current_staff_id(), 'approved_at' => current_time( 'mysql' ) ], 'credit_note_declined' );
+		$res = WB_CCT::update( 'wb_credit_notes', $credit_id, [ 'status' => 'declined', 'approved_by_staff_id' => WB_Staff::current_staff_id(), 'approved_at' => wb_now() ], 'credit_note_declined' );
 		if ( true === $res && '' !== $why ) wb_ledger_write( 'credit_note_decline_reason', 'wb_credit_notes', $credit_id, null, [ 'why' => sanitize_text_field( $why ) ] );
 		WB_Notifications::resolve( 'wb_credit_notes', $credit_id );
 		return $res;

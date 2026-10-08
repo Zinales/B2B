@@ -266,7 +266,7 @@ class WB_Orders {
 		$status = WB_Pricing::refresh_quote_status( $quote_id );
 		if ( 'needs_approval' === $status ) return new WP_Error( 'wb_needs_approval', 'Some prices are below the floor, out of date, or have no cost on file. Ask for approval first.' );
 		$valid = (string) $q['valid_until'] >= wb_today() ? (string) $q['valid_until'] : gmdate( 'Y-m-d', strtotime( wb_today() . ' +' . (int) WB_Pricing::policy()['quote_validity_days'] . ' days' ) );
-		$res = WB_CCT::update( 'wb_quotes', $quote_id, [ 'status' => 'sent', 'sent_at' => current_time( 'mysql' ), 'valid_until' => $valid ], 'quote_sent' );
+		$res = WB_CCT::update( 'wb_quotes', $quote_id, [ 'status' => 'sent', 'sent_at' => wb_now(), 'valid_until' => $valid ], 'quote_sent' );
 		if ( is_wp_error( $res ) ) return $res;
 		self::touchpoint( (int) $q['customer_id'], 'quote_sent', 'Quote ' . $q['quote_number'] . ' sent', 'quote:' . $quote_id, (int) $q['contact_id'] );
 		return self::acceptance_url( $quote_id );
@@ -377,7 +377,7 @@ class WB_Orders {
 				], 'order_line_created' );
 				if ( is_wp_error( $r ) ) return $r;
 			}
-			$ok = WB_CCT::update( 'wb_quotes', (int) $q['_ID'], [ 'status' => 'converted', 'accepted_at' => current_time( 'mysql' ), 'accepted_by' => $accepted_by, 'acceptance_doc_id' => $doc_id ], 'quote_accepted' );
+			$ok = WB_CCT::update( 'wb_quotes', (int) $q['_ID'], [ 'status' => 'converted', 'accepted_at' => wb_now(), 'accepted_by' => $accepted_by, 'acceptance_doc_id' => $doc_id ], 'quote_accepted' );
 			return is_wp_error( $ok ) ? $ok : $oid;
 		} );
 		if ( is_wp_error( $order_id ) ) return $order_id;
@@ -572,7 +572,7 @@ class WB_Orders {
 			// The note first, so every movement can point at it; its lines are filled in below,
 			// inside the same transaction (a failure rolls the whole note back, number included).
 			$dn_id = WB_CCT::insert( 'wb_delivery_notes', [
-				'dn_number' => $number, 'order_id' => $order_id, 'issued_at' => current_time( 'mysql' ), 'type' => $type,
+				'dn_number' => $number, 'order_id' => $order_id, 'issued_at' => wb_now(), 'type' => $type,
 				'vehicle_or_courier' => sanitize_text_field( (string) ( $args['vehicle_or_courier'] ?? '' ) ),
 				'lines_json' => [], 'status' => 'issued', 'issued_by_staff_id' => WB_Staff::current_staff_id(),
 			], 'delivery_note_issued' );
@@ -626,7 +626,7 @@ class WB_Orders {
 		$name = mb_substr( sanitize_text_field( $collected_by_name ), 0, 120 );
 		if ( '' === $name ) return new WP_Error( 'wb_no_name', 'Write the name of the person who collected or received the goods.' );
 		return WB_CCT::update( 'wb_delivery_notes', $dn_id, [
-			'status' => 'collection' === $dn['type'] ? 'collected' : 'delivered', 'collected_by_name' => $name, 'collected_at' => current_time( 'mysql' ),
+			'status' => 'collection' === $dn['type'] ? 'collected' : 'delivered', 'collected_by_name' => $name, 'collected_at' => wb_now(),
 			'signature_key' => WB_Storage::sane_key( $signature_key ), 'pod_doc_id' => $pod_doc_id,
 		], 'delivery_note_signed' );
 	}
@@ -647,7 +647,7 @@ class WB_Orders {
 		$terms   = $c && (int) $c['payment_terms_days'] > 0 && ! WB_Invoices::is_past_due( $inv, wb_today() );
 		if ( ! $settled && ! $terms ) return new WP_Error( 'wb_unpaid', 'The invoice is unpaid and outside terms.' );
 		$res = self::set_status( $order_id, 'closed' );
-		if ( true === $res ) WB_CCT::update( 'wb_orders', $order_id, [ 'closed_at' => current_time( 'mysql' ), 'closed_by_staff_id' => WB_Staff::current_staff_id() ], 'order_closed_by' );
+		if ( true === $res ) WB_CCT::update( 'wb_orders', $order_id, [ 'closed_at' => wb_now(), 'closed_by_staff_id' => WB_Staff::current_staff_id() ], 'order_closed_by' );
 		return $res;
 	}
 
@@ -694,7 +694,7 @@ class WB_Orders {
 	public static function touchpoint( int $customer_id, string $type, string $summary, string $source_ref = '', int $contact_id = 0 ): void {
 		if ( $customer_id <= 0 || ! WB_CCT::table( 'wb_touchpoints' ) ) return;
 		WB_CCT::insert( 'wb_touchpoints', [
-			'customer_id' => $customer_id, 'contact_id' => $contact_id, 'type' => $type, 'happened_at' => current_time( 'mysql' ),
+			'customer_id' => $customer_id, 'contact_id' => $contact_id, 'type' => $type, 'happened_at' => wb_now(),
 			'staff_id' => WB_Staff::current_staff_id(), 'summary' => mb_substr( $summary, 0, 500 ), 'source_ref' => $source_ref,
 		], 'touchpoint_' . $type );
 	}

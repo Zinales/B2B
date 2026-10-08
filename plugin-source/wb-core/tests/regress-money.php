@@ -164,5 +164,15 @@ eq( 'B (50) first, then A (2 write-offs, 5 units, 25)', WB_Integrity::by_product
 eq( 'count +4 and −4 → 8 units, not 0', WB_Integrity::by_product( [ [ 'product' => 'C', 'qty' => 4, 'value' => 20 ], [ 'product' => 'C', 'qty' => -4, 'value' => -20 ] ] )[0]['qty'], 8.0 );
 eq( 'nothing → empty', WB_Integrity::by_product( [] ), [] );
 
+/* ===================================================================== 1.2.0: why a price broke a rule, in words */
+section( '1.2.0: a broken price rule is explained in a sentence' );
+$l = [ 'unit_price' => 85, 'floor_price' => 93.6, 'cost_price' => 72, 'list_price' => 129, 'below_floor' => 'yes', 'out_of_date' => 'no' ];
+eq( 'below the floor', WB_Pricing::explain( $l ), 'Below the lowest allowed price: R 85.00 is under R 93.60 (cost R 72.00 + 30% margin).' );
+eq( 'out of date', WB_Pricing::explain( [ 'below_floor' => 'no', 'out_of_date' => 'yes' ] + $l ), "The product's price is out of date: today is outside its valid-from and valid-to dates." );
+eq( 'both at once, both said', substr_count( WB_Pricing::explain( [ 'out_of_date' => 'yes' ] + $l ), '. ' ), 1 );
+eq( 'above the list price', WB_Pricing::explain( [ 'unit_price' => 140, 'below_floor' => 'no' ] + $l ), 'Above the list price: R 140.00 is more than the list price of R 129.00.' );
+eq( 'no cost on file', WB_Pricing::explain( [ 'cost_price' => 0, 'below_floor' => 'yes' ] + $l ), 'The product has no cost price on file, so the lowest allowed price cannot be worked out.' );
+eq( 'nothing wrong: nothing to say', WB_Pricing::explain( [ 'unit_price' => 100, 'below_floor' => 'no' ] + $l ), '' );
+
 echo "\n{$pass} passed, {$fail} failed\n";
 exit( $fail ? 1 : 0 );

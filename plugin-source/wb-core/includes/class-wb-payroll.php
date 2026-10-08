@@ -461,7 +461,7 @@ class WB_Payroll {
 		$msg   = self::access_message( $name, $left, $deleting );
 		WB_Notifications::notify_owners( 'staff', $msg, WB_Workspace::url( 'payroll' ), 'wb_staff', (int) $staff_ids[0] );
 		wb_ledger_write( 'payslip_access_lost_notice', 'wb_staff', (int) $staff_ids[0], null, [ 'user_id' => $uid, 'left' => $left, 'login_removed' => $deleting ] );
-		if ( ! $deleting ) update_user_meta( $uid, self::ACCESS_FLAG, current_time( 'mysql' ) );
+		if ( ! $deleting ) update_user_meta( $uid, self::ACCESS_FLAG, wb_now() );
 	}
 
 	/** Nightly backstop: anyone whose access changed without a hook firing (a role edited by another plugin). */
@@ -829,7 +829,7 @@ class WB_Payroll {
 		$ps = self::payslips( $run_id );
 		if ( ! $ps ) return self::err( 'wb_empty', 'The pay run has no payslips.' );
 		foreach ( $ps as $p ) if ( (float) $p['net'] < 0 ) return self::err( 'wb_negative', sprintf( 'The payslip for %s pays less than nothing. Fix it before checking.', self::staff_name( $p['staff_id'] ) ) );
-		return WB_CCT::update( 'wb_pay_runs', $run_id, [ 'status' => 'checked', 'checked_by' => $me, 'checked_at' => current_time( 'mysql' ) ], 'pay_run_checked' );
+		return WB_CCT::update( 'wb_pay_runs', $run_id, [ 'status' => 'checked', 'checked_by' => $me, 'checked_at' => wb_now() ], 'pay_run_checked' );
 	}
 
 	/** Send a checked run back to draft (a problem was found). @return true|WP_Error */
@@ -870,7 +870,7 @@ class WB_Payroll {
 			$r = WB_CCT::update( 'wb_payslips', (int) $p['_ID'], [ 'pdf_key' => $key, 'status' => 'finalised' ], 'payslip_finalised' );
 			if ( is_wp_error( $r ) ) return $r;
 		}
-		$res = WB_CCT::update( 'wb_pay_runs', $run_id, [ 'status' => 'finalised', 'finalised_at' => current_time( 'mysql' ), 'finalised_by' => WB_Staff::current_staff_id() ], 'pay_run_finalised' );
+		$res = WB_CCT::update( 'wb_pay_runs', $run_id, [ 'status' => 'finalised', 'finalised_at' => wb_now(), 'finalised_by' => WB_Staff::current_staff_id() ], 'pay_run_finalised' );
 		if ( is_wp_error( $res ) ) return $res;
 		foreach ( self::payslips( $run_id ) as $p ) {
 			$uid = WB_Staff::user_for_staff( (int) $p['staff_id'] );

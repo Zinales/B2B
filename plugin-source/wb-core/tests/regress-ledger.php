@@ -263,7 +263,8 @@ eq( 'never the tenant\'s leave types', WB_Demo::is_demo_creation( 'leave_type_se
 eq( 'a pure event about a real order is not a creation', WB_Demo::is_demo_creation( 'order_released', 'wb_orders', 5, null ), false );
 eq( 'an update is not a creation', WB_Demo::is_demo_creation( 'quote_created', 'wb_quotes', 4, [ 'status' => 'draft' ] ), false );
 eq( 'action and type must agree', WB_Demo::is_demo_creation( 'quote_created', 'wb_orders', 4, null ), false );
-eq( 'unknown creations are not captured', WB_Demo::is_demo_creation( 'payroll_profile_created', 'wb_payroll_profiles', 1, null ), false );
+eq( 'unknown creations are not captured', WB_Demo::is_demo_creation( 'statement_generated', 'wb_statements', 1, null ), false );
+eq( '1.2.0: the deeper seed\'s creations are captured', WB_Demo::is_demo_creation( 'payroll_profile_created', 'wb_payroll_profiles', 1, null ) && WB_Demo::is_demo_creation( 'payment_received_card', 'wb_payments', 3, null ) && WB_Demo::is_demo_creation( 'stock_request_write_off', 'wb_stock_requests', 2, null ), true );
 
 echo "\n{$pass} passed, {$fail} failed\n";
 exit( $fail ? 1 : 0 );

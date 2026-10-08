@@ -55,7 +55,7 @@ class WB_Documents {
 			'storage_key'         => $key,
 			'mime'                => sanitize_mime_type( (string) ( $meta['mime'] ?? ( wp_check_filetype( $name )['type'] ?: 'application/octet-stream' ) ) ),
 			'size'                => $size,
-			'issued_at'           => current_time( 'mysql' ),
+			'issued_at'           => wb_now(),
 			'expires_at'          => sanitize_text_field( (string) ( $meta['expires_at'] ?? '' ) ),
 			'is_customer_visible' => wb_truthy( $meta['is_customer_visible'] ?? '' ) ? 1 : 0,   // S4: "false" is off
 		], 'document_filed' );

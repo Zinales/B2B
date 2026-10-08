@@ -1,5 +1,36 @@
 # wb-core changelog
 
+## 1.2.0 — 8 October 2026
+A year of trading in the demo, and a broken price rule explained in words (Zina, 8 October).
+- **The demo now holds a year.** `WB_Demo_Seed` writes a deterministic script (the same year on
+  every site) and plays it through the real engines with the business clock set to each event's
+  date, so every document is numbered in sequence, priced by both checks, released by the gate,
+  ledgered and PDF'd exactly as a real one would be. Demo Technical Supplies: 16 products in four
+  categories with specifications, 3 price tiers, 4 suppliers, 8 customers (two pay early, two
+  pay late, one is on hold, two pay cash at the counter), 12 contacts, 6 staff with pay set up;
+  stock arriving by purchase order; around 80 quotes over twelve months with coatings peaking in
+  spring and adhesives dipping over the holidays; orders, invoices, delivery and collection notes;
+  a year's bank statement imported and matched (most by reference, some suggested, one odd);
+  overdue invoices; two weeks of timesheets; leave; a review; last month's pay run.
+- **Loose ends for a first visit:** a price below the floor to decide, a write-off to decide, a
+  credit note to approve, a stocktake to check, timesheets to approve, a leave request, a pay run
+  to check, quotes still out, a purchase order on its way, and three notes on the timeline.
+- **The business clock.** Every engine now stamps dates from `wb_now()` (filterable) instead of
+  `current_time()` directly; live, it is the site's time. Numbering follows the clock's year. The
+  audit trail keeps its own real time.
+- **"Why it needs approval"** on every quote line that broke a rule, and on the approve queue, in
+  a sentence: "Below the lowest allowed price: R 85.00 is under R 93.60 (cost R 72.00 + 30%
+  margin)." / "The product's price is out of date…" / "Above the list price…" / "The product has
+  no cost price on file…" (`WB_Pricing::explain()`). The person who typed the price and the person
+  who decides read the same words; the requester's own note and the decider's note stay as they
+  were.
+- The demo wipe now knows every kind of row the deeper seed makes (contacts, KPIs, credit notes,
+  payments, adjustments and counts, stocktakes, timesheets, leave, reviews, pay runs, payslips,
+  profiles, scores, PDFs and their files).
+- Tests: regress-demo.php (23): the script is deterministic, a year long, in date order, never on a
+  weekend, seasonal, stock always arrives before it is sold, the loose ends are there;
+  regress-money.php +6 for the explanations.
+
 ## 1.1.0 — 8 October 2026
 Documents as PDF (Zina, 8 October: "please convert to pdf").
 - **Quotes, invoices, credit notes, delivery notes and purchase orders are made as PDF** on this
