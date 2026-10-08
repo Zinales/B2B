@@ -418,6 +418,6 @@ class WB_Setup {
 	}
 
 	private static function fold( string $title, string $body, bool $open = false ): string {
-		return '<details class="wb-fold"' . ( $open ? ' open' : '' ) . '><summary>' . esc_html( $title ) . '</summary><div class="wb-fold-body">' . $body . '</div></details>';
+		return WB_Render::fold( $title, $body, [ 'open' => $open ] );
 	}
 }

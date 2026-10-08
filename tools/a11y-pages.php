@@ -47,6 +47,12 @@ function get_bloginfo( $k ) { return 'Demo Technical Supplies'; }
 function wp_body_open() {}
 function wp_footer() {}
 function get_option( $k, $d = false ) { return $d; }
+function date_i18n( $f ) { return date( $f ); }
+function wp_nonce_field( ...$a ) { return ''; }
+function sanitize_html_class( $s ) { return $s; }
+function selected( ...$a ) { return ''; }
+function wp_strip_all_tags( $s ) { return strip_tags( $s ); }
+function wp_json_encode( $v ) { return json_encode( $v ); }
 function get_query_var( $k, $d = '' ) { return $d; }
 function add_action( ...$a ) {} function add_filter( ...$a ) {} function add_shortcode( ...$a ) {}
 function wb_notice( string $kind, string $msg ): string { return '<div class="wb-notice wb-' . $kind . '" role="status">' . $msg . '</div>'; }
@@ -70,7 +76,7 @@ function do_shortcode( $s ) {
 }
 
 $base = WB_PLUGIN_DIR . 'includes/';
-foreach ( [ 'roles', 'setup', 'workspace', 'welcome' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
+foreach ( [ 'roles', 'setup', 'workspace', 'welcome', 'render', 'needs' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
 
 function caps_of( string $role ): array {
 	if ( 'administrator' === $role ) return WB_Roles::staff_caps();

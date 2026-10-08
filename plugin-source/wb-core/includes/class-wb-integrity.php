@@ -201,9 +201,7 @@ class WB_Integrity {
 			'below_floor'           => [ 'Prices approved below the floor or above list', [ 'when', 'quote_id', 'reason', 'floor', 'price', 'margin_pct', 'asked_by', 'approved_by' ] ],
 		];
 		foreach ( $sections as $key => [ $title, $cols ] ) {
-			$h .= '<details class="wb-fold"' . ( $r[ $key ] ? ' open' : '' ) . '><summary>' . esc_html( $title ) . ' <span class="wb-count">' . count( $r[ $key ] ) . '</span></summary>';
-			$h .= $r[ $key ] ? WB_Render::render_table( $r[ $key ], array_map( fn( $c ) => [ 'key' => $c, 'label' => WB_Render::label( $c ) ], $cols ) ) : '<p class="wb-muted">None.</p>';
-			$h .= '</details>';
+			$h .= WB_Render::fold( $title, $r[ $key ] ? WB_Render::render_table( $r[ $key ], array_map( fn( $c ) => [ 'key' => $c, 'label' => WB_Render::label( $c ) ], $cols ) ) : '<p class="wb-muted">None.</p>', [ 'open' => (bool) $r[ $key ], 'hint' => count( $r[ $key ] ) . ( 1 === count( $r[ $key ] ) ? ' entry' : ' entries' ) ] );
 		}
 		return $h;
 	}

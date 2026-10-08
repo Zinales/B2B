@@ -57,7 +57,28 @@ class WB_Render {
 	}
 
 	public static function label( string $key ): string {
-		return self::LABELS[ $key ] ?? ucfirst( str_replace( '_', ' ', $key ) );
+		return self::LABELS[ $key ] ?? self::words( $key );
+	}
+
+	/**
+	 * Stored value → screen word (0.3.4, BUILD-PATTERNS §2.3, Kaycie's KC_Words). Rename what the code
+	 * regenerates, never what is stored; this map is the bridge. A value not listed is the stored key
+	 * with spaces, first letter up. Status values are compared in SQL and are never renamed.
+	 */
+	const WORDS = [
+		'on_hold' => 'On hold', 'needs_approval' => 'Needs approval', 'part_paid' => 'Part paid', 'awaiting_payment' => 'Awaiting payment',
+		'part_delivered' => 'Part delivered', 'part_received' => 'Part received', 'at_risk' => 'At risk', 'first_order' => 'First order',
+		'auto_reference' => 'By reference', 'auto_amount' => 'By amount', 'manual' => 'By hand', 'unallocated' => 'Not allocated',
+		'fixed_price' => 'Fixed price', 'pct_off_list' => '% off list', 'pct_on_cost' => '% on cost', 'rule' => 'Customer rule', 'tier' => 'Price tier', 'list' => 'List price',
+		'write_off' => 'Write-off', 'coa' => 'Certificate of analysis', 'msds' => 'Safety data sheet', 'quote_pdf' => 'Quote', 'invoice_pdf' => 'Invoice',
+		'credit_pdf' => 'Credit note', 'dn_pdf' => 'Delivery note', 'pod' => 'Proof of delivery', 'signed_quote' => 'Signed quote', 'staff_doc' => 'Staff document',
+		'to_do' => 'To do', 'self_review' => 'Self review', 'manager_review' => 'Manager review',
+	];
+
+	/** The screen word for a stored value. */
+	public static function words( string $value ): string {
+		$v = trim( $value );
+		return self::WORDS[ $v ] ?? ucfirst( str_replace( '_', ' ', $v ) );
 	}
 
 	public static function money( $v ): string {
@@ -72,7 +93,7 @@ class WB_Render {
 		if ( in_array( $v, [ 'active', 'open', 'paid', 'matched', 'approved', 'passed', 'delivered', 'closed', 'received', 'posted', 'signed', 'collected', 'yes', 'repeat', 'converted', 'done', 'finalised', 'checked' ], true ) ) $tone = 'good';
 		elseif ( in_array( $v, [ 'overdue', 'on_hold', 'needs_approval', 'unmatched', 'declined', 'void', 'cancelled', 'disputed', 'lapsed', 'at_risk', 'queried', 'below' ], true ) ) $tone = 'bad';
 		elseif ( in_array( $v, [ 'suggested', 'part_paid', 'partial', 'requested', 'submitted', 'awaiting_payment', 'ready', 'part_delivered', 'sent', 'draft', 'pending', 'unallocated', 'to_do' ], true ) ) $tone = 'wait';
-		return '<span class="wb-chip wb-chip--' . $tone . '">' . esc_html( ucfirst( str_replace( '_', ' ', $v ) ) ) . '</span>';
+		return '<span class="wb-chip wb-chip--' . $tone . '">' . esc_html( self::words( $v ) ) . '</span>';
 	}
 
 	/** The ⋯ menu wrapper. One definition. */
@@ -80,9 +101,44 @@ class WB_Render {
 		return '<div class="wb-kebab"><button type="button" class="wb-kebab-btn" aria-label="Actions" aria-expanded="false" aria-haspopup="true">&#8943;</button><div class="wb-kebab-body" role="menu">' . $menu . '</div></div>';
 	}
 
-	public static function stat( string $label, $value, string $href = '' ): string {
-		$inner = '<span class="wb-stat-label">' . esc_html( $label ) . '</span><span class="wb-stat-num">' . esc_html( (string) $value ) . '</span>';
-		return '' !== $href ? '<a class="wb-stat" href="' . esc_url( $href ) . '">' . $inner . '</a>' : '<div class="wb-stat">' . $inner . '</div>';
+	/** A stat tile: label → number → note (0.3.4). $hot marks the one number that must not be missed. */
+	public static function stat( string $label, $value, string $href = '', string $note = '', bool $hot = false ): string {
+		$inner = '<span class="wb-stat-label">' . esc_html( $label ) . '</span><span class="wb-stat-num">' . esc_html( (string) $value ) . '</span>'
+			. ( '' !== $note ? '<span class="wb-stat-sub">' . esc_html( $note ) . '</span>' : '' );
+		$cls = 'wb-stat' . ( $hot ? ' wb-stat--hot' : '' );
+		return '' !== $href ? '<a class="' . $cls . '" href="' . esc_url( $href ) . '">' . $inner . '</a>' : '<div class="' . $cls . '">' . $inner . '</div>';
+	}
+
+	/**
+	 * A fold (0.3.4, Kaycie's section hierarchy: width does the sorting before colour does).
+	 * $opts: open (bool), id, kind ('lead' = the first and main fold, marked by the frame when not set;
+	 * 'sibling' = also here, inset; 'reference' = read-only proof, inset further, collapsed),
+	 * hint (a count or short note on the summary), note (one line at the top of the body).
+	 */
+	public static function fold( string $title, string $body, array $opts = [] ): string {
+		$kind = (string) ( $opts['kind'] ?? '' );
+		$cls  = 'wb-fold' . ( in_array( $kind, [ 'lead', 'sibling', 'reference' ], true ) ? ' wb-fold--' . $kind : '' );
+		$h    = '<details class="' . $cls . '"' . ( ! empty( $opts['open'] ) ? ' open' : '' ) . ( ! empty( $opts['id'] ) ? ' id="' . esc_attr( (string) $opts['id'] ) . '"' : '' ) . '><summary>'
+			. ( 'sibling' === $kind ? '<span class="wb-fold-eyebrow">Also here</span>' : '' ) . esc_html( $title )
+			. ( 'reference' === $kind ? ' <span class="wb-fold-ro">Read only</span>' : '' )
+			. ( ! empty( $opts['hint'] ) ? '<span class="wb-fold-hint">' . esc_html( (string) $opts['hint'] ) . '</span>' : '' ) . '</summary><div class="wb-fold-body">'
+			. ( ! empty( $opts['note'] ) ? '<p class="wb-fold-note">' . esc_html( (string) $opts['note'] ) . '</p>' : '' );
+		return $h . $body . '</div></details>';
+	}
+
+	/** An empty or blocked state card: says what would be here and what to do (never a blank). */
+	public static function state( string $type, string $title, string $text = '' ): string {
+		$ic = 'blocked' === $type
+			? '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'
+			: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12l3-7h12l3 7v7H3z"/><path d="M3 12h5l2 3h4l2-3h5"/></svg>';
+		return '<div class="wb-state wb-state--' . esc_attr( $type ) . '"><span class="wb-state-ic">' . $ic . '</span><div><p class="wb-state-t">' . esc_html( $title ) . '</p>'
+			. ( '' !== $text ? '<p class="wb-state-s">' . esc_html( $text ) . '</p>' : '' ) . '</div></div>';
+	}
+
+	/** A bounded list says its bound (BUILD-PATTERNS §2.4): the line under a table whose fetch filled its cap. */
+	public static function bounded( array $rows, int $limit, string $what = 'the newest' ): string {
+		if ( $limit <= 0 || count( $rows ) < $limit ) return '';
+		return '<p class="wb-list-more">Showing ' . $what . ' <strong>' . number_format( $limit ) . '</strong>. There may be more; narrow the list to find the rest.</p>';
 	}
 
 	/**
@@ -90,7 +146,7 @@ class WB_Render {
 	 * $opts: cct + actions (WB_RowActions keys), action_html fn($row) for bespoke menus, cards (default true), empty.
 	 */
 	public static function render_table( array $rows, array $columns, array $opts = [] ): string {
-		if ( ! $rows ) return isset( $opts['empty'] ) ? '<p class="wb-muted">' . esc_html( (string) $opts['empty'] ) . '</p>' : '';
+		if ( ! $rows ) return isset( $opts['empty'] ) ? self::state( 'empty', (string) $opts['empty'], (string) ( $opts['empty_note'] ?? '' ) ) : '';
 		$cards       = ! array_key_exists( 'cards', $opts ) || $opts['cards'];
 		$cct         = (string) ( $opts['cct'] ?? '' );
 		$actions     = (array) ( $opts['actions'] ?? [] );
@@ -150,7 +206,7 @@ class WB_Render {
 	public static function field( string $name, string $label, string $type = 'text', $value = '', array $opts = [] ): string {
 		$id  = 'wb-' . sanitize_html_class( $name );
 		$req = ! empty( $opts['required'] ) ? ' required' : '';
-		$h   = '<label class="wb-field" for="' . esc_attr( $id ) . '"><span>' . esc_html( $label ) . '</span>';
+		$h   = '<label class="wb-field" for="' . esc_attr( $id ) . '"><span>' . esc_html( $label ) . ( '' !== $req ? ' <span class="wb-req" aria-hidden="true">*</span>' : '' ) . '</span>';
 		if ( 'select' === $type ) {
 			$h .= '<select id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '"' . $req . '>';
 			foreach ( (array) ( $opts['options'] ?? [] ) as $k => $v ) $h .= '<option value="' . esc_attr( (string) $k ) . '"' . selected( (string) $value, (string) $k, false ) . '>' . esc_html( (string) $v ) . '</option>';
@@ -192,7 +248,7 @@ class WB_Render {
 		if ( ! $cols ) return wb_notice( 'warn', 'That list is not set up yet.' );
 		$rows = WB_CCT::find( $cct, $where, [ 'limit' => (int) ( $atts['limit'] ?? 50 ), 'orderby' => (string) ( $atts['orderby'] ?? '_ID' ), 'order' => (string) ( $atts['order'] ?? 'DESC' ) ] );
 		$out  = self::render_table( $rows, $cols, [ 'cct' => $cct, 'actions' => array_filter( array_map( 'trim', explode( ',', (string) ( $atts['actions'] ?? '' ) ) ) ), 'empty' => (string) ( $atts['empty'] ?? 'Nothing here yet.' ) ] );
-		if ( count( $rows ) >= (int) ( $atts['limit'] ?? 50 ) ) $out .= '<p class="wb-muted">Showing the newest ' . count( $rows ) . '.</p>';   // a bounded list says so
+		$out .= self::bounded( $rows, (int) ( $atts['limit'] ?? 50 ) );   // a bounded list says so
 		return $out;
 	}
 

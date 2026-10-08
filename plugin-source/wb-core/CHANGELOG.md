@@ -1,5 +1,49 @@
 # wb-core changelog
 
+## 0.3.4 — 8 October 2026
+The screens get their look and their anatomy (Zina, 8 October: "the screens need a lot of visual
+styling"; benchmark Kaycie, look from the Brandzgro design system v2). Nothing that stores data
+changed; this is how screens are drawn.
+- **Two sources, one sheet.** Brandzgro decides how things look: cream page, white cards, deep rose
+  for anything pressed or read as a link, navy headings and the one dark surface (the side menu),
+  slate body text, a 1px hairline instead of shadows, 4px corners on everything that holds content
+  and full-round only on chips, Poppins, hover is a colour change and nothing moves, the 3px rose
+  focus ring on everything you can reach by keyboard. Every colour is still a token from System
+  Settings, so a client's own colours replace the Brandzgro defaults without touching the sheet.
+  Kaycie decides how screens are built (below).
+- **One type scale.** Eight sizes (`--wb-fs-xs` to `--wb-fs-3xl`); every size on a screen is one of
+  them. Buttons follow Brandzgro's three levels (primary, outline, text) and sizes; one primary per
+  screen, and it sits in the page head.
+- **Every screen has the same head:** an eyebrow naming the group (Sell, Stock, Know, Team, Admin),
+  the title, one line, and the screen's one primary action as a button that lands on the fold that
+  does it (Add a customer, New quote, Import a bank statement…). The "Next" band sits under it.
+- **Folds have a hierarchy by width before colour:** the first fold on a page carries the rule
+  (lead), "Also here" folds are inset, read-only proof is inset further and marked. A fold can carry
+  a count on its summary and a note at the top of its body. `WB_Render::fold()` draws every fold;
+  the portal, payroll, Setup and Integrity screens now use it too.
+- **Stat tiles read label → number → note,** and the one number that must not be missed (overdue
+  invoices) carries the rule. Empty lists show a state card that says what would be here, never a
+  bare line. Chips are the only pill. Notices are the only component with a left rule.
+- **The side menu** has a line icon per screen (Lucide shapes, 1.6 stroke, never filled), the
+  system name with "Workspace" under it, a count of what is waiting on the person against Today,
+  and the signed-in person with Sign out at the foot. The top bar has a breadcrumb and the same
+  count as a bubble that links to Needs attention. Tap targets are 44px on touch screens.
+- **Today is now Kaycie's Today:** the date as the eyebrow, "Good morning, Thandi." as the title,
+  "3 things are waiting on you, and 2 are still open." under it; the week in numbers; a **Needs
+  attention** card listing every line this person can clear with a verb on each (Decide, Match,
+  Approve, Check, Chase, Reorder…), waiting before open; **Quick actions** beside it; then the
+  notifications. New `WB_Needs` is the one list behind the card, the menu count and the top bar,
+  so they cannot disagree; every count fails to zero on a missing table, never a blank page.
+- Placeholders are examples, never instructions (BUILD-PATTERNS §2.9) on the customer, product and
+  price-rule forms. Required fields carry a mark. A bounded `[wb_list]` says its bound in words.
+  Stored values get their screen words from one map, `WB_Render::WORDS` (§2.3); the two remaining
+  hand-made labels now read it.
+- Tests: regress-frame.php +164 (the head on every screen for every login, breadcrumb, waiting
+  count, icons, the foot of the menu), regress-workspace.php +24 (fold kinds, state, stat, bound
+  line, the word map, the needs list: sort order, the lede, greetings, every line lands on a real
+  screen behind a real capability and fails to zero without a database). The browser check passes
+  on the new chrome at 1280px and 375px (761 text elements, 0 problems).
+
 ## 0.3.3 — 8 October 2026
 Buttons you could not read (Zina, 8 October: "the button text doesn't render").
 - **Link-buttons painted their words in the button's own colour.** The workspace sheet colours every

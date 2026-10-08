@@ -19,7 +19,7 @@ define( 'ABSPATH', __DIR__ . '/' );
 define( 'WB_PLUGIN_DIR', dirname( __DIR__ ) . '/' );
 
 $base = dirname( __DIR__ ) . '/includes/';
-foreach ( [ 'tables', 'workspace', 'setup', 'roles' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
+foreach ( [ 'tables', 'workspace', 'setup', 'roles', 'render', 'needs' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
 
 $pass = 0;
 $fail = 0;
@@ -195,6 +195,48 @@ foreach ( WB_Workspace::SCREENS as $slug => $s ) {
 	foreach ( WB_Roles::catalog() as $tick ) if ( in_array( $s[2], $tick['caps'], true ) ) $granted = true;
 	if ( ! $granted ) eq( "screen {$slug}: some tick grants its gate {$s[2]}", false, true );
 }
+
+/* ============================================================ 5. 0.3.4: the shared primitives and what is waiting */
+section( 'screen primitives (0.3.4)' );
+function esc_html( $s ) { return htmlspecialchars( (string) $s, ENT_QUOTES ); }
+function esc_attr( $s ) { return esc_html( $s ); }
+function esc_url( $s ) { return esc_html( $s ); }
+function current_user_can( $c ) { return true; }
+function sanitize_html_class( $s ) { return $s; }
+function selected( ...$a ) { return ''; }
+$f = WB_Render::fold( 'Add a customer', '<p>form</p>', [ 'open' => true, 'id' => 'wb-add' ] );
+eq( 'a plain fold', $f, '<details class="wb-fold" open id="wb-add"><summary>Add a customer</summary><div class="wb-fold-body"><p>form</p></div></details>' );
+eq( 'a sibling fold says "Also here"', 0 === strpos( WB_Render::fold( 'Price rules', '', [ 'kind' => 'sibling' ] ), '<details class="wb-fold wb-fold--sibling"><summary><span class="wb-fold-eyebrow">Also here</span>Price rules</summary>' ), true );
+eq( 'a reference fold is marked read only', false !== strpos( WB_Render::fold( 'Audit trail', '', [ 'kind' => 'reference' ] ), 'Audit trail <span class="wb-fold-ro">Read only</span>' ), true );
+eq( 'a hint sits on the summary, a note at the top of the body', WB_Render::fold( 'Entries', 'x', [ 'hint' => '3 entries', 'note' => 'This month.' ] ), '<details class="wb-fold"><summary>Entries<span class="wb-fold-hint">3 entries</span></summary><div class="wb-fold-body"><p class="wb-fold-note">This month.</p>x</div></details>' );
+eq( 'an unknown kind is a plain fold', 0 === strpos( WB_Render::fold( 'T', '', [ 'kind' => 'odd' ] ), '<details class="wb-fold">' ), true );
+eq( 'the empty state has a title and a line', WB_Render::state( 'empty', 'No customers yet.', 'Add the first one below.' ), '<div class="wb-state wb-state--empty"><span class="wb-state-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12l3-7h12l3 7v7H3z"/><path d="M3 12h5l2 3h4l2-3h5"/></svg></span><div><p class="wb-state-t">No customers yet.</p><p class="wb-state-s">Add the first one below.</p></div></div>' );
+eq( 'a stat tile: label → number → note, hot carries the rule', WB_Render::stat( 'Overdue invoices', 3, 'https://b2b.test/workspace/invoices/', 'past the due date', true ), '<a class="wb-stat wb-stat--hot" href="https://b2b.test/workspace/invoices/"><span class="wb-stat-label">Overdue invoices</span><span class="wb-stat-num">3</span><span class="wb-stat-sub">past the due date</span></a>' );
+eq( 'a bounded list says its bound', WB_Render::bounded( array_fill( 0, 500, [] ), 500 ), '<p class="wb-list-more">Showing the newest <strong>500</strong>. There may be more; narrow the list to find the rest.</p>' );
+eq( 'under the bound: nothing', WB_Render::bounded( array_fill( 0, 499, [] ), 500 ), '' );
+eq( 'stored value → screen word', [ WB_Render::words( 'on_hold' ), WB_Render::words( 'auto_reference' ), WB_Render::words( 'pct_off_list' ), WB_Render::words( 'msds' ) ], [ 'On hold', 'By reference', '% off list', 'Safety data sheet' ] );
+eq( 'a value not in the map is the key with spaces', WB_Render::words( 'some_new_status' ), 'Some new status' );
+eq( 'chips use the map', WB_Render::chip( 'part_paid' ), '<span class="wb-chip wb-chip--wait">Part paid</span>' );
+eq( 'a required field carries the mark', false !== strpos( WB_Render::field( 'name', 'Company name', 'text', '', [ 'required' => true ] ), '<span>Company name <span class="wb-req" aria-hidden="true">*</span></span>' ), true );
+
+section( 'what is waiting (0.3.4)' );
+$rows = [
+	[ 'key' => 'overdue', 'kind' => 'open', 'count' => 9 ],
+	[ 'key' => 'payments', 'kind' => 'waiting', 'count' => 2 ],
+	[ 'key' => 'prices', 'kind' => 'waiting', 'count' => 2 ],
+	[ 'key' => 'leave', 'kind' => 'waiting', 'count' => 5 ],
+];
+eq( 'waiting before open, bigger first, then list order', array_column( WB_Needs::sort( $rows ), 'key' ), [ 'leave', 'payments', 'prices', 'overdue' ] );
+eq( 'nothing at all', WB_Needs::lede( 0, 0 ), 'Nothing is waiting on you, and nothing is still open.' );
+eq( 'one waiting', WB_Needs::lede( 1, 0 ), 'One thing is waiting on you.' );
+eq( 'several waiting and several open', WB_Needs::lede( 3, 2 ), '3 things are waiting on you, and 2 are still open.' );
+eq( 'none waiting, one open', WB_Needs::lede( 0, 1 ), 'Nothing is waiting on you, and one thing is still open.' );
+eq( 'thousands are formatted', WB_Needs::lede( 1200, 0 ), '1,200 things are waiting on you.' );
+eq( 'morning / afternoon / evening', [ WB_Needs::greeting( 6 ), WB_Needs::greeting( 11 ), WB_Needs::greeting( 12 ), WB_Needs::greeting( 16 ), WB_Needs::greeting( 17 ), WB_Needs::greeting( 23 ) ], [ 'Good morning', 'Good morning', 'Good afternoon', 'Good afternoon', 'Good evening', 'Good evening' ] );
+eq( 'every line has a verb', array_values( array_filter( array_map( fn( $l ) => $l['key'], WB_Needs::all() ), fn( $k ) => 'Open' === WB_Needs::verb( $k ) ) ), [] );
+eq( 'without a database every count fails to zero, never a fatal', array_sum( array_column( WB_Needs::all(), 'count' ) ), 0 );
+eq( 'every line lands on a screen that exists', array_values( array_filter( array_map( fn( $l ) => $l['slug'], WB_Needs::all() ), fn( $s ) => null === WB_Workspace::screen( $s ) ) ), [] );
+eq( 'every line is gated by a real capability', array_values( array_filter( array_map( fn( $l ) => $l['cap'], WB_Needs::all() ), fn( $c ) => ! isset( WB_Roles::CAPS[ $c ] ) ) ), [] );
 
 echo "\n{$pass} passed, {$fail} failed\n";
 exit( $fail ? 1 : 0 );

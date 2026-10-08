@@ -221,6 +221,50 @@ class WB_Workspace {
 		return home_url( '/portal/' );
 	}
 
+	/** The one primary action for a screen (Brandzgro: one primary per screen), as a link to the fold that does it. */
+	const ACTIONS = [
+		'customers' => [ 'wb_manage_customers', '#wb-add', 'Add a customer' ], 'products' => [ 'wb_manage_products', '#wb-add', 'Add a product' ],
+		'quotes' => [ 'wb_create_quotes', '#wb-add', 'New quote' ], 'payments' => [ 'wb_import_bank', '#wb-add', 'Import a bank statement' ],
+		'stock' => [ 'wb_move_stock', '#wb-add', 'Correct stock' ], 'purchasing' => [ 'wb_manage_purchasing', '#wb-add', 'New purchase order' ],
+		'documents' => [ 'wb_manage_documents', '#wb-add', 'File a document' ], 'marketing' => [ 'wb_manage_marketing', '#wb-add', 'Record a contact' ],
+		'staff' => [ 'wb_access_workspace', '#wb-add', 'My timesheet' ], 'invoices' => [ 'wb_issue_credit_notes', '#wb-add', 'Ask for a credit note' ],
+	];
+
+	public static function head_action( string $slug, callable $can ): string {
+		$a = self::ACTIONS[ $slug ] ?? null;
+		if ( ! $a || ! $can( $a[0] ) ) return '';
+		return '<a class="wb-btn" href="' . esc_url( self::url( $slug ) . $a[1] ) . '">' . esc_html( $a[2] ) . '</a>';
+	}
+
+	/** Line icons for the menu (Lucide shapes, stroke 1.6, never filled), keyed by screen slug. */
+	const ICONS = [
+		'home'          => '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
+		'notifications' => '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+		'customers'     => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+		'quotes'        => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+		'orders'        => '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 2h2l2.7 12.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 1.9-1.6L22 7H5"/>',
+		'invoices'      => '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
+		'payments'      => '<rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/>',
+		'deliveries'    => '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.6a1 1 0 0 0-.2-.6L18.3 8.4A1 1 0 0 0 17.5 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
+		'products'      => '<path d="M16.5 9.4 7.5 4.2"/><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/>',
+		'stock'         => '<path d="M12.8 2.2a2 2 0 0 0-1.6 0L2.6 6.1a1 1 0 0 0 0 1.8l8.6 3.9a2 2 0 0 0 1.6 0l8.6-3.9a1 1 0 0 0 0-1.8z"/><path d="m22 17.6-9.2 4.2a2 2 0 0 1-1.6 0L2 17.6"/><path d="m22 12.6-9.2 4.2a2 2 0 0 1-1.6 0L2 12.6"/>',
+		'purchasing'    => '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+		'documents'     => '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+		'marketing'     => '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+		'cashflow'      => '<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>',
+		'integrity'     => '<path d="M20 13c0 5-3.5 7.5-7.7 9a1 1 0 0 1-.6 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1.2 1.2 0 0 1 1.6 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+		'staff'         => '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+		'payroll'       => '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
+		'setup'         => '<path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 14h4"/><path d="M10 8h4"/><path d="M18 16h4"/>',
+		'settings'      => '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+		'signout'       => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+	];
+
+	public static function icon( string $slug ): string {
+		$d = self::ICONS[ $slug ] ?? '<circle cx="12" cy="12" r="4"/>';
+		return '<span class="wb-side-ic" aria-hidden="true"><svg viewBox="0 0 24 24">' . $d . '</svg></span>';
+	}
+
 	/** The whole document: frame + header + content. Returned, not printed. */
 	private static function page( string $slug, string $title, string $sub, string $content ): string {
 		$can     = fn( string $cap ): bool => current_user_can( $cap );
@@ -232,24 +276,35 @@ class WB_Workspace {
 		$user   = wp_get_current_user();
 
 		$side = '';
+		$wait = ! $portal && class_exists( 'WB_Needs' ) ? WB_Needs::waiting_count( $can ) : 0;
 		if ( ! $portal ) {
-			$side .= '<aside class="wb-side" id="wb-side" aria-label="Workspace menu"><div class="wb-side-brand"><span class="wb-side-mark">' . $mark . '</span><span class="wb-side-name">' . esc_html( $name ) . '</span></div><nav class="wb-side-nav">';
+			$side .= '<aside class="wb-side" id="wb-side" aria-label="Workspace menu"><div class="wb-side-brand"><span class="wb-side-mark">' . $mark . '</span><span class="wb-side-name">' . esc_html( $name ) . '<small>Workspace</small></span></div><nav class="wb-side-nav">';
 			foreach ( self::menu( $can ) as $group => $items ) {
 				$side .= '<div class="wb-side-group">' . ( '' !== $group ? '<div class="wb-side-gtitle">' . esc_html( $group ) . '</div>' : '' );
 				foreach ( $items as $to => $words ) {
 					$on    = $to === $slug || ( 'home' === $to && '' === $slug );
-					$side .= '<a class="wb-side-item' . ( $on ? ' is-active' : '' ) . '" href="' . esc_url( self::url( $to ) ) . '"' . ( $on ? ' aria-current="page"' : '' ) . '>' . esc_html( $words ) . '</a>';
+					$badge = 'home' === $to && $wait > 0 ? '<span class="wb-side-badge">' . (int) $wait . '<span class="wb-sr"> waiting on you</span></span>' : '';
+					$side .= '<a class="wb-side-item' . ( $on ? ' is-active' : '' ) . '" href="' . esc_url( self::url( $to ) ) . '"' . ( $on ? ' aria-current="page"' : '' ) . '>' . self::icon( $to ) . '<span>' . esc_html( $words ) . '</span>' . $badge . '</a>';
 				}
 				$side .= '</div>';
 			}
-			$side .= '</nav></aside><div class="wb-scrim" data-wb-side-close></div>';
+			$initials = '';
+			foreach ( array_slice( preg_split( '/\s+/', trim( (string) $user->display_name ) ) ?: [], 0, 2 ) as $w ) $initials .= strtoupper( substr( $w, 0, 1 ) );
+			$side .= '</nav><div class="wb-side-foot"><div class="wb-side-me"><span class="wb-side-av" aria-hidden="true">' . esc_html( $initials ) . '</span><span>' . esc_html( (string) $user->display_name ) . '<small>Signed in</small></span></div>'
+				. '<a class="wb-side-item" href="' . esc_url( wp_logout_url( home_url( '/' ) ) ) . '">' . self::icon( 'signout' ) . '<span>Sign out</span></a></div></aside><div class="wb-scrim" data-wb-side-close></div>';
 		}
 
 		$me  = is_user_logged_in()
 			? esc_html( $user->display_name ) . ' · <a href="' . esc_url( wp_logout_url( home_url( '/' ) ) ) . '">Sign out</a>'
 			: '<a href="' . esc_url( wp_login_url( self::url( 'home' ) ) ) . '">Sign in</a>';
+		$crumb = '';
+		if ( ! $portal ) {
+			$crumb = '<nav aria-label="Breadcrumb"><ol class="wb-crumb"><li>' . ( 'home' === $slug ? '<span aria-current="page">Today</span>' : '<a href="' . esc_url( self::url( 'home' ) ) . '">Today</a>' ) . '</li>'
+				. ( 'home' !== $slug && '' !== $title ? '<li><span aria-current="page">' . esc_html( $title ) . '</span></li>' : '' ) . '</ol></nav>';
+			$crumb .= '<a class="wb-top-wait' . ( $wait ? '' : ' is-clear' ) . '" href="' . esc_url( self::url( 'home' ) ) . '#wb-waiting"><b>' . (int) $wait . '</b>' . ( $wait ? ' waiting on you' : ' waiting' ) . '</a>';
+		}
 		$top = '<header class="wb-top">'
-			. ( $portal ? '<a class="wb-top-brand" href="' . esc_url( home_url( '/' ) ) . '"><span class="wb-side-mark">' . $mark . '</span>' . esc_html( $name ) . '</a>' : '<button type="button" class="wb-top-menu" aria-controls="wb-side" aria-expanded="false">Menu</button>' )
+			. ( $portal ? '<a class="wb-top-brand" href="' . esc_url( home_url( '/' ) ) . '"><span class="wb-side-mark">' . $mark . '</span>' . esc_html( $name ) . '</a>' : '<button type="button" class="wb-top-menu" aria-controls="wb-side" aria-expanded="false">Menu</button>' . $crumb )
 			. '<span class="wb-top-me">' . $me . '</span></header>';
 
 		$next = '';
@@ -262,7 +317,26 @@ class WB_Workspace {
 			}
 		}
 
-		$head = $welcome ? '' : '<div class="wb-head"><h1>' . esc_html( $title ) . '</h1>' . ( '' !== $sub ? '<p class="wb-sub">' . esc_html( $sub ) . '</p>' : '' ) . '</div>';
+		// The page head (Kaycie's kc-head): eyebrow, title, one line, and the screen's one primary action.
+		$head = '';
+		if ( ! $welcome ) {
+			$s       = self::screen( $slug );
+			$eyebrow = $s && '' !== (string) ( self::GROUPS[ $s[3] ] ?? '' ) ? self::GROUPS[ $s[3] ] : ( 'portal' === $slug ? 'Your account' : '' );
+			$h1      = $title;
+			if ( 'home' === $slug && class_exists( 'WB_Needs' ) ) {
+				$eyebrow = date_i18n( 'l j F' );
+				$first   = trim( (string) strtok( (string) $user->display_name, ' ' ) );
+				$h1      = WB_Needs::greeting( (int) date_i18n( 'G' ) ) . ( '' !== $first ? ', ' . $first : '' ) . '.';
+				$waiting = 0; $open = 0;
+				foreach ( WB_Needs::mine( $can ) as $l ) { if ( 'waiting' === $l['kind'] ) $waiting += $l['count']; else $open += $l['count']; }
+				$sub = WB_Needs::lede( $waiting, $open );
+			}
+			$acts = self::head_action( $slug, $can );
+			$head = '<div class="wb-head"><div>' . ( '' !== $eyebrow ? '<span class="wb-eyebrow">' . esc_html( $eyebrow ) . '</span>' : '' ) . '<h1>' . esc_html( $h1 ) . '</h1>'
+				. ( '' !== $sub ? '<p class="wb-sub">' . esc_html( $sub ) . '</p>' : '' ) . '</div>' . ( '' !== $acts ? '<div class="wb-head-acts">' . $acts . '</div>' : '' ) . '</div>';
+		}
+		// One lead fold per page: the first plain fold carries the rule unless a screen chose its own.
+		if ( false === strpos( $content, 'wb-fold--lead' ) ) $content = preg_replace( '/<details class="wb-fold"/', '<details class="wb-fold wb-fold--lead"', $content, 1 );
 		$main = '<main class="wb-dash' . ( $welcome ? ' wb-welcome' : ( $portal ? ' wb-portal' : '' ) ) . '" id="wb-content">' . $head . $next . $content . '</main>';
 
 		ob_start();

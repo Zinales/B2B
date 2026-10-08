@@ -47,8 +47,9 @@ class WB_Screens {
 		return current_user_can( $cap ) ? '' : wb_notice( 'warn', 'This page is not part of your work. Ask the owner if you need it.' );
 	}
 
-	private static function fold( string $title, string $body, bool $open = false, string $id = '' ): string {
-		return '<details class="wb-fold"' . ( $open ? ' open' : '' ) . ( '' !== $id ? ' id="' . esc_attr( $id ) . '"' : '' ) . '><summary>' . esc_html( $title ) . '</summary><div class="wb-fold-body">' . $body . '</div></details>';
+	/** A fold on a screen; $kind: '' (the first plain fold becomes the lead), 'sibling' (also here), 'reference' (read-only proof). */
+	private static function fold( string $title, string $body, bool $open = false, string $id = '', string $kind = '', string $hint = '' ): string {
+		return WB_Render::fold( $title, $body, [ 'open' => $open, 'id' => $id, 'kind' => $kind, 'hint' => $hint ] );
 	}
 
 	private static function p( string $k, $default = '' ) {
@@ -452,22 +453,43 @@ class WB_Screens {
 
 	/* ================================================================== dashboards */
 
+	/** Quick actions on Today: [ cap, screen, fold anchor, words, note ]. At most six show. */
+	const QUICK = [
+		[ 'wb_create_quotes', 'quotes', '#wb-add', 'Write a quote', 'both price checks run as you type' ],
+		[ 'wb_manage_customers', 'customers', '#wb-add', 'Add a customer', 'terms, credit limit, price tier' ],
+		[ 'wb_import_bank', 'payments', '#wb-add', 'Import a bank statement', 'CSV from the bank, matched for you' ],
+		[ 'wb_manage_products', 'products', '#wb-add', 'Add a product', 'cost, list price, lowest margin' ],
+		[ 'wb_move_stock', 'stock', '#wb-add', 'Correct stock', 'a second person approves it' ],
+		[ 'wb_manage_purchasing', 'purchasing', '#wb-add', 'Raise a purchase order', 'what to reorder, from whom' ],
+		[ 'wb_access_workspace', 'staff', '#wb-add', 'My timesheet', 'today\'s hours' ],
+		[ 'wb_manage_documents', 'documents', '#wb-add', 'File a document', 'datasheet, certificate, safety sheet' ],
+	];
+
 	public static function home( $atts = [] ): string {
 		if ( $g = self::gate( 'wb_access_workspace' ) ) return $g;
 		$h = WB_RowActions::notice();
 		if ( current_user_can( 'wb_manage_settings' ) && in_array( false, array_column( WB_Setup::checklist(), 1 ), true ) ) $h .= WB_Setup::checklist_card();
-		$h .= '<div class="wb-stats">';
-		if ( current_user_can( 'wb_create_quotes' ) ) $h .= WB_Render::stat( 'Quotes out', WB_CCT::count( 'wb_quotes', [ 'status' => 'sent' ] ), WB_Workspace::url( 'quotes' ) );
-		if ( current_user_can( 'wb_manage_orders' ) ) $h .= WB_Render::stat( 'Orders waiting for payment', WB_CCT::count( 'wb_orders', [ 'status' => 'awaiting_payment' ] ), WB_Workspace::url( 'orders' ) );
-		if ( current_user_can( 'wb_issue_delivery_notes' ) ) $h .= WB_Render::stat( 'Ready to go out', WB_CCT::count( 'wb_orders', [ 'status' => [ 'ready', 'part_delivered' ] ] ), WB_Workspace::url( 'deliveries' ) );
+		// The week in numbers: label → number → note. The one that must not be missed is hot.
+		$stats = '';
+		if ( current_user_can( 'wb_create_quotes' ) ) $stats .= WB_Render::stat( 'Quotes out', WB_CCT::count( 'wb_quotes', [ 'status' => 'sent' ] ), WB_Workspace::url( 'quotes' ), 'sent, not yet answered' );
+		if ( current_user_can( 'wb_manage_orders' ) ) $stats .= WB_Render::stat( 'Orders waiting for payment', WB_CCT::count( 'wb_orders', [ 'status' => 'awaiting_payment' ] ), WB_Workspace::url( 'orders' ), 'goods wait for the money' );
+		if ( current_user_can( 'wb_issue_delivery_notes' ) ) $stats .= WB_Render::stat( 'Ready to go out', WB_CCT::count( 'wb_orders', [ 'status' => [ 'ready', 'part_delivered' ] ] ), WB_Workspace::url( 'deliveries' ), 'released and put aside' );
 		if ( current_user_can( 'wb_match_payments' ) ) {
-			$h .= WB_Render::stat( 'Overdue invoices', WB_CCT::count( 'wb_invoices', [ 'status' => 'overdue' ] ), WB_Workspace::url( 'invoices' ) );
-			$h .= WB_Render::stat( 'Payments to match', WB_CCT::count( 'wb_payments', [ 'match_status' => [ 'unmatched', 'suggested' ] ] ), WB_Workspace::url( 'payments' ) );
+			$overdue = WB_CCT::count( 'wb_invoices', [ 'status' => 'overdue' ] );
+			$stats  .= WB_Render::stat( 'Overdue invoices', $overdue, WB_Workspace::url( 'invoices' ), $overdue ? 'past the due date' : 'nothing overdue', $overdue > 0 );
+			$stats  .= WB_Render::stat( 'Payments to match', WB_CCT::count( 'wb_payments', [ 'match_status' => [ 'unmatched', 'suggested' ] ] ), WB_Workspace::url( 'payments' ), 'in the bank, not yet on an invoice' );
 		}
-		if ( current_user_can( 'wb_manage_purchasing' ) ) $h .= WB_Render::stat( 'Products to reorder', count( WB_Stock::open_alerts() ), WB_Workspace::url( 'purchasing' ) );
-		if ( current_user_can( 'wb_approve_pricing' ) ) $h .= WB_Render::stat( 'Prices to approve', count( WB_Pricing::pending() ), WB_Workspace::url( 'quotes' ) );
-		if ( current_user_can( 'wb_approve_adjustments' ) ) $h .= WB_Render::stat( 'Stock changes to approve', count( WB_Stock::pending_requests() ), WB_Workspace::url( 'stock' ) );
-		return $h . '</div>' . WB_Notifications::panel();
+		if ( current_user_can( 'wb_manage_purchasing' ) ) $stats .= WB_Render::stat( 'Products to reorder', count( WB_Stock::open_alerts() ), WB_Workspace::url( 'purchasing' ), 'below the reorder point' );
+		if ( '' !== $stats ) $h .= '<div class="wb-stats">' . $stats . '</div>';
+		// Needs attention beside quick actions (Kaycie's Today).
+		$quick = '';
+		foreach ( self::QUICK as [ $cap, $slug, $anchor, $words, $note ] ) {
+			if ( ! current_user_can( $cap ) ) continue;
+			$quick .= '<a class="wb-quick-btn" href="' . esc_url( WB_Workspace::url( $slug ) . $anchor ) . '">' . esc_html( $words ) . '<small>' . esc_html( $note ) . '</small></a>';
+			if ( 6 === substr_count( $quick, 'wb-quick-btn' ) ) break;
+		}
+		$h .= '<div class="wb-two">' . WB_Needs::card() . ( '' !== $quick ? '<section class="wb-card" aria-labelledby="wb-quick-h"><h2 id="wb-quick-h">Quick actions</h2><div class="wb-quick">' . $quick . '</div></section>' : '' ) . '</div>';
+		return $h . WB_Notifications::panel();
 	}
 
 	public static function customers( $atts = [] ): string {
@@ -477,11 +499,11 @@ class WB_Screens {
 		$h   .= WB_Render::render_table( $rows, [ 'name', 'account_status', 'journey_stage', 'payment_terms_days', [ 'key' => 'credit_limit', 'type' => 'money' ], 'region' ], [ 'cct' => 'wb_customers', 'actions' => [ 'archive_wb_customers' ], 'empty' => 'No customers yet.' ] );
 		if ( current_user_can( 'wb_manage_customers' ) ) {
 			$f = WB_Render::form_open( 'customer_add' )
-				. WB_Render::field( 'name', 'Company name', 'text', '', [ 'required' => true ] ) . WB_Render::field( 'trading_name', 'Trading as' ) . WB_Render::field( 'vat_number', 'VAT number' )
+				. WB_Render::field( 'name', 'Company name', 'text', '', [ 'required' => true, 'placeholder' => 'Karoo Agri (Pty) Ltd' ] ) . WB_Render::field( 'trading_name', 'Trading as', 'text', '', [ 'placeholder' => 'Karoo Agri' ] ) . WB_Render::field( 'vat_number', 'VAT number', 'text', '', [ 'placeholder' => '4123456789' ] )
 				. WB_Render::field( 'payment_terms_days', 'Days to pay', 'number', 0, [ 'note' => '0 = pays before collection (cash). More than 0 also needs a credit limit.' ] )
 				. WB_Render::field( 'credit_limit', 'Credit limit', 'number', 0 ) . WB_Render::field( 'price_tier_id', 'Price tier', 'select', '', [ 'options' => WB_Render::options( 'wb_price_tiers', 'name' ) ] )
-				. WB_Render::field( 'region', 'Region' ) . WB_Render::field( 'industry', 'Industry' ) . WB_Render::form_close( 'Add customer' );
-			$h .= self::fold( 'Add a customer', $f, ! $rows );   // first run: open
+				. WB_Render::field( 'region', 'Region', 'text', '', [ 'placeholder' => 'Western Cape' ] ) . WB_Render::field( 'industry', 'Industry', 'text', '', [ 'placeholder' => 'Agriculture' ] ) . WB_Render::form_close( 'Add customer' );
+			$h .= self::fold( 'Add a customer', $f, ! $rows, 'wb-add' );   // first run: open
 		}
 		return $h . WB_Portal::staff_panel();
 	}
@@ -499,15 +521,15 @@ class WB_Screens {
 		$cols[] = 'status';
 		$h .= WB_Render::render_table( $rows, $cols, [ 'cct' => 'wb_products', 'actions' => [ 'archive_wb_products' ], 'empty' => 'No products yet.' ] );
 		if ( current_user_can( 'wb_manage_products' ) ) {
-			$f = WB_Render::form_open( 'product_add' ) . WB_Render::field( 'sku', 'Product code', 'text', '', [ 'required' => true ] ) . WB_Render::field( 'name', 'Name', 'text', '', [ 'required' => true ] )
+			$f = WB_Render::form_open( 'product_add' ) . WB_Render::field( 'sku', 'Product code', 'text', '', [ 'required' => true, 'placeholder' => 'ADH-EP200' ] ) . WB_Render::field( 'name', 'Name', 'text', '', [ 'required' => true, 'placeholder' => 'Epoxy adhesive 200 ml' ] )
 				. WB_Render::field( 'category_id', 'Category', 'select', '', [ 'options' => WB_Render::options( 'wb_product_categories', 'name' ) ] )
 				. WB_Render::field( 'unit', 'Sold per', 'select', 'each', [ 'options' => [ 'each' => 'each', 'kg' => 'kg', 'm' => 'metre', 'box' => 'box' ] ] ) . WB_Render::field( 'pack_size', 'Pack size', 'number', 1 )
-				. WB_Render::field( 'cost_price', 'Cost price', 'number' ) . WB_Render::field( 'list_price', 'List price', 'number' )
+				. WB_Render::field( 'cost_price', 'Cost price', 'number', '', [ 'placeholder' => '84.50' ] ) . WB_Render::field( 'list_price', 'List price', 'number', '', [ 'placeholder' => '129.00' ] )
 				. WB_Render::field( 'min_margin_pct', 'Lowest margin %', 'number', '', [ 'note' => 'Leave blank to use the category or company default.' ] )
 				. WB_Render::field( 'price_valid_from', 'Price valid from', 'date' ) . WB_Render::field( 'price_valid_to', 'Price valid until', 'date' )
 				. WB_Render::field( 'reorder_point', 'Reorder when available falls to', 'number' ) . WB_Render::field( 'reorder_qty', 'Reorder quantity', 'number' )
 				. WB_Render::field( 'batch_tracked', 'Tracked by batch?', 'select', 'no', [ 'options' => [ 'no' => 'No', 'yes' => 'Yes' ] ] ) . WB_Render::form_close( 'Add product' );
-			$h .= self::fold( 'Add a product', $f, ! $rows );   // first run: open
+			$h .= self::fold( 'Add a product', $f, ! $rows, 'wb-add' );   // first run: open
 		}
 		if ( current_user_can( 'wb_manage_pricing' ) ) {
 			$rules = WB_CCT::find( 'wb_price_rules', [], [ 'limit' => 500 ] );
@@ -515,8 +537,8 @@ class WB_Screens {
 			$body .= WB_Render::form_open( 'rule_add' ) . WB_Render::field( 'customer_id', 'Customer', 'select', '', [ 'options' => WB_Render::options( 'wb_customers', 'name' ) ] )
 				. WB_Render::field( 'product_id', 'Product', 'select', '', [ 'options' => WB_Render::options( 'wb_products', 'name' ) ] ) . WB_Render::field( 'category_id', 'or a whole category', 'select', '', [ 'options' => WB_Render::options( 'wb_product_categories', 'name' ) ] )
 				. WB_Render::field( 'rule_type', 'Price is', 'select', 'pct_off_list', [ 'options' => [ 'fixed_price' => 'a fixed price', 'pct_off_list' => '% off the list price', 'pct_on_cost' => '% on top of cost' ] ] )
-				. WB_Render::field( 'value', 'Amount or %', 'number' ) . WB_Render::field( 'valid_from', 'From', 'date' ) . WB_Render::field( 'valid_to', 'Until', 'date' ) . WB_Render::form_close( 'Save rule (draft)' );
-			$h .= self::fold( 'Customer price rules', $body );
+				. WB_Render::field( 'value', 'Amount or %', 'number', '', [ 'placeholder' => '12.5' ] ) . WB_Render::field( 'valid_from', 'From', 'date' ) . WB_Render::field( 'valid_to', 'Until', 'date' ) . WB_Render::form_close( 'Save rule (draft)' );
+			$h .= self::fold( 'Customer price rules', $body, false, '', 'sibling' );
 		}
 		return $h;
 	}
@@ -555,7 +577,7 @@ class WB_Screens {
 		$f = WB_Render::form_open( 'quote_new' ) . WB_Render::field( 'customer_id', 'Customer', 'select', '', [ 'options' => WB_Render::options( 'wb_customers', 'name', [ 'account_status' => [ 'open', 'on_hold' ] ] ), 'required' => true ] )
 			. WB_Render::field( 'lines', 'Lines: product code, quantity, and a price only if you want to type one', 'textarea', '', [ 'rows' => 5, 'placeholder' => "ABC-100, 20\nXYZ-7, 5, 149.50", 'required' => true ] )
 			. WB_Render::field( 'notes', 'Note to the customer', 'textarea', '', [ 'rows' => 2 ] ) . WB_Render::form_close( 'Create draft quote' );
-		return $h . self::fold( 'New quote', $f );
+		return $h . self::fold( 'New quote', $f, false, 'wb-add' );
 	}
 
 	public static function orders( $atts = [] ): string {
@@ -611,7 +633,7 @@ class WB_Screens {
 				. WB_Render::field( 'amount', 'Amount (before VAT)', 'number' ) . WB_Render::field( 'description', 'Description' )
 				. WB_Render::field( 'return_stock', 'Goods are back on the shelf?', 'select', 'no', [ 'options' => [ 'no' => 'No', 'yes' => 'Yes — put them back into stock on approval' ] ] )
 				. WB_Render::form_close( 'Ask for the credit note' );
-			$h .= self::fold( 'Ask for a credit note', $f );
+			$h .= self::fold( 'Ask for a credit note', $f, false, 'wb-add' );
 		}
 		return $h;
 	}
@@ -622,14 +644,14 @@ class WB_Screens {
 		if ( current_user_can( 'wb_import_bank' ) ) {
 			$st = get_transient( self::bank_state_key() );
 			if ( is_array( $st ) ) {
-				$h .= self::fold( 'Import a bank statement', self::bank_steps( $st ), true );
+				$h .= self::fold( 'Import a bank statement', self::bank_steps( $st ), true, 'wb-add' );
 			} else {
 				$banks = [ '' => '— a new layout: I will map the columns —' ];
 				foreach ( WB_Payments::profiles() as $k => $m ) if ( isset( $m['columns'] ) ) $banks[ $k ] = (string) ( $m['label'] ?? $k );
 				foreach ( WB_Payments::default_mappings() as $k => $m ) if ( ! isset( $banks[ $k ] ) ) $banks[ $k ] = $m['label'] . ' (standard columns)';
 				$f  = WB_Render::form_open( 'bank_upload', true ) . WB_Render::field( 'profile', 'Layout', 'select', '', [ 'options' => $banks, 'note' => 'A full statement or a filtered spreadsheet saved as CSV both work.' ] )
 					. '<label class="wb-field"><span>Statement (CSV)</span><input type="file" name="statement" accept=".csv,.txt,.tsv,text/csv" required></label>' . WB_Render::form_close( 'Upload' );
-				$h .= self::fold( 'Import a bank statement', $f, true );
+				$h .= self::fold( 'Import a bank statement', $f, true, 'wb-add' );
 			}
 		}
 		$rows = WB_CCT::find( 'wb_payments', [ 'match_status' => [ 'unmatched', 'suggested', 'unallocated' ] ], [ 'limit' => 500 ] );
@@ -684,7 +706,7 @@ class WB_Screens {
 			$f = WB_Render::form_open( 'stock_request' ) . WB_Render::field( 'product_id', 'Product', 'select', '', [ 'options' => WB_Render::options( 'wb_products', 'name' ) ] )
 				. WB_Render::field( 'type', 'What happened', 'select', 'adjustment', [ 'options' => [ 'adjustment' => 'Correction (+ or −)', 'write_off' => 'Write-off (damaged, expired, lost)' ] ] )
 				. WB_Render::field( 'qty', 'Quantity', 'number', '', [ 'note' => 'For a correction, use a minus sign for less stock.' ] ) . WB_Render::field( 'reason', 'Why', 'text', '', [ 'required' => true ] ) . WB_Render::form_close( 'Ask for approval' );
-			$h .= self::fold( 'Correct stock or write it off', $f );
+			$h .= self::fold( 'Correct stock or write it off', $f, false, 'wb-add' );
 		}
 		if ( current_user_can( 'wb_run_stocktake' ) ) {
 			$sts  = WB_CCT::find( 'wb_stocktakes', [], [ 'limit' => 50 ] );
@@ -708,7 +730,7 @@ class WB_Screens {
 		$h     .= '<h3>To reorder</h3>' . WB_Render::render_table( $alerts, [ [ 'key' => 'product_id', 'render' => fn( $v ) => esc_html( self::product_name( $v ) ) ], 'qty_on_hand', 'qty_reserved', 'qty_on_order', 'suggested_qty', 'raised_at' ], [ 'empty' => 'Nothing needs reordering.' ] );
 		$pos    = WB_CCT::find( 'wb_purchase_orders', [], [ 'limit' => 200 ] );
 		$h     .= '<h3>Purchase orders</h3>' . WB_Render::render_table( $pos, [ 'po_number', [ 'key' => 'supplier_id', 'label' => 'Supplier', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_suppliers', (int) $v )['name'] ?? '' ) ) ], 'status', 'expected_at', [ 'key' => 'total', 'type' => 'money' ] ], [ 'cct' => 'wb_purchase_orders', 'actions' => [ 'po_send', 'po_cancel' ], 'empty' => 'No purchase orders yet.' ] );
-		$h     .= self::fold( 'New purchase order', WB_Render::form_open( 'po_new' ) . WB_Render::field( 'supplier_id', 'Supplier', 'select', '', [ 'options' => WB_Render::options( 'wb_suppliers', 'name' ) ] ) . WB_Render::field( 'lines', 'Lines: product code, quantity, cost each (optional)', 'textarea', '', [ 'rows' => 4 ] ) . WB_Render::field( 'expected_at', 'Expected', 'date' ) . WB_Render::form_close( 'Create draft' ) );
+		$h     .= self::fold( 'New purchase order', WB_Render::form_open( 'po_new' ) . WB_Render::field( 'supplier_id', 'Supplier', 'select', '', [ 'options' => WB_Render::options( 'wb_suppliers', 'name' ) ] ) . WB_Render::field( 'lines', 'Lines: product code, quantity, cost each (optional)', 'textarea', '', [ 'rows' => 4 ] ) . WB_Render::field( 'expected_at', 'Expected', 'date' ) . WB_Render::form_close( 'Create draft' ), false, 'wb-add' );
 		$open = [ '' => '— choose —' ];
 		foreach ( $pos as $po ) {
 			if ( ! in_array( $po['status'], [ 'sent', 'part_received' ], true ) ) continue;
@@ -731,14 +753,14 @@ class WB_Screens {
 			}, 'empty' => 'No documents filed yet.' ] );
 		$h .= self::fold( 'Datasheet link for a customer', WB_Render::form_open( 'datasheet_link' ) . WB_Render::field( 'product_id', 'Product', 'select', '', [ 'options' => WB_Render::options( 'wb_products', 'name' ) ] ) . WB_Render::field( 'customer_id', 'For customer (optional)', 'select', '', [ 'options' => WB_Render::options( 'wb_customers', 'name' ) ] ) . WB_Render::form_close( 'Make a 7-day link' ) );
 		if ( current_user_can( 'wb_manage_documents' ) ) {
-			$types = array_combine( WB_Documents::TYPES, array_map( fn( $t ) => ucfirst( str_replace( '_', ' ', $t ) ), WB_Documents::TYPES ) );
+			$types = array_combine( WB_Documents::TYPES, array_map( [ 'WB_Render', 'words' ], WB_Documents::TYPES ) );
 			$prev  = [ '' => '— a new document —' ];
 			foreach ( $rows as $d ) $prev[ (int) $d['_ID'] ] = $d['title'] . ' (v' . $d['version'] . ')';
 			$h .= self::fold( 'File a document', WB_Render::form_open( 'doc_upload', true ) . '<label class="wb-field"><span>File</span><input type="file" name="file" required></label>'
 				. WB_Render::field( 'type', 'Kind', 'select', 'datasheet', [ 'options' => $types ] ) . WB_Render::field( 'title', 'Title' )
 				. WB_Render::field( 'product_id', 'Product', 'select', '', [ 'options' => WB_Render::options( 'wb_products', 'name' ) ] ) . WB_Render::field( 'customer_id', 'Customer', 'select', '', [ 'options' => WB_Render::options( 'wb_customers', 'name' ) ] )
 				. WB_Render::field( 'supersedes_doc_id', 'This replaces', 'select', '', [ 'options' => $prev, 'note' => 'The old version stays on file.' ] ) . WB_Render::field( 'expires_at', 'Expires', 'date' )
-				. WB_Render::field( 'visible', 'Customers may see it?', 'select', 'no', [ 'options' => [ 'no' => 'No', 'yes' => 'Yes' ] ] ) . WB_Render::form_close( 'File it' ) );
+				. WB_Render::field( 'visible', 'Customers may see it?', 'select', 'no', [ 'options' => [ 'no' => 'No', 'yes' => 'Yes' ] ] ) . WB_Render::form_close( 'File it' ), false, 'wb-add' );
 		}
 		return $h;
 	}
@@ -746,7 +768,7 @@ class WB_Screens {
 	public static function marketing( $atts = [] ): string {
 		if ( $g = self::gate( 'wb_view_marketing' ) ) return $g;
 		$h      = WB_RowActions::notice() . '<div class="wb-stats">';
-		foreach ( [ 'lead', 'quoted', 'first_order', 'repeat', 'at_risk', 'lapsed' ] as $s ) $h .= WB_Render::stat( ucfirst( str_replace( '_', ' ', $s ) ), WB_CCT::count( 'wb_customers', [ 'journey_stage' => $s ] ) );
+		foreach ( [ 'lead', 'quoted', 'first_order', 'repeat', 'at_risk', 'lapsed' ] as $s ) $h .= WB_Render::stat( WB_Render::words( $s ), WB_CCT::count( 'wb_customers', [ 'journey_stage' => $s ] ) );
 		$h     .= '</div><h3>Likely to order in the next two weeks</h3>';
 		$due    = WB_Demand::due_soon();
 		$h     .= WB_Render::render_table( $due, [ [ 'key' => 'customer_id', 'render' => fn( $v ) => esc_html( self::customer_name( $v ) ) ], [ 'key' => 'product_id', 'render' => fn( $v ) => esc_html( self::product_name( $v ) ) ], 'predicted_next_at', 'avg_qty', 'confidence' ], [ 'empty' => 'No predictions yet (they need at least two orders per customer and product).' ] );
@@ -755,7 +777,7 @@ class WB_Screens {
 		if ( current_user_can( 'wb_manage_marketing' ) ) {
 			$h .= self::fold( 'Record a contact', WB_Render::form_open( 'touchpoint' ) . WB_Render::field( 'customer_id', 'Customer', 'select', '', [ 'options' => WB_Render::options( 'wb_customers', 'name' ) ] )
 				. WB_Render::field( 'type', 'Kind', 'select', 'call', [ 'options' => [ 'call' => 'Call', 'email' => 'Email', 'visit' => 'Visit', 'complaint' => 'Complaint', 'note' => 'Note' ] ] )
-				. WB_Render::field( 'summary', 'What happened', 'textarea', '', [ 'rows' => 3 ] ) . WB_Render::field( 'next_action', 'Next step' ) . WB_Render::field( 'next_action_date', 'By', 'date' ) . WB_Render::form_close( 'Save' ) );
+				. WB_Render::field( 'summary', 'What happened', 'textarea', '', [ 'rows' => 3 ] ) . WB_Render::field( 'next_action', 'Next step' ) . WB_Render::field( 'next_action_date', 'By', 'date' ) . WB_Render::form_close( 'Save' ), false, 'wb-add' );
 		}
 		return $h;
 	}
@@ -776,7 +798,7 @@ class WB_Screens {
 			$body = WB_Render::render_table( $mine, [ 'work_date', 'start', 'end', 'break_minutes', 'hours', 'activity', 'status', 'query_note' ], [ 'cct' => 'wb_timesheets', 'actions' => [ 'ts_submit' ], 'empty' => 'No days yet.' ] );
 			$body .= WB_Render::form_open( 'timesheet' ) . WB_Render::field( 'work_date', 'Day', 'date', wb_today() ) . WB_Render::field( 'start', 'Start', 'time', '08:00' ) . WB_Render::field( 'end', 'End', 'time', '17:00' )
 				. WB_Render::field( 'break_minutes', 'Break (minutes)', 'number', 60 ) . WB_Render::field( 'activity', 'Mostly', 'select', 'admin', [ 'options' => [ 'sales' => 'Sales', 'warehouse' => 'Warehouse', 'admin' => 'Admin', 'delivery' => 'Delivery' ] ] ) . WB_Render::form_close( 'Save day' );
-			$h .= self::fold( 'My timesheet', $body, true );
+			$h .= self::fold( 'My timesheet', $body, true, 'wb-add' );
 
 			$types = WB_CCT::find( 'wb_leave_types', [], [ 'order' => 'ASC' ] );
 			$bal   = [];

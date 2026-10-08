@@ -58,7 +58,13 @@ function wb_notice( string $kind, string $msg ): string { return '<div class="wb
 class WB_Storage { public static function exists( $k ) { return false; } }
 
 $base = WB_PLUGIN_DIR . 'includes/';
-foreach ( [ 'roles', 'setup', 'workspace', 'welcome' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
+foreach ( [ 'roles', 'setup', 'workspace', 'welcome', 'render', 'needs' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
+function date_i18n( $f ) { return date( $f, 1789982000 ); }   // Monday 21 September 2026, 09:13 UTC: a morning
+function wp_nonce_field( ...$a ) { return ''; }
+function sanitize_html_class( $s ) { return $s; }
+function selected( ...$a ) { return ''; }
+function wp_strip_all_tags( $s ) { return strip_tags( $s ); }
+function wp_json_encode( $v ) { return json_encode( $v ); }
 
 $pass = 0;
 $fail = 0;
@@ -109,7 +115,8 @@ foreach ( $logins as $role ) {
 		$opens = $s && current_user_can( $s[2] );
 		ok( "{$role} /{$slug}: status", $status === ( $opens ? 200 : 403 ), "got {$status}" );
 		ok( "{$role} /{$slug}: a whole document", 0 === strpos( $html, '<!doctype html>' ) && false !== strpos( $html, '</html>' ) && false !== strpos( $html, '<!--head-->' ) && false !== strpos( $html, '<!--foot-->' ) );
-		ok( "{$role} /{$slug}: the title is on the page", false !== strpos( $html, '<h1>' . esc_html( $s[0] ) . '</h1>' ) );
+		ok( "{$role} /{$slug}: the title is on the page", false !== strpos( $html, 'home' === $slug ? '<h1>Good morning, Thandi.</h1>' : '<h1>' . esc_html( $s[0] ) . '</h1>' ) );
+		if ( 'portal' !== $slug ) ok( "{$role} /{$slug}: the eyebrow names the group (or the day on Today)", false !== strpos( $html, 'home' === $slug ? '<span class="wb-eyebrow">Monday 21 September</span>' : '<span class="wb-eyebrow">' . esc_html( WB_Workspace::GROUPS[ $s[3] ] ) . '</span>' ) || ( 'home' !== $slug && '' === WB_Workspace::GROUPS[ $s[3] ] ) );
 		if ( $opens ) {
 			ok( "{$role} /{$slug}: the screen's shortcodes are rendered", false !== strpos( $html, 'data-shortcodes="' . esc_attr( $s[4] ) . '"' ) );
 			ok( "{$role} /{$slug}: no refusal on an open screen", false === strpos( $html, 'not part of your work' ) && false === strpos( $html, 'for customer logins' ) );
@@ -121,6 +128,7 @@ foreach ( $logins as $role ) {
 		}
 		if ( 'portal' === $slug ) {
 			ok( "{$role} /portal: no staff menu on the portal", false === strpos( $html, '<aside class="wb-side"' ) );
+			ok( "{$role} /portal: the eyebrow says whose account", false !== strpos( $html, '<span class="wb-eyebrow">Your account</span>' ) );
 			continue;
 		}
 		$menu = menu_items( $html );
@@ -132,6 +140,13 @@ foreach ( $logins as $role ) {
 	}
 	[ $status, $html ] = WB_Workspace::render( 'wp-admin' );
 	ok( "{$role} unknown address: 404 with words", 404 === $status && false !== strpos( $html, 'no screen at this address' ) );
+	if ( current_user_can( 'wb_access_workspace' ) ) {
+		[ , $html ] = WB_Workspace::render( 'home' );
+		ok( "{$role}: breadcrumb on the top bar", false !== strpos( $html, '<ol class="wb-crumb"><li><span aria-current="page">Today</span></li></ol>' ) );
+		ok( "{$role}: the waiting count is on the top bar and links to Needs attention", false !== strpos( $html, 'class="wb-top-wait is-clear" href="https://b2b.test/workspace/#wb-waiting"><b>0</b> waiting</a>' ) );
+		ok( "{$role}: every menu item carries an icon", substr_count( $html, 'class="wb-side-item' ) === substr_count( $html, '<span class="wb-side-ic"' ) );
+		ok( "{$role}: the person and Sign out are at the foot of the menu", false !== strpos( $html, '<div class="wb-side-foot">' ) && false !== strpos( $html, '<span class="wb-side-av" aria-hidden="true">TM</span>' ) );
+	}
 }
 
 section( 'welcome page' );
