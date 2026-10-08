@@ -1,0 +1,172 @@
+<?php
+/**
+ * Regression test for 0.3.0 (Zina, 7 October 2026): the workspace frame renders for every kind of
+ * login, on every screen, with WordPress stood in for. BUILD-PATTERNS.md §2.2 (Kaycie's harness):
+ * a one-off version of this caught a fatal (mb_strtoupper on a build without mbstring) that the
+ * pure-function tests could not. Any PHP notice, warning or fatal here fails the build.
+ *
+ *   php tests/regress-frame.php
+ *
+ * What it checks, for owner / sales / warehouse / accounts / plain staff / customer logins:
+ *  - every screen in WB_Workspace::SCREENS and the portal returns 200 with content, or 403 with
+ *    the no-access words (never a blank page), and an unknown address returns 404;
+ *  - the side menu lists only screens the login can open, and marks the current one;
+ *  - the "Next" links only point at screens the login can open;
+ *  - the no-access page names a way back for anyone who has one.
+ * Shortcodes are stood in for by a marker (their output is the engines' business, tested elsewhere).
+ */
+
+error_reporting( E_ALL );
+ini_set( 'display_errors', '1' );
+set_error_handler( function ( $no, $str, $file, $line ) { throw new ErrorException( $str, 0, $no, $file, $line ); } );
+
+define( 'ABSPATH', __DIR__ . '/' );
+define( 'WB_PLUGIN_DIR', dirname( __DIR__ ) . '/' );
+define( 'WB_PLUGIN_FILE', WB_PLUGIN_DIR . 'wb-core.php' );
+define( 'WB_VERSION', '0.3.0-test' );
+define( 'KB_IN_BYTES', 1024 );
+
+/* ---------- the stand-ins: just enough WordPress for the frame ---------- */
+$GLOBALS['T'] = [ 'caps' => [], 'uid' => 5, 'logged_in' => true ];
+function esc_html( $s ) { return htmlspecialchars( (string) $s, ENT_QUOTES ); }
+function esc_attr( $s ) { return esc_html( $s ); }
+function esc_url( $s ) { return esc_html( $s ); }
+function esc_textarea( $s ) { return esc_html( $s ); }
+function wp_kses_post( $s ) { return $s; }
+function sanitize_key( $s ) { return strtolower( preg_replace( '/[^a-z0-9_\-]/i', '', (string) $s ) ); }
+function home_url( $p = '' ) { return 'https://b2b.test' . $p; }
+function current_user_can( $c ) { return ! empty( $GLOBALS['T']['caps'][ $c ] ); }
+function user_can( $u, $c ) { return current_user_can( $c ); }
+function is_user_logged_in() { return $GLOBALS['T']['logged_in']; }
+function get_current_user_id() { return $GLOBALS['T']['uid']; }
+function wp_get_current_user() { return (object) [ 'ID' => $GLOBALS['T']['uid'], 'display_name' => 'Thandi Mokoena' ]; }
+function get_userdata( $id ) { return (object) [ 'ID' => $id, 'display_name' => 'Owner ' . $id ]; }
+function get_users( $args = [] ) { return [ 1, 2 ]; }   // owner_ids(): two owners
+function wp_logout_url( $r = '' ) { return 'https://b2b.test/logout'; }
+function wp_login_url( $r = '' ) { return 'https://b2b.test/wp-login.php?redirect_to=' . rawurlencode( (string) $r ); }
+function language_attributes() { echo 'lang="en"'; }
+function bloginfo( $k ) { echo 'UTF-8'; }
+function get_bloginfo( $k ) { return 'Demo Technical Supplies'; }
+function wp_head() { echo '<!--head-->'; }
+function wp_body_open() {}
+function wp_footer() { echo '<!--foot-->'; }
+function do_shortcode( $s ) { return '<div data-shortcodes="' . esc_attr( $s ) . '">rendered</div>'; }
+function get_option( $k, $d = false ) { return $d; }
+function get_query_var( $k, $d = '' ) { return $d; }
+function add_action( ...$a ) {} function add_filter( ...$a ) {} function add_shortcode( ...$a ) {}
+function wb_notice( string $kind, string $msg ): string { return '<div class="wb-notice wb-' . $kind . '" role="status">' . $msg . '</div>'; }
+class WB_Storage { public static function exists( $k ) { return false; } }
+
+$base = WB_PLUGIN_DIR . 'includes/';
+foreach ( [ 'roles', 'setup', 'workspace', 'welcome' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
+
+$pass = 0;
+$fail = 0;
+function ok( string $name, bool $cond, string $detail = '' ): void {
+	global $pass, $fail;
+	if ( $cond ) { $pass++; return; }
+	$fail++;
+	echo "FAIL  {$name}" . ( '' !== $detail ? "\n      " . $detail : '' ) . "\n";
+}
+function section( string $t ): void { echo "-- {$t}\n"; }
+
+/** The caps a WP role holds, from the plugin's own map (administrators: every staff cap). */
+function caps_of( string $role ): array {
+	if ( 'administrator' === $role ) return WB_Roles::staff_caps();
+	$m = WB_Roles::map();
+	return array_filter( $m[ $role ]['caps'] ?? [], fn( $v, $k ) => $v && 'read' !== $k, ARRAY_FILTER_USE_BOTH );
+}
+function menu_items( string $html ): array {
+	preg_match_all( '#<a class="wb-side-item( is-active)?" href="https://b2b\.test/workspace/([a-z_-]*)/?"#', $html, $m, PREG_SET_ORDER );
+	$out = [];
+	foreach ( $m as $x ) $out[ '' === $x[2] ? 'home' : $x[2] ] = '' !== $x[1];
+	return $out;
+}
+function next_items( string $html ): array {
+	if ( ! preg_match( '#<nav class="wb-next".*?</nav>#s', $html, $nav ) ) return [];
+	preg_match_all( '#href="https://b2b\.test/workspace/([a-z_-]*)/?"#', $nav[0], $m );
+	return array_map( fn( $s ) => '' === $s ? 'home' : $s, $m[1] );
+}
+
+$logins = [ 'administrator', 'wb_owner', 'wb_sales', 'wb_warehouse', 'wb_accounts', 'wb_staff', 'wb_customer' ];
+$slugs  = array_merge( array_keys( WB_Workspace::SCREENS ), [ 'portal' ] );
+
+foreach ( $logins as $role ) {
+	section( $role );
+	$GLOBALS['T']['caps'] = caps_of( $role );
+	$can = fn( string $c ): bool => current_user_can( $c );
+	$expected_menu = [];
+	foreach ( WB_Workspace::menu( $can ) as $items ) $expected_menu += $items;
+
+	foreach ( $slugs as $slug ) {
+		try {
+			[ $status, $html ] = WB_Workspace::render( $slug );
+		} catch ( Throwable $e ) {
+			ok( "{$role} /{$slug}: renders without a PHP error", false, get_class( $e ) . ': ' . $e->getMessage() . ' at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
+			continue;
+		}
+		$s     = WB_Workspace::screen( $slug );
+		$opens = $s && current_user_can( $s[2] );
+		ok( "{$role} /{$slug}: status", $status === ( $opens ? 200 : 403 ), "got {$status}" );
+		ok( "{$role} /{$slug}: a whole document", 0 === strpos( $html, '<!doctype html>' ) && false !== strpos( $html, '</html>' ) && false !== strpos( $html, '<!--head-->' ) && false !== strpos( $html, '<!--foot-->' ) );
+		ok( "{$role} /{$slug}: the title is on the page", false !== strpos( $html, '<h1>' . esc_html( $s[0] ) . '</h1>' ) );
+		if ( $opens ) {
+			ok( "{$role} /{$slug}: the screen's shortcodes are rendered", false !== strpos( $html, 'data-shortcodes="' . esc_attr( $s[4] ) . '"' ) );
+			ok( "{$role} /{$slug}: no refusal on an open screen", false === strpos( $html, 'not part of your work' ) && false === strpos( $html, 'for customer logins' ) );
+		} else {
+			ok( "{$role} /{$slug}: never a blank refusal", false !== strpos( $html, 'wb-notice wb-warn' ) && ( false !== strpos( $html, 'not part of your work' ) || false !== strpos( $html, 'for customer logins' ) ) );
+			ok( "{$role} /{$slug}: nothing of the screen leaks on a refusal", false === strpos( $html, 'data-shortcodes=' ) );
+			$has_way_back = current_user_can( 'wb_access_workspace' ) || current_user_can( 'wb_portal' );
+			ok( "{$role} /{$slug}: a way back when there is one", $has_way_back === ( false !== strpos( $html, 'Back to Today' ) || false !== strpos( $html, 'Go to your account' ) || false !== strpos( $html, 'Go to the workspace' ) ) );
+		}
+		if ( 'portal' === $slug ) {
+			ok( "{$role} /portal: no staff menu on the portal", false === strpos( $html, '<aside class="wb-side"' ) );
+			continue;
+		}
+		$menu = menu_items( $html );
+		ok( "{$role} /{$slug}: the menu lists exactly what this login can open", array_keys( $menu ) === array_keys( $expected_menu ), 'menu: ' . implode( ',', array_keys( $menu ) ) . ' | expected: ' . implode( ',', array_keys( $expected_menu ) ) );
+		if ( $opens ) ok( "{$role} /{$slug}: the current screen is marked", ( $menu[ $slug ] ?? false ) === true );
+		foreach ( next_items( $html ) as $to ) {
+			ok( "{$role} /{$slug}: next link →{$to} is one this login can open", isset( $expected_menu[ $to ] ), "→{$to}" );
+		}
+	}
+	[ $status, $html ] = WB_Workspace::render( 'wp-admin' );
+	ok( "{$role} unknown address: 404 with words", 404 === $status && false !== strpos( $html, 'no screen at this address' ) );
+}
+
+section( 'welcome page' );
+$GLOBALS['T']['logged_in'] = false; $GLOBALS['T']['caps'] = [];
+[ $status, $html ] = WB_Workspace::render( 'welcome' );
+ok( 'signed out: 200', 200 === $status );
+ok( 'signed out: a way in', substr_count( $html, 'wp-login.php' ) >= 2 && false !== strpos( $html, '>Sign in</a>' ) );
+ok( 'signed out: no workspace or account buttons', false === strpos( $html, 'Open the workspace' ) && false === strpos( $html, 'Your account' ) );
+ok( 'signed out: no staff menu, no sign out', false === strpos( $html, '<aside class="wb-side"' ) && false === strpos( $html, 'Sign out' ) );
+ok( 'signed out: no getting-started block', false === strpos( $html, 'Getting started' ) );
+ok( 'welcome may be indexed; it holds no business data', false === strpos( $html, 'noindex' ) );
+ok( 'what it does: six areas', 6 === substr_count( $html, '<div class="wb-area">' ) );
+ok( 'how it keeps you safe: four points', 4 === substr_count( $html, '<div class="wb-safe">' ) );
+ok( 'no plugin or WordPress talk on the welcome page', ! preg_match( '/plugin|WordPress|JetEngine|table/i', strip_tags( $html ) ) );
+$GLOBALS['T']['logged_in'] = true;
+$GLOBALS['T']['caps'] = caps_of( 'wb_owner' );
+[ , $html ] = WB_Workspace::render( 'welcome' );
+ok( 'owner: workspace button and getting started', false !== strpos( $html, 'Open the workspace' ) && false !== strpos( $html, 'Getting started' ) && false !== strpos( $html, 'Go to System Settings' ) );
+$GLOBALS['T']['caps'] = caps_of( 'wb_sales' );
+[ , $html ] = WB_Workspace::render( 'welcome' );
+ok( 'sales: workspace button, no getting started', false !== strpos( $html, 'Open the workspace' ) && false === strpos( $html, 'Getting started' ) );
+$GLOBALS['T']['caps'] = caps_of( 'wb_customer' );
+[ , $html ] = WB_Workspace::render( 'welcome' );
+ok( 'customer: account button only', false !== strpos( $html, 'Your account' ) && false === strpos( $html, 'Open the workspace' ) );
+[ , $html ] = WB_Workspace::render( 'home' );
+ok( 'the screens stay unindexed', false !== strpos( $html, 'noindex' ) );
+
+section( 'brand on the frame' );
+$GLOBALS['T']['caps'] = caps_of( 'wb_owner' );
+[ , $html ] = WB_Workspace::render( 'home' );
+ok( 'the company name is on the frame', false !== strpos( $html, 'Demo Technical Supplies' ) );
+ok( 'the mark is the first letter without mbstring', false !== strpos( $html, '<span class="wb-side-mark">D</span>' ) );
+ok( 'the signed-in person and sign out are on the top bar', false !== strpos( $html, 'Thandi Mokoena' ) && false !== strpos( $html, 'Sign out' ) );
+ok( 'the phone menu button is there', false !== strpos( $html, 'class="wb-top-menu"' ) );
+ok( 'robots are told to stay out', false !== strpos( $html, 'noindex' ) );
+
+echo "\n{$pass} passed, {$fail} failed\n";
+exit( $fail ? 1 : 0 );
