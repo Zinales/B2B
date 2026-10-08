@@ -1,0 +1,12 @@
+<!-- B2B Wholesale CUSTOMER PORTAL — a customer login's own quotes, invoices, statement, datasheets, quote requests and contact details.
+     Page slug: portal (NOT under /workspace/). Gate: wb_portal; every query is scoped to the login's own company and fails closed when the login is not linked.
+     Shortcodes: [wb_portal] for everything on one page, or the parts on separate pages:
+     [wb_portal_home] [wb_portal_quotes] [wb_portal_invoices] [wb_portal_datasheets] [wb_portal_request] [wb_portal_details].
+     Paste into the page as Custom HTML; styles come from assets/wb-dashboard.css and the brand tokens in the page head. -->
+<div class="wb-dash wb-portal">
+  <div class="wb-head">
+    <h1>Your account</h1>
+    <p class="wb-sub">Quotes to accept, invoices to pay, your statement and the datasheets for what you buy.</p>
+  </div>
+  [wb_portal]
+</div>

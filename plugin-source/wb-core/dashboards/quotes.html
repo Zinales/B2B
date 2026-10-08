@@ -1,0 +1,12 @@
+<!-- B2B Wholesale dashboard: QUOTES — both price checks run on every line.
+     Page slug: workspace/quotes. Gate: wb_create_quotes (the shortcodes check it again; a page without it shows a polite refusal).
+     Shortcodes: [wb_notify_bar], [wb_quotes]. Paste into the page as Custom HTML; styles come from assets/wb-dashboard.css. -->
+<div class="wb-dash">
+  <div class="wb-head">
+    <h1>Quotes</h1>
+    <p class="wb-sub">Check one finds the customer's price; check two makes sure the product allows it.</p>
+  </div>
+  <nav class="wb-next" aria-label="Where this work goes next"><span class="wb-next-label">Next</span><a href="/workspace/orders/">Orders from accepted quotes</a></nav>
+  [wb_notify_bar]
+  [wb_quotes]
+</div>

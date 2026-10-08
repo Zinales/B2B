@@ -1,0 +1,2509 @@
+{
+ "_about": "Every JetEngine CCT for the B2B Wholesale System. Create each with this slug (JetEngine adds the jet_cct_ prefix). Every CCT also carries record_status (select active|archived|inactive|void, default active); JetEngine adds _ID, cct_status, cct_author_id, cct_created, cct_modified. Fields with extension:true were added by wb-core beyond DATA-ARCHITECTURE.md (see README). 0.2.0 adds wb_portal_requests, wb_payroll_profiles, wb_pay_runs, wb_payslips. Payroll *_enc fields hold wb_enc() ciphertext only \u2014 never plain text.",
+ "version": "0.2.1",
+ "ccts": {
+  "wb_customers": {
+   "title": "Customers",
+   "description": "The companies we sell to.",
+   "fields": [
+    {
+     "name": "name",
+     "type": "text"
+    },
+    {
+     "name": "trading_name",
+     "type": "text"
+    },
+    {
+     "name": "reg_number",
+     "type": "text"
+    },
+    {
+     "name": "vat_number",
+     "type": "text"
+    },
+    {
+     "name": "billing_address",
+     "type": "textarea"
+    },
+    {
+     "name": "delivery_address",
+     "type": "textarea"
+    },
+    {
+     "name": "payment_terms_days",
+     "type": "number"
+    },
+    {
+     "name": "credit_limit",
+     "type": "number"
+    },
+    {
+     "name": "account_status",
+     "type": "select",
+     "options": [
+      "open",
+      "on_hold",
+      "closed"
+     ]
+    },
+    {
+     "name": "price_tier_id",
+     "type": "number"
+    },
+    {
+     "name": "currency",
+     "type": "text"
+    },
+    {
+     "name": "rep_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "industry",
+     "type": "text"
+    },
+    {
+     "name": "region",
+     "type": "text"
+    },
+    {
+     "name": "segment",
+     "type": "text"
+    },
+    {
+     "name": "journey_stage",
+     "type": "select",
+     "options": [
+      "lead",
+      "quoted",
+      "first_order",
+      "repeat",
+      "at_risk",
+      "lapsed"
+     ]
+    },
+    {
+     "name": "notes",
+     "type": "textarea"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_contacts": {
+   "title": "Contacts",
+   "description": "People at a customer.",
+   "fields": [
+    {
+     "name": "customer_id",
+     "type": "number"
+    },
+    {
+     "name": "first_name",
+     "type": "text"
+    },
+    {
+     "name": "last_name",
+     "type": "text"
+    },
+    {
+     "name": "role_title",
+     "type": "text"
+    },
+    {
+     "name": "email",
+     "type": "text"
+    },
+    {
+     "name": "phone",
+     "type": "text"
+    },
+    {
+     "name": "is_primary",
+     "type": "switcher"
+    },
+    {
+     "name": "receives_invoices",
+     "type": "switcher"
+    },
+    {
+     "name": "receives_datasheets",
+     "type": "switcher"
+    },
+    {
+     "name": "marketing_optin",
+     "type": "switcher"
+    },
+    {
+     "name": "marketing_optin_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "portal_wp_user_id",
+     "type": "number"
+    },
+    {
+     "name": "popia_consent_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_touchpoints": {
+   "title": "Touchpoints",
+   "description": "Every contact moment.",
+   "fields": [
+    {
+     "name": "customer_id",
+     "type": "number"
+    },
+    {
+     "name": "contact_id",
+     "type": "number"
+    },
+    {
+     "name": "type",
+     "type": "select",
+     "options": [
+      "call",
+      "email",
+      "visit",
+      "quote_sent",
+      "quote_accepted",
+      "order",
+      "delivery",
+      "datasheet_sent",
+      "portal_login",
+      "complaint",
+      "note",
+      "quote_requested",
+      "quote_declined",
+      "details_change"
+     ],
+     "extension_options": [
+      "quote_requested",
+      "quote_declined",
+      "details_change"
+     ]
+    },
+    {
+     "name": "happened_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "staff_id",
+     "type": "number"
+    },
+    {
+     "name": "summary",
+     "type": "textarea"
+    },
+    {
+     "name": "next_action",
+     "type": "text"
+    },
+    {
+     "name": "next_action_date",
+     "type": "date"
+    },
+    {
+     "name": "source_ref",
+     "type": "text"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_products": {
+   "title": "Products",
+   "description": "The catalogue.",
+   "fields": [
+    {
+     "name": "sku",
+     "type": "text"
+    },
+    {
+     "name": "name",
+     "type": "text"
+    },
+    {
+     "name": "category_id",
+     "type": "number"
+    },
+    {
+     "name": "unit",
+     "type": "select",
+     "options": [
+      "each",
+      "kg",
+      "m",
+      "box"
+     ]
+    },
+    {
+     "name": "pack_size",
+     "type": "number"
+    },
+    {
+     "name": "barcode",
+     "type": "text"
+    },
+    {
+     "name": "cost_price",
+     "type": "number"
+    },
+    {
+     "name": "list_price",
+     "type": "number"
+    },
+    {
+     "name": "min_margin_pct",
+     "type": "number"
+    },
+    {
+     "name": "price_valid_from",
+     "type": "date"
+    },
+    {
+     "name": "price_valid_to",
+     "type": "date"
+    },
+    {
+     "name": "reorder_point",
+     "type": "number"
+    },
+    {
+     "name": "reorder_qty",
+     "type": "number"
+    },
+    {
+     "name": "lead_time_days",
+     "type": "number"
+    },
+    {
+     "name": "preferred_supplier_id",
+     "type": "number"
+    },
+    {
+     "name": "batch_tracked",
+     "type": "select",
+     "options": [
+      "no",
+      "yes"
+     ]
+    },
+    {
+     "name": "shelf_life_days",
+     "type": "number"
+    },
+    {
+     "name": "spec_json",
+     "type": "textarea"
+    },
+    {
+     "name": "datasheet_doc_id",
+     "type": "number"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "active",
+      "discontinued"
+     ]
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_product_categories": {
+   "title": "Product categories",
+   "description": "Category tree.",
+   "fields": [
+    {
+     "name": "name",
+     "type": "text"
+    },
+    {
+     "name": "parent_id",
+     "type": "number"
+    },
+    {
+     "name": "min_margin_pct",
+     "type": "number"
+    },
+    {
+     "name": "spec_template_json",
+     "type": "textarea"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_price_tiers": {
+   "title": "Price tiers",
+   "description": "Named tiers.",
+   "fields": [
+    {
+     "name": "name",
+     "type": "text"
+    },
+    {
+     "name": "discount_pct",
+     "type": "number"
+    },
+    {
+     "name": "is_default",
+     "type": "switcher"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_price_rules": {
+   "title": "Price rules",
+   "description": "Customer-specific pricing (check one).",
+   "fields": [
+    {
+     "name": "customer_id",
+     "type": "number"
+    },
+    {
+     "name": "product_id",
+     "type": "number"
+    },
+    {
+     "name": "category_id",
+     "type": "number"
+    },
+    {
+     "name": "rule_type",
+     "type": "select",
+     "options": [
+      "fixed_price",
+      "pct_off_list",
+      "pct_on_cost"
+     ]
+    },
+    {
+     "name": "value",
+     "type": "number"
+    },
+    {
+     "name": "valid_from",
+     "type": "date"
+    },
+    {
+     "name": "valid_to",
+     "type": "date"
+    },
+    {
+     "name": "approved_by_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "approved_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "draft",
+      "approved",
+      "retired"
+     ]
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_suppliers": {
+   "title": "Suppliers",
+   "description": "Who we buy from.",
+   "fields": [
+    {
+     "name": "name",
+     "type": "text"
+    },
+    {
+     "name": "contact_name",
+     "type": "text"
+    },
+    {
+     "name": "email",
+     "type": "text"
+    },
+    {
+     "name": "phone",
+     "type": "text"
+    },
+    {
+     "name": "address",
+     "type": "textarea"
+    },
+    {
+     "name": "lead_time_days",
+     "type": "number"
+    },
+    {
+     "name": "payment_terms_days",
+     "type": "number"
+    },
+    {
+     "name": "currency",
+     "type": "text"
+    },
+    {
+     "name": "bank_details_enc",
+     "type": "textarea"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_stock_movements": {
+   "title": "Stock movements",
+   "description": "THE stock ledger. Append-only.",
+   "fields": [
+    {
+     "name": "product_id",
+     "type": "number"
+    },
+    {
+     "name": "batch_id",
+     "type": "number"
+    },
+    {
+     "name": "qty",
+     "type": "number"
+    },
+    {
+     "name": "type",
+     "type": "select",
+     "options": [
+      "receipt",
+      "sale",
+      "reserve",
+      "release",
+      "adjustment",
+      "return",
+      "write_off",
+      "transfer",
+      "count"
+     ]
+    },
+    {
+     "name": "unit_cost",
+     "type": "number"
+    },
+    {
+     "name": "ref_type",
+     "type": "select",
+     "options": [
+      "order",
+      "purchase_order",
+      "delivery_note",
+      "credit_note",
+      "stocktake",
+      "stock_request"
+     ],
+     "extension_options": [
+      "stock_request"
+     ]
+    },
+    {
+     "name": "ref_id",
+     "type": "number"
+    },
+    {
+     "name": "location",
+     "type": "text"
+    },
+    {
+     "name": "staff_id",
+     "type": "number"
+    },
+    {
+     "name": "reason",
+     "type": "textarea"
+    },
+    {
+     "name": "approved_by_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_batches": {
+   "title": "Batches",
+   "description": "Lots for batch-tracked products.",
+   "fields": [
+    {
+     "name": "product_id",
+     "type": "number"
+    },
+    {
+     "name": "batch_no",
+     "type": "text"
+    },
+    {
+     "name": "received_at",
+     "type": "date"
+    },
+    {
+     "name": "expiry_at",
+     "type": "date"
+    },
+    {
+     "name": "supplier_id",
+     "type": "number"
+    },
+    {
+     "name": "coa_doc_id",
+     "type": "number"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_purchase_orders": {
+   "title": "Purchase orders",
+   "description": "Reorders to suppliers.",
+   "fields": [
+    {
+     "name": "po_number",
+     "type": "text"
+    },
+    {
+     "name": "supplier_id",
+     "type": "number"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "draft",
+      "sent",
+      "part_received",
+      "received",
+      "cancelled"
+     ]
+    },
+    {
+     "name": "expected_at",
+     "type": "date"
+    },
+    {
+     "name": "total",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "notes",
+     "type": "textarea",
+     "extension": true
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_po_lines": {
+   "title": "Purchase order lines",
+   "description": "",
+   "fields": [
+    {
+     "name": "po_id",
+     "type": "number"
+    },
+    {
+     "name": "product_id",
+     "type": "number"
+    },
+    {
+     "name": "qty_ordered",
+     "type": "number"
+    },
+    {
+     "name": "qty_received",
+     "type": "number"
+    },
+    {
+     "name": "unit_cost",
+     "type": "number"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_stocktakes": {
+   "title": "Stocktakes",
+   "description": "A count event with two names.",
+   "fields": [
+    {
+     "name": "started_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "counted_by_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "checked_by_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "counting",
+      "submitted",
+      "posted",
+      "cancelled"
+     ]
+    },
+    {
+     "name": "variance_total",
+     "type": "number"
+    },
+    {
+     "name": "lines_json",
+     "type": "textarea",
+     "extension": true
+    },
+    {
+     "name": "location",
+     "type": "text",
+     "extension": true
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_quotes": {
+   "title": "Quotes",
+   "description": "",
+   "fields": [
+    {
+     "name": "quote_number",
+     "type": "text"
+    },
+    {
+     "name": "customer_id",
+     "type": "number"
+    },
+    {
+     "name": "contact_id",
+     "type": "number"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "draft",
+      "sent",
+      "accepted",
+      "declined",
+      "expired",
+      "converted"
+     ]
+    },
+    {
+     "name": "valid_until",
+     "type": "date"
+    },
+    {
+     "name": "subtotal",
+     "type": "number"
+    },
+    {
+     "name": "vat",
+     "type": "number"
+    },
+    {
+     "name": "total",
+     "type": "number"
+    },
+    {
+     "name": "pricing_check_status",
+     "type": "select",
+     "options": [
+      "passed",
+      "needs_approval",
+      "approved"
+     ]
+    },
+    {
+     "name": "approved_by_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "accepted_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "accepted_by",
+     "type": "text"
+    },
+    {
+     "name": "acceptance_doc_id",
+     "type": "number"
+    },
+    {
+     "name": "pdf_key",
+     "type": "text"
+    },
+    {
+     "name": "rep_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "notes_to_customer",
+     "type": "textarea"
+    },
+    {
+     "name": "sent_at",
+     "type": "datetime-local",
+     "extension": true
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_quote_lines": {
+   "title": "Quote lines",
+   "description": "Prices frozen at quote time.",
+   "fields": [
+    {
+     "name": "quote_id",
+     "type": "number"
+    },
+    {
+     "name": "product_id",
+     "type": "number"
+    },
+    {
+     "name": "description",
+     "type": "text"
+    },
+    {
+     "name": "qty",
+     "type": "number"
+    },
+    {
+     "name": "unit_price",
+     "type": "number"
+    },
+    {
+     "name": "price_source",
+     "type": "select",
+     "options": [
+      "rule",
+      "tier",
+      "list",
+      "manual"
+     ]
+    },
+    {
+     "name": "floor_price",
+     "type": "number"
+    },
+    {
+     "name": "below_floor",
+     "type": "select",
+     "options": [
+      "no",
+      "yes"
+     ]
+    },
+    {
+     "name": "discount_pct",
+     "type": "number"
+    },
+    {
+     "name": "line_total",
+     "type": "number"
+    },
+    {
+     "name": "spec_snapshot_json",
+     "type": "textarea"
+    },
+    {
+     "name": "datasheet_doc_id",
+     "type": "number"
+    },
+    {
+     "name": "list_price",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "cost_price",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "out_of_date",
+     "type": "select",
+     "options": [
+      "no",
+      "yes"
+     ],
+     "extension": true
+    },
+    {
+     "name": "approval_id",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "priced_by_user_id",
+     "type": "number",
+     "extension": true,
+     "description": "0.2.1: the login that set or last changed this line's price. The person who priced a line may not approve it."
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_orders": {
+   "title": "Orders",
+   "description": "Created the moment a quote is accepted.",
+   "fields": [
+    {
+     "name": "order_number",
+     "type": "text"
+    },
+    {
+     "name": "quote_id",
+     "type": "number"
+    },
+    {
+     "name": "customer_id",
+     "type": "number"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "accepted",
+      "invoiced",
+      "awaiting_payment",
+      "paid",
+      "ready",
+      "part_delivered",
+      "delivered",
+      "closed",
+      "cancelled"
+     ]
+    },
+    {
+     "name": "fulfilment",
+     "type": "select",
+     "options": [
+      "collection",
+      "delivery"
+     ]
+    },
+    {
+     "name": "required_by",
+     "type": "date"
+    },
+    {
+     "name": "closed_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "closed_by_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "subtotal",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "vat",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "total",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "cancel_reason",
+     "type": "text",
+     "extension": true
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_order_lines": {
+   "title": "Order lines",
+   "description": "Copy of the accepted quote lines plus fulfilment.",
+   "fields": [
+    {
+     "name": "order_id",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "quote_line_id",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "product_id",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "description",
+     "type": "text",
+     "extension": true
+    },
+    {
+     "name": "unit_price",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "price_source",
+     "type": "text",
+     "extension": true
+    },
+    {
+     "name": "floor_price",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "below_floor",
+     "type": "text",
+     "extension": true
+    },
+    {
+     "name": "line_total",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "qty_ordered",
+     "type": "number"
+    },
+    {
+     "name": "qty_reserved",
+     "type": "number"
+    },
+    {
+     "name": "qty_delivered",
+     "type": "number"
+    },
+    {
+     "name": "qty_backordered",
+     "type": "number"
+    },
+    {
+     "name": "batch_id",
+     "type": "number"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_invoices": {
+   "title": "Invoices",
+   "description": "Immutable once issued.",
+   "fields": [
+    {
+     "name": "invoice_number",
+     "type": "text"
+    },
+    {
+     "name": "order_id",
+     "type": "number"
+    },
+    {
+     "name": "customer_id",
+     "type": "number"
+    },
+    {
+     "name": "issued_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "due_at",
+     "type": "date"
+    },
+    {
+     "name": "subtotal",
+     "type": "number"
+    },
+    {
+     "name": "vat_rate",
+     "type": "number"
+    },
+    {
+     "name": "vat",
+     "type": "number"
+    },
+    {
+     "name": "total",
+     "type": "number"
+    },
+    {
+     "name": "amount_paid",
+     "type": "number"
+    },
+    {
+     "name": "amount_credited",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "issued",
+      "part_paid",
+      "paid",
+      "overdue",
+      "credited",
+      "void"
+     ]
+    },
+    {
+     "name": "pdf_key",
+     "type": "text"
+    },
+    {
+     "name": "lines_json",
+     "type": "textarea",
+     "extension": true
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_credit_notes": {
+   "title": "Credit notes",
+   "description": "A new numbered document; needs approval.",
+   "fields": [
+    {
+     "name": "credit_number",
+     "type": "text"
+    },
+    {
+     "name": "invoice_id",
+     "type": "number"
+    },
+    {
+     "name": "customer_id",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "reason",
+     "type": "select",
+     "options": [
+      "return",
+      "pricing",
+      "damage",
+      "goodwill"
+     ]
+    },
+    {
+     "name": "lines_json",
+     "type": "textarea"
+    },
+    {
+     "name": "subtotal",
+     "type": "number"
+    },
+    {
+     "name": "vat",
+     "type": "number"
+    },
+    {
+     "name": "total",
+     "type": "number"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "requested",
+      "approved",
+      "declined"
+     ],
+     "extension": true
+    },
+    {
+     "name": "requested_by_staff_id",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "approved_by_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "approved_at",
+     "type": "datetime-local",
+     "extension": true
+    },
+    {
+     "name": "return_stock",
+     "type": "select",
+     "options": [
+      "no",
+      "yes"
+     ],
+     "extension": true
+    },
+    {
+     "name": "payment_id",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "pdf_key",
+     "type": "text"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_payments": {
+   "title": "Payments",
+   "description": "Money received.",
+   "fields": [
+    {
+     "name": "received_at",
+     "type": "date"
+    },
+    {
+     "name": "amount",
+     "type": "number"
+    },
+    {
+     "name": "method",
+     "type": "select",
+     "options": [
+      "eft",
+      "card",
+      "cash"
+     ]
+    },
+    {
+     "name": "bank_reference",
+     "type": "text"
+    },
+    {
+     "name": "bank_description",
+     "type": "text"
+    },
+    {
+     "name": "import_batch_id",
+     "type": "number"
+    },
+    {
+     "name": "invoice_id",
+     "type": "number"
+    },
+    {
+     "name": "customer_id",
+     "type": "number"
+    },
+    {
+     "name": "match_status",
+     "type": "select",
+     "options": [
+      "unmatched",
+      "suggested",
+      "matched",
+      "partial",
+      "unallocated"
+     ]
+    },
+    {
+     "name": "match_method",
+     "type": "select",
+     "options": [
+      "auto_reference",
+      "auto_amount",
+      "manual"
+     ]
+    },
+    {
+     "name": "matched_by_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "matched_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "suggested_invoice_id",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "amount_allocated",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "line_hash",
+     "type": "text",
+     "extension": true
+    },
+    {
+     "name": "match_note",
+     "type": "text",
+     "extension": true
+    },
+    {
+     "name": "allocations_json",
+     "type": "textarea",
+     "extension": true,
+     "description": "0.2.1: every allocation of this payment as a JSON list of {invoice_id, amount, by, at}. invoice_id keeps the first invoice."
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_delivery_notes": {
+   "title": "Delivery notes",
+   "description": "Issuing writes sale movements.",
+   "fields": [
+    {
+     "name": "dn_number",
+     "type": "text"
+    },
+    {
+     "name": "order_id",
+     "type": "number"
+    },
+    {
+     "name": "issued_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "type",
+     "type": "select",
+     "options": [
+      "collection",
+      "delivery"
+     ]
+    },
+    {
+     "name": "vehicle_or_courier",
+     "type": "text"
+    },
+    {
+     "name": "lines_json",
+     "type": "textarea"
+    },
+    {
+     "name": "collected_by_name",
+     "type": "text"
+    },
+    {
+     "name": "collected_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "signature_key",
+     "type": "text"
+    },
+    {
+     "name": "pod_doc_id",
+     "type": "number"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "issued",
+      "collected",
+      "delivered",
+      "disputed"
+     ]
+    },
+    {
+     "name": "issued_by_staff_id",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_statements": {
+   "title": "Statements",
+   "description": "Monthly customer statements.",
+   "fields": [
+    {
+     "name": "statement_number",
+     "type": "text",
+     "extension": true
+    },
+    {
+     "name": "customer_id",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "period",
+     "type": "text"
+    },
+    {
+     "name": "pdf_key",
+     "type": "text"
+    },
+    {
+     "name": "closing_balance",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_documents": {
+   "title": "Documents",
+   "description": "The register. storage_key, never a URL.",
+   "fields": [
+    {
+     "name": "type",
+     "type": "select",
+     "options": [
+      "datasheet",
+      "coa",
+      "msds",
+      "certificate",
+      "quote_pdf",
+      "invoice_pdf",
+      "credit_pdf",
+      "dn_pdf",
+      "pod",
+      "signed_quote",
+      "contract",
+      "staff_doc"
+     ]
+    },
+    {
+     "name": "title",
+     "type": "text"
+    },
+    {
+     "name": "product_id",
+     "type": "number"
+    },
+    {
+     "name": "customer_id",
+     "type": "number"
+    },
+    {
+     "name": "staff_id",
+     "type": "number"
+    },
+    {
+     "name": "order_id",
+     "type": "number"
+    },
+    {
+     "name": "version",
+     "type": "number"
+    },
+    {
+     "name": "supersedes_doc_id",
+     "type": "number"
+    },
+    {
+     "name": "storage_key",
+     "type": "text"
+    },
+    {
+     "name": "mime",
+     "type": "text"
+    },
+    {
+     "name": "size",
+     "type": "number"
+    },
+    {
+     "name": "issued_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "expires_at",
+     "type": "date"
+    },
+    {
+     "name": "is_customer_visible",
+     "type": "switcher"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_staff": {
+   "title": "Staff",
+   "description": "",
+   "fields": [
+    {
+     "name": "wp_user_id",
+     "type": "number"
+    },
+    {
+     "name": "first_name",
+     "type": "text"
+    },
+    {
+     "name": "last_name",
+     "type": "text"
+    },
+    {
+     "name": "employee_no",
+     "type": "text"
+    },
+    {
+     "name": "job_title",
+     "type": "text"
+    },
+    {
+     "name": "department",
+     "type": "text"
+    },
+    {
+     "name": "manager_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "started_at",
+     "type": "date"
+    },
+    {
+     "name": "ended_at",
+     "type": "date"
+    },
+    {
+     "name": "employment_type",
+     "type": "select",
+     "options": [
+      "permanent",
+      "contract",
+      "casual"
+     ]
+    },
+    {
+     "name": "hours_per_week",
+     "type": "number"
+    },
+    {
+     "name": "days_per_week",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "id_number_enc",
+     "type": "textarea"
+    },
+    {
+     "name": "emergency_contact_enc",
+     "type": "textarea"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "active",
+      "ended"
+     ]
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_timesheets": {
+   "title": "Timesheets",
+   "description": "One row per staff per day.",
+   "fields": [
+    {
+     "name": "staff_id",
+     "type": "number"
+    },
+    {
+     "name": "work_date",
+     "type": "date"
+    },
+    {
+     "name": "start",
+     "type": "time"
+    },
+    {
+     "name": "end",
+     "type": "time"
+    },
+    {
+     "name": "break_minutes",
+     "type": "number"
+    },
+    {
+     "name": "hours",
+     "type": "number"
+    },
+    {
+     "name": "activity",
+     "type": "select",
+     "options": [
+      "sales",
+      "warehouse",
+      "admin",
+      "delivery",
+      "leave"
+     ]
+    },
+    {
+     "name": "customer_id",
+     "type": "number"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "draft",
+      "submitted",
+      "approved",
+      "queried"
+     ]
+    },
+    {
+     "name": "approved_by_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "query_note",
+     "type": "text",
+     "extension": true
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_leave_types": {
+   "title": "Leave types",
+   "description": "SA BCEA defaults, editable.",
+   "fields": [
+    {
+     "name": "name",
+     "type": "text"
+    },
+    {
+     "name": "code",
+     "type": "text",
+     "extension": true
+    },
+    {
+     "name": "days_per_year",
+     "type": "number"
+    },
+    {
+     "name": "cycle_months",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "accrual",
+     "type": "select",
+     "options": [
+      "monthly",
+      "upfront"
+     ]
+    },
+    {
+     "name": "carry_over_max",
+     "type": "number"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_leave": {
+   "title": "Leave",
+   "description": "Balance is computed, never typed.",
+   "fields": [
+    {
+     "name": "staff_id",
+     "type": "number"
+    },
+    {
+     "name": "leave_type_id",
+     "type": "number"
+    },
+    {
+     "name": "from_date",
+     "type": "date"
+    },
+    {
+     "name": "to_date",
+     "type": "date"
+    },
+    {
+     "name": "days",
+     "type": "number"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "requested",
+      "approved",
+      "declined",
+      "cancelled"
+     ]
+    },
+    {
+     "name": "approved_by_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "note",
+     "type": "textarea"
+    },
+    {
+     "name": "doc_id",
+     "type": "number"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_kpis": {
+   "title": "KPIs",
+   "description": "",
+   "fields": [
+    {
+     "name": "name",
+     "type": "text"
+    },
+    {
+     "name": "applies_to",
+     "type": "select",
+     "options": [
+      "role",
+      "staff"
+     ]
+    },
+    {
+     "name": "role_key",
+     "type": "text",
+     "extension": true
+    },
+    {
+     "name": "staff_id",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "measure",
+     "type": "select",
+     "options": [
+      "quotes_sent",
+      "quote_win_rate",
+      "revenue",
+      "on_time_delivery",
+      "stock_accuracy",
+      "timesheet_compliance",
+      "custom"
+     ]
+    },
+    {
+     "name": "target",
+     "type": "number"
+    },
+    {
+     "name": "unit",
+     "type": "text"
+    },
+    {
+     "name": "period",
+     "type": "select",
+     "options": [
+      "monthly",
+      "quarterly"
+     ]
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_kpi_scores": {
+   "title": "KPI scores",
+   "description": "",
+   "fields": [
+    {
+     "name": "kpi_id",
+     "type": "number"
+    },
+    {
+     "name": "staff_id",
+     "type": "number"
+    },
+    {
+     "name": "period_start",
+     "type": "date"
+    },
+    {
+     "name": "target",
+     "type": "number"
+    },
+    {
+     "name": "actual",
+     "type": "number"
+    },
+    {
+     "name": "source",
+     "type": "select",
+     "options": [
+      "auto",
+      "manual"
+     ]
+    },
+    {
+     "name": "note",
+     "type": "text"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_reviews": {
+   "title": "Reviews",
+   "description": "",
+   "fields": [
+    {
+     "name": "staff_id",
+     "type": "number"
+    },
+    {
+     "name": "reviewer_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "period",
+     "type": "text"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "scheduled",
+      "self_review",
+      "manager_review",
+      "discussed",
+      "signed"
+     ]
+    },
+    {
+     "name": "self_json",
+     "type": "textarea"
+    },
+    {
+     "name": "manager_json",
+     "type": "textarea"
+    },
+    {
+     "name": "rating",
+     "type": "number"
+    },
+    {
+     "name": "goals_json",
+     "type": "textarea"
+    },
+    {
+     "name": "signed_at_staff",
+     "type": "datetime-local"
+    },
+    {
+     "name": "signed_at_manager",
+     "type": "datetime-local"
+    },
+    {
+     "name": "doc_id",
+     "type": "number"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_staff_notes": {
+   "title": "Staff notes",
+   "description": "",
+   "fields": [
+    {
+     "name": "staff_id",
+     "type": "number"
+    },
+    {
+     "name": "type",
+     "type": "select",
+     "options": [
+      "commendation",
+      "warning",
+      "training",
+      "certification"
+     ]
+    },
+    {
+     "name": "note",
+     "type": "textarea"
+    },
+    {
+     "name": "noted_at",
+     "type": "date"
+    },
+    {
+     "name": "expires_at",
+     "type": "date"
+    },
+    {
+     "name": "written_by_staff_id",
+     "type": "number",
+     "extension": true
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_portal_requests": {
+   "title": "Portal requests",
+   "description": "Things a customer asked for in the portal that a person must approve (0.2.0: contact-details changes). Never applied without a staff decision.",
+   "fields": [
+    {
+     "name": "contact_id",
+     "type": "number"
+    },
+    {
+     "name": "customer_id",
+     "type": "number"
+    },
+    {
+     "name": "kind",
+     "type": "select",
+     "options": [
+      "details_change"
+     ]
+    },
+    {
+     "name": "payload_json",
+     "type": "textarea"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "requested",
+      "approved",
+      "declined"
+     ]
+    },
+    {
+     "name": "requested_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "decided_by_staff_id",
+     "type": "number"
+    },
+    {
+     "name": "decided_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "decision_note",
+     "type": "text"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_payroll_profiles": {
+   "title": "Payroll profiles",
+   "description": "One per person paid. Salary, hourly rate, tax number and bank account are encrypted (wb_enc).",
+   "fields": [
+    {
+     "name": "staff_id",
+     "type": "number"
+    },
+    {
+     "name": "pay_type",
+     "type": "select",
+     "options": [
+      "monthly",
+      "hourly"
+     ]
+    },
+    {
+     "name": "salary_enc",
+     "type": "text"
+    },
+    {
+     "name": "hourly_rate_enc",
+     "type": "text"
+    },
+    {
+     "name": "tax_number_enc",
+     "type": "text"
+    },
+    {
+     "name": "bank_account_enc",
+     "type": "text"
+    },
+    {
+     "name": "bank_branch_code",
+     "type": "text"
+    },
+    {
+     "name": "date_of_birth",
+     "type": "date",
+     "note": "for the age rebates (65, 75) on the last day of the tax year"
+    },
+    {
+     "name": "medical_scheme_members",
+     "type": "number",
+     "note": "0 none \u00b7 1 member only \u00b7 2 member + 1 \u00b7 \u2026"
+    },
+    {
+     "name": "retirement_contribution_pct",
+     "type": "number"
+    },
+    {
+     "name": "retirement_contribution_fixed",
+     "type": "number"
+    },
+    {
+     "name": "uif_exempt",
+     "type": "select",
+     "options": [
+      "no",
+      "yes"
+     ]
+    },
+    {
+     "name": "start_date",
+     "type": "date"
+    },
+    {
+     "name": "end_date",
+     "type": "date"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_pay_runs": {
+   "title": "Pay runs",
+   "description": "One per month: draft \u2192 checked (by a different person) \u2192 finalised. A finalised run is never changed (WB_CCT refuses).",
+   "fields": [
+    {
+     "name": "period",
+     "type": "text",
+     "note": "YYYY-MM"
+    },
+    {
+     "name": "period_start",
+     "type": "date"
+    },
+    {
+     "name": "period_end",
+     "type": "date"
+    },
+    {
+     "name": "pay_date",
+     "type": "date"
+    },
+    {
+     "name": "tax_year",
+     "type": "text"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "draft",
+      "checked",
+      "finalised"
+     ]
+    },
+    {
+     "name": "prepared_by",
+     "type": "number",
+     "note": "wb_staff id"
+    },
+    {
+     "name": "checked_by",
+     "type": "number",
+     "note": "wb_staff id; never the preparer"
+    },
+    {
+     "name": "checked_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "finalised_at",
+     "type": "datetime-local"
+    },
+    {
+     "name": "finalised_by",
+     "type": "number"
+    },
+    {
+     "name": "headcount",
+     "type": "number"
+    },
+    {
+     "name": "gross_total",
+     "type": "number"
+    },
+    {
+     "name": "paye_total",
+     "type": "number"
+    },
+    {
+     "name": "uif_employee_total",
+     "type": "number"
+    },
+    {
+     "name": "uif_employer_total",
+     "type": "number"
+    },
+    {
+     "name": "sdl_total",
+     "type": "number"
+    },
+    {
+     "name": "other_deductions_total",
+     "type": "number"
+    },
+    {
+     "name": "net_total",
+     "type": "number"
+    },
+    {
+     "name": "notes",
+     "type": "text"
+    },
+    {
+     "name": "editors_json",
+     "type": "textarea",
+     "extension": true,
+     "description": "0.2.1: JSON list of staff ids who changed the draft run (recalculated or adjusted). Nobody on this list, nor the preparer, may check the run."
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
+  "wb_payslips": {
+   "title": "Payslips",
+   "description": "One per person per run. Immutable once finalised; a correction is an adjustment in the next run. pdf_key = the stored payslip page (HTML in 0.2.0).",
+   "fields": [
+    {
+     "name": "run_id",
+     "type": "number"
+    },
+    {
+     "name": "staff_id",
+     "type": "number"
+    },
+    {
+     "name": "period",
+     "type": "text"
+    },
+    {
+     "name": "status",
+     "type": "select",
+     "options": [
+      "draft",
+      "finalised"
+     ]
+    },
+    {
+     "name": "lines_json",
+     "type": "textarea",
+     "note": "inputs, adjustments, earning/deduction/employer lines with their purpose, warnings, tax year"
+    },
+    {
+     "name": "gross",
+     "type": "number"
+    },
+    {
+     "name": "taxable",
+     "type": "number"
+    },
+    {
+     "name": "paye",
+     "type": "number"
+    },
+    {
+     "name": "uif_employee",
+     "type": "number"
+    },
+    {
+     "name": "uif_employer",
+     "type": "number"
+    },
+    {
+     "name": "sdl",
+     "type": "number"
+    },
+    {
+     "name": "other_deductions",
+     "type": "number",
+     "note": "retirement contribution + other deductions"
+    },
+    {
+     "name": "net",
+     "type": "number"
+    },
+    {
+     "name": "ordinary_hours",
+     "type": "number"
+    },
+    {
+     "name": "overtime_hours",
+     "type": "number"
+    },
+    {
+     "name": "pdf_key",
+     "type": "text"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  }
+ }
+}

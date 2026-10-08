@@ -1,0 +1,12 @@
+<!-- B2B Wholesale dashboard: ORDERS — the state machine (accepted → … → closed).
+     Page slug: workspace/orders. Gate: wb_manage_orders (the shortcodes check it again; a page without it shows a polite refusal).
+     Shortcodes: [wb_notify_bar], [wb_orders]. Paste into the page as Custom HTML; styles come from assets/wb-dashboard.css. -->
+<div class="wb-dash">
+  <div class="wb-head">
+    <h1>Orders</h1>
+    <p class="wb-sub">Built from the accepted quote. Goods leave only when the release check says so.</p>
+  </div>
+  <nav class="wb-next" aria-label="Where this work goes next"><span class="wb-next-label">Next</span><a href="/workspace/deliveries/">Ready to go out</a><a href="/workspace/invoices/">Invoices</a></nav>
+  [wb_notify_bar]
+  [wb_orders]
+</div>

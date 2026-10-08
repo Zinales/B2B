@@ -1,0 +1,55 @@
+/* B2B Wholesale System — dashboard stylesheet (v1, wb-core 0.1.0).
+   One file, enqueued site-wide by WB_Render. Colours are tokens; tables never scroll sideways;
+   under 640px every table becomes cards (each cell carries data-label). Inputs are 16px on
+   phones so iOS does not zoom. Bare <button>s are reset inside .wb-* components (themes style them). */
+:root{--wb-ink:#1d2433;--wb-muted:#5b6372;--wb-line:#e3e5ea;--wb-canvas:#f7f6f2;--wb-card:#fff;--wb-accent:#2f6f5e;
+--wb-good-bg:#e4f2ec;--wb-good:#1f5c46;--wb-bad-bg:#fbe7e6;--wb-bad:#8f2a22;--wb-wait-bg:#fdf1dc;--wb-wait:#7a4f0c;--wb-neutral-bg:#eef0f3;--wb-neutral:#3b4352}
+.wb-list{width:100%;border-collapse:collapse;font-size:.9rem;background:var(--wb-card);table-layout:auto}
+.wb-list th{text-align:left;font-weight:600;color:var(--wb-muted);border-bottom:2px solid var(--wb-line);padding:.5rem .6rem;white-space:nowrap}
+.wb-list td{border-bottom:1px solid var(--wb-line);padding:.5rem .6rem;vertical-align:top;color:var(--wb-ink);overflow-wrap:anywhere}
+.wb-cell-money,.wb-col-money{text-align:right;font-variant-numeric:tabular-nums}
+.wb-col-actions,.wb-row-actions{width:2.5rem;text-align:right}
+.wb-chip{display:inline-block;padding:.1rem .55rem;border-radius:999px;font-size:.78rem;font-weight:600;background:var(--wb-neutral-bg);color:var(--wb-neutral)}
+.wb-chip--good{background:var(--wb-good-bg);color:var(--wb-good)}.wb-chip--bad{background:var(--wb-bad-bg);color:var(--wb-bad)}.wb-chip--wait{background:var(--wb-wait-bg);color:var(--wb-wait)}
+.wb-kebab{position:relative;display:inline-block}
+.wb-kebab button.wb-kebab-btn{all:unset;cursor:pointer;padding:.15rem .5rem;border-radius:6px;font-size:1.2rem;line-height:1;color:var(--wb-ink)}
+.wb-kebab button.wb-kebab-btn:hover,.wb-kebab button.wb-kebab-btn:focus-visible{background:var(--wb-neutral-bg)}
+.wb-kebab-body{display:none;position:absolute;right:0;top:100%;z-index:20;min-width:14rem;background:var(--wb-card);border:1px solid var(--wb-line);border-radius:10px;box-shadow:0 8px 24px rgba(29,36,51,.14);padding:.3rem}
+.wb-kebab.is-open .wb-kebab-body{display:block}
+.wb-menuform{margin:0}
+.wb-menuitem,button.wb-menuitem{all:unset;box-sizing:border-box;display:flex;gap:.5rem;align-items:center;width:100%;padding:.45rem .6rem;border-radius:6px;cursor:pointer;color:var(--wb-ink);font-size:.88rem;text-decoration:none}
+.wb-menuitem:hover,button.wb-menuitem:hover{background:var(--wb-neutral-bg)}.wb-menuitem--danger{color:var(--wb-bad)}
+.wb-notice{padding:.7rem .9rem;border-radius:8px;margin:0 0 1rem;font-size:.92rem}.wb-ok{background:var(--wb-good-bg);color:var(--wb-good)}.wb-err{background:var(--wb-bad-bg);color:var(--wb-bad)}.wb-warn{background:var(--wb-wait-bg);color:var(--wb-wait)}
+.wb-copy{display:block;width:100%;font-size:.85rem;margin-top:.4rem;overflow-wrap:anywhere;word-break:break-all;user-select:all}
+.wb-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(10rem,1fr));gap:.75rem;margin:0 0 1.2rem}
+.wb-stat{display:flex;flex-direction:column;gap:.2rem;background:var(--wb-card);border:1px solid var(--wb-line);border-radius:12px;padding:.8rem 1rem;text-decoration:none;color:var(--wb-ink)}
+.wb-stat-label{font-size:.78rem;color:var(--wb-muted)}.wb-stat-num{font-size:1.5rem;font-weight:800}
+.wb-fold{background:var(--wb-card);border:1px solid var(--wb-line);border-radius:12px;margin:0 0 1rem}
+.wb-fold>summary{cursor:pointer;padding:.8rem 1rem;font-weight:600}.wb-fold-body{padding:0 1rem 1rem}
+.wb-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:.6rem 1rem;align-items:end;margin:.6rem 0}
+.wb-field{display:flex;flex-direction:column;gap:.25rem;font-size:.85rem;color:var(--wb-muted)}
+.wb-field input,.wb-field select,.wb-field textarea{font-size:.95rem;padding:.45rem .55rem;border:1px solid #c9ccd3;border-radius:6px;color:var(--wb-ink);background:#fff}
+.wb-field small{color:var(--wb-muted)}
+.wb-form button.wb-btn,button.wb-btn,.wb-btn{all:unset;box-sizing:border-box;display:inline-block;cursor:pointer;background:var(--wb-primary,var(--wb-ink));color:var(--wb-on-primary,#fff);padding:.55rem 1rem;border-radius:8px;font-weight:600;font-size:.9rem;text-align:center}
+button.wb-btn-ghost,.wb-btn-ghost{background:transparent;color:var(--wb-ink);border:1px solid var(--wb-line)}
+.wb-ticks{display:flex;flex-wrap:wrap;gap:.3rem 1rem;border:1px solid var(--wb-line);border-radius:8px;padding:.6rem}
+.wb-muted{color:var(--wb-muted);font-size:.88rem}.wb-count{background:var(--wb-neutral-bg);border-radius:999px;padding:0 .5rem;font-size:.78rem;margin-left:.3rem}
+.wb-notify-bar{background:var(--wb-card);border:1px solid var(--wb-line);border-left:4px solid var(--wb-accent);border-radius:8px;padding:.7rem 1rem;margin:0 0 1rem;font-size:.9rem}
+.wb-notify-bar ul{margin:.4rem 0;padding-left:1.1rem}
+/* 0.2.0: the brand (WB_Setup prints the tokens in the page head), setup checklist, colour swatches */
+.wb-form button.wb-btn:hover,button.wb-btn:hover,.wb-btn:hover{background:var(--wb-primary-dark,var(--wb-ink))}
+.wb-list,.wb-fold,.wb-field,.wb-stat,.wb-notice{font-family:var(--wb-font,inherit)}
+.wb-checklist-list{list-style:none;margin:.3rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:.35rem 1rem}
+.wb-checklist-list a{color:var(--wb-ink)}
+.wb-swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:.5rem}
+.wb-swatch{border:1px solid var(--wb-line);border-radius:8px;padding:.6rem .8rem;font-size:.88rem}
+@media (max-width:640px){
+ .wb-list--cards thead{display:none}
+ .wb-list--cards,.wb-list--cards tbody,.wb-list--cards tr,.wb-list--cards td{display:block;width:100%}
+ .wb-list--cards tr{border:1px solid var(--wb-line);border-radius:10px;margin:0 0 .7rem;padding:.4rem .2rem;position:relative}
+ .wb-list--cards td{border:0;padding:.25rem .6rem;text-align:left}
+ .wb-list--cards td::before{content:attr(data-label);display:block;font-size:.72rem;color:var(--wb-muted)}
+ .wb-list--cards td.wb-cell-identity{font-weight:700;padding-right:3rem}.wb-list--cards td.wb-cell-identity::before{display:none}
+ .wb-list--cards td.wb-row-actions{position:absolute;top:.3rem;right:.3rem;width:auto}.wb-list--cards td.wb-row-actions::before{display:none}
+ .wb-field input,.wb-field select,.wb-field textarea{font-size:16px}
+}

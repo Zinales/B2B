@@ -1,0 +1,12 @@
+<!-- B2B Wholesale dashboard: PAYROLL — payroll profiles, monthly pay runs (prepared, checked by someone else, finalised), payslips, EMP201 figures, the net-pay bank file.
+     Page slug: workspace/payroll. Gate: wb_access_workspace for "My payslips"; wb_view_payroll / wb_run_payroll / wb_check_payroll for the rest (the shortcode checks every section).
+     Shortcodes: [wb_notify_bar], [wb_payroll]. Paste into the page as Custom HTML; styles come from assets/wb-dashboard.css. -->
+<div class="wb-dash">
+  <div class="wb-head">
+    <h1>Payroll</h1>
+    <p class="wb-sub">Calculates and records pay. Nothing is paid or sent to SARS by the system: you capture the EMP201 figures and upload the bank file yourself.</p>
+  </div>
+  <nav class="wb-next" aria-label="Where this work goes next"><span class="wb-next-label">Next</span><a href="/workspace/staff/">Timesheets and leave</a><a href="/workspace/cashflow/">Cashflow</a></nav>
+  [wb_notify_bar]
+  [wb_payroll]
+</div>
