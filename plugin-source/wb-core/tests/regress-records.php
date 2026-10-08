@@ -49,7 +49,7 @@ foreach ( WB_Records::TABLES as $slug => $pol ) {
 	foreach ( WB_Records::fields( $slug ) as $name => $f ) { $count++; $typed[ $slug ][] = $name; if ( ! in_array( $name, $cols, true ) ) $unknown[] = $slug . '.' . $name; }
 }
 eq( 'no field in the policy is missing from the schema', $unknown, [] );
-eq( 'nine master tables', count( WB_Records::TABLES ), 9 );
+eq( 'ten master tables', count( WB_Records::TABLES ), 10 );
 eq( 'the customer form carries every column a person should type (17 of 17 minus the engine\'s journey_stage)', count( $typed['wb_customers'] ), 16 );
 eq( 'the staff form carries 15 columns', count( $typed['wb_staff'] ), 15 );
 eq( 'the price tier form carries the discount', in_array( 'discount_pct', $typed['wb_price_tiers'], true ), true );

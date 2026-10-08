@@ -73,8 +73,9 @@ For the owner, once. Part of _Setting up: the company, the tables, who can do wh
 1. **Products.** Open "Upload categories from a file" (the fold under Categories) and download the template. Fill it, save as CSV, choose it and press "Check file (no import)". Fix what it lists, then "Validate and import". Then do the same for Price tiers, then Products.
 2. **Customers.** Customers next, then Contacts (a contact names its customer by the exact name or the _ID).
 3. **Purchasing.** Suppliers.
-4. **Staff.** Staff, Leave types and KPIs.
-5. **Products.** Later changes: download the export, edit it, import it back. Rows with an _ID are updated, rows without one are added.
+4. **Documents.** Datasheets: one row per product with the summary, description, applications and handling notes, uploaded under "Upload datasheets from a file". The specification rows came in with the products.
+5. **Staff.** Staff, Leave types and KPIs.
+6. **Products.** Later changes: download the export, edit it, import it back. Rows with an _ID are updated, rows without one are added.
 
 ## Run the month's payroll
 

@@ -38,6 +38,7 @@ class WB_Demo {
 		'wb_product_categories_created' => 'wb_product_categories',
 		'wb_suppliers_created'          => 'wb_suppliers',
 		'wb_products_created'           => 'wb_products',
+		'wb_datasheets_created'         => 'wb_datasheets',
 		'wb_customers_created'          => 'wb_customers',
 		'wb_contacts_created'           => 'wb_contacts',
 		'wb_price_rules_created'        => 'wb_price_rules',

@@ -281,7 +281,7 @@ class WB_Workspace {
 		'customers' => [ 'wb_manage_customers', '#wb-add', 'Add a customer' ], 'products' => [ 'wb_manage_products', '#wb-add', 'Add a product' ],
 		'quotes' => [ 'wb_create_quotes', '#wb-add', 'New quote' ], 'payments' => [ 'wb_import_bank', '#wb-add', 'Import a bank statement' ],
 		'stock' => [ 'wb_move_stock', '#wb-add', 'Correct stock' ], 'purchasing' => [ 'wb_manage_purchasing', '#wb-add', 'New purchase order' ],
-		'documents' => [ 'wb_manage_documents', '#wb-add', 'File a document' ], 'marketing' => [ 'wb_manage_marketing', '#wb-add', 'Record a contact' ],
+		'documents' => [ 'wb_manage_documents', '#wb-add', 'Add a datasheet' ], 'marketing' => [ 'wb_manage_marketing', '#wb-add', 'Record a contact' ],
 		'staff' => [ 'wb_access_workspace', '#wb-add', 'My timesheet' ], 'invoices' => [ 'wb_issue_credit_notes', '#wb-add', 'Ask for a credit note' ],
 	];
 

@@ -34,6 +34,26 @@ class WB_Demo_Seed {
 		'Coatings'  => [ 'margin' => 30, 'spec' => [ [ 'label' => 'Coverage', 'unit' => 'm²/L' ], [ 'label' => 'Dry film thickness', 'unit' => 'µm' ], [ 'label' => 'Recoat', 'unit' => 'h' ] ], 'season' => [ 0.7, 0.7, 0.8, 0.8, 0.8, 0.8, 0.9, 1.1, 1.5, 1.7, 1.5, 0.9 ] ],
 	];
 
+	/** sku => [ headline, description, applications, handling ] — the datasheet data (1.4.0); one product keeps an online link instead. */
+	const DATASHEETS = [
+		'ADH-CT5'    => [ 'Solvent-based contact adhesive for laminates, rubber and leather.', "Apply to both surfaces, let the solvent flash off, then press together: the bond forms on contact.\n\nHigh initial grab and good heat resistance make it the choice for post-forming and edge work.", "- Laminates and veneers to board\n- Rubber and leather to most substrates\n- Foam and upholstery", "Store between 5 and 25 °C, away from heat and flame. Flammable: ventilate the workspace and wear gloves. See the safety data sheet." ],
+		'ADH-EP200'  => [ 'Two-part structural epoxy for metal, stone and composites.', "Mix 1:1 by volume and work within the open time. Cures to a rigid, machinable bond with high shear strength and good chemical resistance.", "- Metal brackets and fixings\n- Stone and concrete repairs\n- Composite and GRP work", "Store between 5 and 25 °C with the caps on. Wear gloves and eye protection; uncured resin and hardener are skin sensitisers." ],
+		'ADH-PVA20'  => [ 'Water-based wood glue for joinery and assembly.', "A PVA emulsion that sets by water loss into a bond stronger than the wood. Clamp for the open time; full strength in a day.", "- Joinery and furniture assembly\n- Edge gluing and laminating\n- Dowels, biscuits and tenons", "Keep from freezing. Clean tools with water while wet. Not for exterior or wet-service joints." ],
+		'ADH-CA50'   => [ 'Instant cyanoacrylate for small, close-fitting parts.', "A low-viscosity instant adhesive that cures in seconds on close-fitting surfaces, giving a strong, clear bond.", "- Rubber and plastic parts\n- O-rings and gaskets\n- Small metal components", "Bonds skin in seconds: wear gloves and keep away from children. Store cool and dry; refrigerate for long storage." ],
+		'SEA-SIL300' => [ 'Neutral-cure silicone for glazing and sanitary joints.', "A one-part neutral-cure silicone that stays flexible through weathering and temperature, with no odour and no corrosion of metals.", "- Glazing and curtain-wall joints\n- Sanitary and kitchen joints\n- Expansion joints in cladding", "Store below 25 °C. Tool within the skin time. Not paintable." ],
+		'SEA-PU600'  => [ 'Polyurethane sealant and adhesive for construction joints.', "A one-part moisture-curing polyurethane that bonds and seals concrete, masonry, metal and timber, and takes paint once cured.", "- Floor and movement joints\n- Panel and truck-body bonding\n- Roofing and gutters", "Store dry below 25 °C. Prime porous substrates. Wear gloves; uncured material contains isocyanate." ],
+		'SEA-MS290'  => [ 'MS polymer: solvent-free, paintable, bonds almost anything.', "A hybrid sealant-adhesive that cures with moisture into a tough, flexible bond, with no solvent and no isocyanate, paintable while fresh.", "- Bonding panels, skirtings and mirrors\n- Sealing joints in kitchens and bathrooms\n- Marine and vehicle work", "Store between 5 and 25 °C. Keep the nozzle capped. Clean uncured material with spirits." ],
+		'FST-HN16'   => [ 'Hex nut M16, grade 8, zinc plated.', "ISO 4032 hexagon nuts in grade 8, zinc electroplated for corrosion resistance in dry interiors.", "- General structural assembly\n- Plant and machinery\n- With M16 grade 8.8 bolts", "Keep dry. Not for exterior or marine use: choose hot-dip galvanised." ],
+		'FST-HB1680' => [ 'Hex bolt M16 × 80, grade 8.8, zinc plated.', "ISO 4014 hexagon head bolts in grade 8.8, partially threaded, zinc electroplated.", "- Steel-to-steel connections\n- Machinery mounting\n- Brackets and frames", "Torque to the grade 8.8 table. Keep dry." ],
+		'FST-WS12'   => [ 'Wood screw 5 × 60, yellow passivated.', "Countersunk pozi wood screws with a partial thread and cutting point for fast driving without pre-drilling in softwoods.", "- Carcassing and decking frames\n- Fixing battens and boards\n- General joinery", "Pre-drill hardwoods near the edge. Keep dry." ],
+		'FST-AN12'   => [ 'Through-bolt anchor M12 × 110, hot-dip galvanised.', "Expansion anchor for cracked and uncracked concrete, set by torque, galvanised for exterior use.", "- Base plates and handrails\n- Racking and machinery\n- Fixing steel to concrete", "Drill to the stated depth, clean the hole, set to the stated torque." ],
+		'COT-ZR85'   => [ 'Zinc-rich epoxy primer for structural steel.', "A two-pack primer with a high zinc loading that protects steel galvanically wherever the coating is damaged.", "- Structural steel before topcoating\n- Repairs to galvanising\n- Tank and pipework exteriors", "Blast-clean to Sa 2½. Mix the full kit. Wear respiratory protection when spraying. See the safety data sheet." ],
+		'COT-EP20'   => [ 'Solvent-free epoxy floor coating, high build.', "A two-pack epoxy for concrete floors that cures to a hard, seamless, chemical-resistant surface at 250 µm in one coat.", "- Workshops, warehouses and plant rooms\n- Food and beverage floors\n- Car parks", "Floor must be dry and primed. Keep above 10 °C while curing. Wear gloves and eye protection." ],
+		'COT-PU5'    => [ 'Polyurethane topcoat with colour and gloss retention.', "A two-pack acrylic polyurethane that holds colour and gloss in sunlight, over an epoxy primer or intermediate coat.", "- Structural steel finishes\n- Plant, tanks and pipework\n- Vehicle bodies", "Apply over a compatible primer within its overcoat window. Isocyanate hardener: wear respiratory protection." ],
+		'COT-BT30'   => [ 'Bituminous roof coating for waterproofing and repair.', "A fibre-reinforced bitumen emulsion that seals roofs, gutters and parapets in one or two coats and stays flexible.", "- Flat and low-slope roofs\n- Gutters and flashings\n- Foundations below ground", "Apply to a dry surface in dry weather above 10 °C. Protect from frost before it has cured." ],
+		'COT-HB200'  => [ 'Heat-resistant black to 600 °C.', "A silicone-based aerosol finish for surfaces that run hot, curing fully on first heating.", "- Exhausts and manifolds\n- Braais, stoves and flues\n- Engine parts", "Aerosol: pressurised, flammable. Cure by heating gradually. Use in a ventilated space." ],
+	];
+
 	/** sku, name, category, unit, pack, cost, list, reorder point, reorder qty, spec values, opening stock */
 	const PRODUCTS = [
 		[ 'ADH-CT5',   'Contact adhesive 5 L',             'Adhesives', 'each', 1,   210,   349,   20, 60,  [ '3200', '15', '24' ],   240 ],
@@ -209,6 +229,15 @@ class WB_Demo_Seed {
 					'price_valid_from' => substr( $plan['start'], 0, 4 ) . '-01-01', 'price_valid_to' => substr( $today, 0, 4 ) . '-12-31', 'barcode' => '600' . sprintf( '%010d', 1234560 + $i ) ] );
 			}
 			$out['products'] = count( $prods );
+			if ( WB_CCT::table( 'wb_datasheets' ) ) {   // 1.4.0: every product's datasheet as data; one points at an online sheet instead
+				foreach ( self::PRODUCTS as $i => $p ) {
+					$w = self::DATASHEETS[ $p[0] ] ?? null;
+					if ( ! $w ) continue;
+					$link = 'COT-HB200' === $p[0];
+					WB_CCT::insert( 'wb_datasheets', [ 'product_id' => $prods[ $i ], 'source' => $link ? 'link' : 'data', 'headline' => $w[0], 'description' => $link ? '' : $w[1], 'applications' => $link ? '' : $w[2], 'handling' => $link ? '' : $w[3],
+						'external_url' => $link ? 'https://www.example.com/datasheets/heat-resistant-black.pdf' : '', 'revision' => 'Rev ' . ( 1 + $i % 3 ), 'revised_at' => substr( $plan['start'], 0, 4 ) . '-0' . ( 1 + $i % 9 ) . '-15' ] );
+				}
+			}
 			$custs = [];
 			foreach ( self::CUSTOMERS as $i => $c ) {
 				$custs[ $i ] = (int) WB_CCT::insert( 'wb_customers', [ 'name' => $c[0] . $tag, 'payment_terms_days' => $c[1], 'credit_limit' => $c[2], 'price_tier_id' => $tiers[ $c[3] ], 'currency' => 'ZAR', 'region' => $c[4], 'industry' => $c[5], 'segment' => $c[6],

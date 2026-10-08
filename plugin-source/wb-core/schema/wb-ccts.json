@@ -1,5 +1,5 @@
 {
- "_about": "Every JetEngine CCT for B2BGro (working name was B2B Wholesale System; the code prefix stays wb_). Create each with this slug (JetEngine adds the jet_cct_ prefix). Every CCT also carries record_status (select active|archived|inactive|void, default active); JetEngine adds _ID, cct_status, cct_author_id, cct_created, cct_modified. Fields with extension:true were added by wb-core beyond DATA-ARCHITECTURE.md (see README). 0.2.0 adds wb_portal_requests, wb_payroll_profiles, wb_pay_runs, wb_payslips. Payroll *_enc fields hold wb_enc() ciphertext only \u2014 never plain text.",
+ "_about": "Every JetEngine CCT for B2BGro (working name was B2B Wholesale System; the code prefix stays wb_). Create each with this slug (JetEngine adds the jet_cct_ prefix). Every CCT also carries record_status (select active|archived|inactive|void, default active); JetEngine adds _ID, cct_status, cct_author_id, cct_created, cct_modified. Fields with extension:true were added by wb-core beyond DATA-ARCHITECTURE.md (see README). 0.2.0 adds wb_portal_requests, wb_payroll_profiles, wb_pay_runs, wb_payslips. Payroll *_enc fields hold wb_enc() ciphertext only — never plain text.",
  "version": "0.2.1",
  "ccts": {
   "wb_customers": {
@@ -1662,6 +1662,65 @@
     }
    ]
   },
+  "wb_datasheets": {
+   "title": "Datasheets",
+   "description": "Where each product's datasheet comes from: the row's own words rendered to PDF, an uploaded file, or a link to an online datasheet (1.4.0).",
+   "fields": [
+    {
+     "name": "product_id",
+     "type": "number"
+    },
+    {
+     "name": "source",
+     "type": "select",
+     "options": [
+      "data",
+      "upload",
+      "link"
+     ],
+     "default": "data"
+    },
+    {
+     "name": "headline",
+     "type": "text"
+    },
+    {
+     "name": "description",
+     "type": "textarea"
+    },
+    {
+     "name": "applications",
+     "type": "textarea"
+    },
+    {
+     "name": "handling",
+     "type": "textarea"
+    },
+    {
+     "name": "external_url",
+     "type": "text"
+    },
+    {
+     "name": "revision",
+     "type": "text"
+    },
+    {
+     "name": "revised_at",
+     "type": "date"
+    },
+    {
+     "name": "record_status",
+     "type": "select",
+     "options": [
+      "active",
+      "archived",
+      "inactive",
+      "void"
+     ],
+     "default": "active"
+    }
+   ]
+  },
   "wb_staff": {
    "title": "Staff",
    "description": "",
@@ -2268,7 +2327,7 @@
     {
      "name": "medical_scheme_members",
      "type": "number",
-     "note": "0 none \u00b7 1 member only \u00b7 2 member + 1 \u00b7 \u2026"
+     "note": "0 none · 1 member only · 2 member + 1 · …"
     },
     {
      "name": "retirement_contribution_pct",
@@ -2309,7 +2368,7 @@
   },
   "wb_pay_runs": {
    "title": "Pay runs",
-   "description": "One per month: draft \u2192 checked (by a different person) \u2192 finalised. A finalised run is never changed (WB_CCT refuses).",
+   "description": "One per month: draft → checked (by a different person) → finalised. A finalised run is never changed (WB_CCT refuses).",
    "fields": [
     {
      "name": "period",

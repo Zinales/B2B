@@ -110,7 +110,7 @@ eq( 'text default', $f['default_val'], 'ZAR' );
 eq( 'note becomes description', $f['description'], 'ISO code' );
 
 $schema = WB_Tables::schema();
-eq( 'schema read: 35 tables', count( $schema ), 35 );
+eq( 'schema read: 36 tables', count( $schema ), 36 );
 $req = WB_Tables::content_type_request( 'wb_customers', $schema['wb_customers'] );
 eq( 'request slug', $req['slug'], 'wb_customers' );
 eq( 'request name', $req['name'], 'Customers' );

@@ -1,5 +1,31 @@
 # wb-core changelog
 
+## 1.4.0 — 8 October 2026
+Datasheets as data (Zina, 8 October: "datasheet data stored in tables, converted to PDFs, easier to
+update in bulk … or upload a datasheet, or link it to the online datasheet database").
+- **A new JetEngine table, wb_datasheets**: one row per product saying where its datasheet comes
+  from. "From the data": the row's one-line summary, description, applications and storage/handling
+  notes join the product's specification rows and render to a PDF with the company letterhead
+  whenever anyone asks (staff from the Products table or the row's menu, a customer from the portal).
+  Nothing is stored: the sheet is living data and renders in well under a second. "An uploaded
+  file": the supplier's own PDF, filed as before. "A link": the address of the online datasheet.
+  A product with no row falls back to an uploaded file if one is on record. An empty sheet is never
+  handed out.
+- **Typed, uploaded in bulk, exported**: the datasheet rows are a master table on the Documents
+  screen, so the form, the CSV template, "Check file" and "Validate and import", and the export all
+  come from the same policy as customers and products. A whole range is updated in one file.
+- **The 7-day link for a customer** renders the sheet as it is that day and files that copy in the
+  document register, so what the customer was sent stays on record; an uploaded sheet links as
+  before, and an online sheet's own address is the link.
+- **Products**: the Datasheet column now reads "PDF · Rev 2", "Open · v3" or "Online", and the ⋯
+  menu has "Datasheet PDF". The portal lists all three kinds.
+- **Documents** opens on the datasheet rows; uploaded product documents and the system's issued
+  documents are folds below.
+- The demo gives every product a datasheet (one points at an online sheet instead). Creating the
+  table: System Settings › Business tables › "Create the missing tables" adds wb_datasheets.
+- Tests: regress-datasheets.php (resolution, the sheet's HTML, real PDF bytes, the master-table
+  policy).
+
 ## 1.3.2 — 8 October 2026
 Documents, by product (Zina, 8 October: "clicking Datasheets on Products took me to a documents
 list; I would like to view the documents we have uploaded").

@@ -173,8 +173,14 @@ class WB_Documents {
 	 */
 	public static function datasheet_link( int $product_id, int $customer_id = 0, int $contact_id = 0 ) {
 		if ( ! current_user_can( 'wb_view_documents' ) ) return new WP_Error( 'wb_forbidden', 'You cannot share documents.' );
-		$doc = self::current_datasheet( $product_id );
-		if ( ! $doc ) return new WP_Error( 'wb_no_datasheet', 'This product has no datasheet on file yet.' );
+		[ $kind, $row, $doc ] = WB_Datasheets::current( $product_id );
+		if ( 'link' === $kind ) return (string) $row['external_url'];   // the online sheet is its own link
+		if ( 'data' === $kind ) {                                          // 1.4.0: the sheet as it is today, filed so the record shows what was sent
+			$snap = WB_Datasheets::snapshot( $product_id );
+			if ( is_wp_error( $snap ) ) return $snap;
+			$doc = WB_CCT::get( 'wb_documents', (int) $snap );
+		}
+		if ( ! $doc ) return new WP_Error( 'wb_no_datasheet', 'This product has no datasheet yet: no data on its datasheet row, no uploaded sheet, no link.' );
 		$url = self::download_url( (int) $doc['_ID'], 7 * DAY_IN_SECONDS, false );
 		if ( ! is_wp_error( $url ) && $customer_id ) {
 			WB_Orders::touchpoint( $customer_id, 'datasheet_sent', sprintf( 'Datasheet v%d for product #%d', (int) $doc['version'], $product_id ), 'document:' . (int) $doc['_ID'], $contact_id );

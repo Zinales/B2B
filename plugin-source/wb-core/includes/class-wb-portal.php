@@ -354,13 +354,16 @@ class WB_Portal {
 		$uid  = get_current_user_id();
 		$rows = [];
 		foreach ( self::product_ids( (int) $c['customer_id'] ) as $pid ) {
-			$doc = WB_Documents::current_datasheet( $pid );
-			if ( ! $doc || ! WB_Documents::user_can_access( $doc, $uid ) ) continue;
-			$p      = WB_CCT::get( 'wb_products', $pid );
-			$rows[] = [ '_ID' => (int) $doc['_ID'], 'product' => $p ? $p['sku'] . ' · ' . $p['name'] : '', 'title' => $doc['title'], 'version' => $doc['version'], 'issued_at' => substr( (string) $doc['issued_at'], 0, 10 ) ];
+			$p = WB_CCT::get( 'wb_products', $pid );
+			if ( ! $p ) continue;
+			[ $kind, $row, $doc ] = WB_Datasheets::current( $pid, $p );   // 1.4.0: data, an uploaded file, or an online link
+			$name = $p['sku'] . ' · ' . $p['name'];
+			if ( 'data' === $kind ) $rows[] = [ '_ID' => $pid, 'product' => $name, 'title' => 'Datasheet ' . $p['sku'], 'version' => (string) ( $row['revision'] ?? '' ), 'issued_at' => substr( (string) ( $row['revised_at'] ?? '' ), 0, 10 ), '_href' => WB_Datasheets::url( $pid ), '_words' => 'Open' ];
+			elseif ( 'link' === $kind ) $rows[] = [ '_ID' => $pid, 'product' => $name, 'title' => 'Online datasheet', 'version' => '', 'issued_at' => '', '_href' => (string) $row['external_url'], '_words' => 'Open online' ];
+			elseif ( 'upload' === $kind && WB_Documents::user_can_access( $doc, $uid ) ) $rows[] = [ '_ID' => (int) $doc['_ID'], 'product' => $name, 'title' => $doc['title'], 'version' => 'v' . $doc['version'], 'issued_at' => substr( (string) $doc['issued_at'], 0, 10 ), '_href' => WB_Documents::open_url( (int) $doc['_ID'] ), '_words' => 'Open' ];
 		}
-		$dl = [ 'action_html' => fn( $d ) => WB_RowActions::menuitem( 'download', 'Download', [ 'href' => WB_Documents::open_url( (int) $d['_ID'] ) ] ) ];
-		$h  = WB_Render::render_table( $rows, [ 'product', 'title', 'version', 'issued_at' ], $dl + [ 'empty' => 'Datasheets for products you buy or are quoted appear here.' ] );
+		$dl = [ 'action_html' => fn( $d ) => WB_RowActions::menuitem( 'open', (string) ( $d['_words'] ?? 'Download' ), [ 'href' => (string) ( $d['_href'] ?? WB_Documents::open_url( (int) $d['_ID'] ) ) ] ) ];
+		$h  = WB_Render::render_table( $rows, [ 'product', 'title', [ 'key' => 'version', 'label' => 'Revision' ], [ 'key' => 'issued_at', 'label' => 'Dated' ] ], $dl + [ 'empty' => 'Datasheets for products you buy or are quoted appear here.' ] );
 		// 0.2.2: company-wide documents, only when the organisation shows them (Setup → Customer portal)
 		$company = [];
 		foreach ( WB_Documents::company_docs() as $doc ) {

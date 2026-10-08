@@ -47,7 +47,7 @@ class WB_Docs {
 	}
 
 	/** The style every document shares. Dompdf: tables, no flex, no CSS variables. */
-	private static function css( array $c ): string {
+	public static function css( array $c ): string {
 		return 'body{font-family:"DejaVu Sans",sans-serif;font-size:9.5pt;color:#1f2a3a;margin:0}'
 			. '.head{width:100%;border-bottom:2px solid ' . $c['primary'] . ';padding-bottom:10px;margin-bottom:14px}'
 			. '.head td{vertical-align:top}.brand{font-size:16pt;font-weight:bold;color:' . $c['ink'] . '}'

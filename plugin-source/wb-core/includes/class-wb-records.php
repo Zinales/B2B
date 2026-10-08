@@ -59,6 +59,16 @@ class WB_Records {
 			'min_margin_pct' => [ 'label' => 'Lowest margin % for this category', 'placeholder' => '25' ],
 			'spec_template_json' => [ 'label' => 'Specification rows every product here carries', 'note' => 'One per line: label | unit.', 'placeholder' => "Viscosity | mPa·s\nCure time | h" ],
 		] ],
+		'wb_datasheets' => [ 'cap' => 'wb_manage_documents', 'one' => 'datasheet', 'screen' => 'documents', 'key' => [ 'product_id' ], 'order' => 'product_id', 'fields' => [
+			'product_id' => [ 'label' => 'Product', 'required' => true, 'ref' => [ 'wb_products', 'sku' ] ],
+			'source' => [ 'label' => 'The datasheet is', 'options' => [ 'data' => 'From the data on this row', 'upload' => 'An uploaded file', 'link' => 'A link to an online datasheet' ], 'default' => 'data', 'note' => 'From the data: the words below and the product\'s specification rows, rendered to PDF with your letterhead whenever it is asked for. An uploaded file: the supplier\'s own sheet, filed under "File a document". A link: the address of the online datasheet.' ],
+			'headline' => [ 'label' => 'One-line summary', 'placeholder' => 'Two-part structural epoxy for metal, stone and composites' ],
+			'description' => [ 'label' => 'Description', 'type' => 'textarea', 'note' => 'Paragraphs separated by a blank line. A paragraph of lines starting with - becomes a list.' ],
+			'applications' => [ 'label' => 'Applications', 'type' => 'textarea', 'placeholder' => "- Bonding metal brackets\n- Filling and fairing" ],
+			'handling' => [ 'label' => 'Storage, handling and safety', 'type' => 'textarea', 'placeholder' => "Store between 5 and 25 °C.\nWear gloves; see the safety data sheet." ],
+			'external_url' => [ 'label' => 'Online datasheet address', 'placeholder' => 'https://www.supplier.example/datasheets/ep200.pdf', 'note' => 'Only used when "The datasheet is" a link.' ],
+			'revision' => [ 'label' => 'Revision', 'placeholder' => 'Rev 3' ], 'revised_at' => [ 'label' => 'Revised on', 'type' => 'date' ],
+		] ],
 		'wb_price_tiers' => [ 'cap' => 'wb_manage_pricing', 'one' => 'price tier', 'screen' => 'products', 'key' => [ 'name' ], 'order' => 'name', 'fields' => [
 			'name' => [ 'required' => true, 'placeholder' => 'Distributor' ], 'discount_pct' => [ 'label' => '% off the list price', 'required' => true, 'placeholder' => '12.5' ],
 			'is_default' => [ 'label' => 'The tier new customers start on?' ],

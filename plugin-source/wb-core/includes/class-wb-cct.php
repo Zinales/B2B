@@ -28,6 +28,7 @@ class WB_CCT {
 		'wb_quotes', 'wb_quote_lines', 'wb_orders', 'wb_order_lines', 'wb_invoices', 'wb_credit_notes',
 		'wb_payments', 'wb_delivery_notes', 'wb_statements',
 		'wb_documents',
+		'wb_datasheets',                                           // 1.4.0: where each product's datasheet comes from
 		'wb_staff', 'wb_timesheets', 'wb_leave_types', 'wb_leave', 'wb_kpis', 'wb_kpi_scores', 'wb_reviews', 'wb_staff_notes',
 		'wb_portal_requests',                                       // 0.2.0: customer portal change requests
 		'wb_payroll_profiles', 'wb_pay_runs', 'wb_payslips',        // 0.2.0: payroll

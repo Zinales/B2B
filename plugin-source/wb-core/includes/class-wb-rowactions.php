@@ -133,7 +133,7 @@ class WB_RowActions {
 				'handle' => fn( $id ) => WB_Staff::cancel_leave( $id ) ],
 		];
 		// Soft delete (archive) for the master records. Nothing is ever hard-deleted.
-		foreach ( [ 'wb_customers' => 'wb_manage_customers', 'wb_contacts' => 'wb_manage_customers', 'wb_products' => 'wb_manage_products', 'wb_suppliers' => 'wb_manage_purchasing', 'wb_price_rules' => 'wb_manage_pricing' ] as $cct => $cap ) {
+		foreach ( [ 'wb_customers' => 'wb_manage_customers', 'wb_contacts' => 'wb_manage_customers', 'wb_products' => 'wb_manage_products', 'wb_datasheets' => 'wb_manage_documents', 'wb_suppliers' => 'wb_manage_purchasing', 'wb_price_rules' => 'wb_manage_pricing' ] as $cct => $cap ) {
 			$a[ 'archive_' . $cct ] = [ 'cct' => $cct, 'label' => 'Archive', 'icon' => 'archive', 'danger' => true, 'reason' => 'Why archive it? (It stays on file and can be restored.)',
 				'allowed' => fn() => current_user_can( $cap ), 'visible' => fn( $r ) => 'archived' !== ( $r['record_status'] ?? '' ),
 				'handle' => fn( $id, $why ) => WB_CCT::set_status( $cct, $id, 'archived', $why ) ];

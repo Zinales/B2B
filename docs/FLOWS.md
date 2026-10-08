@@ -75,7 +75,7 @@ A category groups products and carries the lowest margin and the shared specific
 2. **Products.** Set up categories and price tiers under their own folds. One tier is the default for new customers.
 3. **Customers.** Put each customer in a tier. Add a rule for a customer who has negotiated their own price for a product or a whole category; a second person approves the rule before it is used.
 4. **Quotes.** When a line is quoted, the price comes from the most specific thing that applies: the customer's product rule, then their category rule (nearest category first), then their tier, then list. The source is shown and frozen on the line.
-5. **Documents.** File a datasheet, certificate or safety sheet against a product. A new version is a new row that supersedes the old; the old stays, so what a customer was sent on a day is always recoverable. A datasheet link always hands out the current version.
+5. **Documents.** A product's datasheet is a row of data: a one-line summary, description, applications and handling notes, which join the product's specification rows and render to a PDF with your letterhead whenever anyone asks for one. Type the rows, or upload a CSV to change a whole range at once. Where the supplier's own sheet is better, upload the file instead, or give the address of the online datasheet; the row says which one the customer gets.
 
 The rules it keeps:
 

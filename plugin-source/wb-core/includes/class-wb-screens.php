@@ -475,7 +475,7 @@ class WB_Screens {
 		[ 'wb_move_stock', 'stock', '#wb-add', 'Correct stock', 'a second person approves it' ],
 		[ 'wb_manage_purchasing', 'purchasing', '#wb-add', 'Raise a purchase order', 'what to reorder, from whom' ],
 		[ 'wb_access_workspace', 'staff', '#wb-add', 'My timesheet', 'today\'s hours' ],
-		[ 'wb_manage_documents', 'documents', '#wb-add', 'File a document', 'datasheet, certificate, safety sheet' ],
+		[ 'wb_manage_documents', 'documents', '#wb-add', 'Add a datasheet', 'typed, or a whole range by CSV' ],
 	];
 
 	public static function home( $atts = [] ): string {
@@ -522,18 +522,13 @@ class WB_Screens {
 		$seeing_stock = current_user_can( 'wb_view_stock' );
 		foreach ( $rows as &$r ) if ( $seeing_stock ) $r['available'] = WB_Stock::available( (int) $r['_ID'] );
 		unset( $r );
-		$sheets = [];   // the current datasheet per product, one query (1.3.2)
-		foreach ( WB_CCT::find( 'wb_documents', [ 'type' => 'datasheet' ], [ 'limit' => 2000, 'orderby' => 'version', 'order' => 'ASC' ] ) as $d ) $sheets[ (int) $d['product_id'] ] = $d;
+		$sheets = WB_Datasheets::current_all( $rows );   // data, upload, link or none per product, two queries (1.4.0)
 		$cols = [ 'sku', 'name', [ 'key' => 'list_price', 'type' => 'money' ] ];
 		if ( current_user_can( 'wb_manage_pricing' ) ) { $cols[] = [ 'key' => 'cost_price', 'type' => 'money' ]; $cols[] = 'min_margin_pct'; }
 		if ( $seeing_stock ) $cols[] = 'available';
-		$cols[] = [ 'key' => '_ID', 'label' => 'Datasheet', 'type' => 'plain', 'render' => function ( $v ) use ( $sheets ) {
-			$d = $sheets[ (int) $v ] ?? null;
-			if ( ! $d ) return '<span class="wb-muted">none</span>';
-			return '<a href="' . esc_url( WB_Documents::open_url( (int) $d['_ID'] ) ) . '">v' . (int) $d['version'] . ' · open</a>';
-		} ];
+		$cols[] = [ 'key' => '_ID', 'label' => 'Datasheet', 'type' => 'plain', 'render' => fn( $v ) => WB_Datasheets::cell( $sheets[ (int) $v ] ?? [ 'none', null, null ] ) ];
 		$cols[] = 'status';
-		$h .= WB_Render::render_table( $rows, $cols, [ 'cct' => 'wb_products', 'actions' => [ 'edit_wb_products', 'product_docs', 'archive_wb_products' ], 'empty' => 'No products yet.' ] );
+		$h .= WB_Render::render_table( $rows, $cols, [ 'cct' => 'wb_products', 'actions' => [ 'edit_wb_products', 'datasheet_pdf', 'product_docs', 'archive_wb_products' ], 'empty' => 'No products yet.' ] );
 		$h .= WB_Records::fold( 'wb_products', ! $rows );   // first run: open
 		$h .= WB_Import::fold( 'wb_products' );
 		if ( current_user_can( 'wb_manage_products' ) ) {
@@ -798,9 +793,18 @@ class WB_Screens {
 			$cols = array_values( array_filter( $cols, fn( $c ) => ! is_array( $c ) || 'product_id' !== $c['key'] ) );
 			$h   .= '<p class="wb-doc-scope">Documents filed against <strong>' . esc_html( (string) $product['name'] ) . '</strong> (' . esc_html( (string) $product['sku'] ) . '). <a href="' . esc_url( WB_Workspace::url( 'documents' ) ) . '">All documents</a> · <a href="' . esc_url( WB_Workspace::url( 'products' ) ) . '">Back to products</a></p>';
 		}
-		$h .= self::fold( $pid ? 'Datasheets and documents for this product' : 'Datasheets and product documents',
+		// 1.4.0: the datasheet rows — where each product's sheet comes from; typed here, uploaded by CSV
+		if ( WB_CCT::table( 'wb_datasheets' ) ) {
+			$ds   = WB_CCT::find( 'wb_datasheets', $pid ? [ 'product_id' => $pid ] : [], [ 'limit' => 2000 ] );
+			$body = '<p class="wb-muted">One row per product says where its datasheet comes from: the words on the row (with the product\'s specification) rendered to PDF whenever it is asked for, the supplier\'s uploaded file, or a link to the online datasheet. Upload a CSV to add or change a whole range at once.</p>'
+				. WB_Render::render_table( $ds, [ [ 'key' => 'product_id', 'render' => fn( $v ) => esc_html( self::product_name( $v ) ) ], [ 'key' => 'source', 'label' => 'Comes from', 'render' => fn( $v ) => esc_html( [ 'data' => 'The data', 'upload' => 'Uploaded file', 'link' => 'Online link' ][ $v ] ?? (string) $v ) ], 'headline', 'revision', 'revised_at' ],
+					[ 'cct' => 'wb_datasheets', 'actions' => [ 'datasheet_row_pdf', 'edit_wb_datasheets', 'archive_wb_datasheets' ], 'empty' => $pid ? 'No datasheet row for this product yet.' : 'No datasheet rows yet.', 'empty_note' => 'Add one below, or download the template under "Upload datasheets from a file" and fill it for a whole range.' ] )
+				. WB_Records::fold( 'wb_datasheets', (bool) $pid && ! $ds ) . WB_Import::fold( 'wb_datasheets' );
+			$h .= self::fold( $pid ? 'Datasheet for this product' : 'Datasheets', $body, true, 'wb-datasheets', 'lead', count( $ds ) . ' row' . ( 1 === count( $ds ) ? '' : 's' ) );
+		}
+		$h .= self::fold( $pid ? 'Uploaded files for this product' : 'Uploaded product documents',
 			WB_Render::render_table( $mine, $cols, $opts + [ 'empty' => $pid ? 'No datasheet or document filed for this product yet.' : 'No product documents filed yet.', 'empty_note' => 'Use "File a document" below: a datasheet, certificate of analysis, safety sheet or certificate, against the product.' ] ),
-			true, 'wb-doc-products', 'lead', count( $mine ) . ' on file' );
+			false, 'wb-doc-products', 'sibling', count( $mine ) . ' on file' );
 		if ( ! $pid || $issued ) {
 			$h .= self::fold( 'Documents the system issued', '<p class="wb-muted">Quotes, invoices, credit notes and delivery notes as PDFs, signed copies and contracts. Each is made once, when the document is issued, and never changes.</p>'
 				. WB_Render::render_table( $issued, $cols, $opts + [ 'empty' => 'Nothing issued yet. A quote\'s PDF appears here the moment it is marked sent.' ] ), false, 'wb-doc-issued', 'sibling', count( $issued ) . ' on file' );
@@ -815,7 +819,7 @@ class WB_Screens {
 				. WB_Render::field( 'type', 'Kind', 'select', 'datasheet', [ 'options' => $types ] ) . WB_Render::field( 'title', 'Title' )
 				. WB_Render::field( 'product_id', 'Product', 'select', $pid ?: '', [ 'options' => WB_Render::options( 'wb_products', 'name' ) ] ) . WB_Render::field( 'customer_id', 'Customer', 'select', '', [ 'options' => WB_Render::options( 'wb_customers', 'name' ) ] )
 				. WB_Render::field( 'supersedes_doc_id', 'This replaces', 'select', '', [ 'options' => $prev, 'note' => 'The old version stays on file.' ] ) . WB_Render::field( 'expires_at', 'Expires', 'date' )
-				. WB_Render::field( 'visible', 'Customers may see it?', 'select', 'no', [ 'options' => [ 'no' => 'No', 'yes' => 'Yes' ] ] ) . WB_Render::form_close( 'File it' ), ! $mine && $pid, 'wb-add' );
+				. WB_Render::field( 'visible', 'Customers may see it?', 'select', 'no', [ 'options' => [ 'no' => 'No', 'yes' => 'Yes' ] ] ) . WB_Render::form_close( 'File it' ), false, 'wb-add-file' );
 		}
 		return $h;
 	}
