@@ -864,7 +864,8 @@ class WB_Payroll {
 			$staff = (array) WB_CCT::get( 'wb_staff', (int) $p['staff_id'] );
 			$prof  = (array) WB_CCT::first( 'wb_payroll_profiles', [ 'staff_id' => (int) $p['staff_id'] ] );
 			$html  = self::payslip_html( $p, $run, $staff, $prof, $brand );
-			$key   = WB_Storage::put_contents( $html, 'payslips/' . $run['period'] . '/payslip-' . (int) $p['staff_id'] . '.html' );
+			$pdf   = class_exists( 'WB_Pdf' ) ? WB_Pdf::render( $html ) : '';   // 1.1.0: a PDF payslip; the HTML page if the engine fails
+			$key   = WB_Storage::put_contents( '' !== $pdf ? $pdf : $html, 'payslips/' . $run['period'] . '/payslip-' . (int) $p['staff_id'] . ( '' !== $pdf ? '.pdf' : '.html' ) );
 			if ( '' === $key ) return self::err( 'wb_store_failed', 'A payslip could not be stored. Nothing was finalised past this point; try again.' );
 			$r = WB_CCT::update( 'wb_payslips', (int) $p['_ID'], [ 'pdf_key' => $key, 'status' => 'finalised' ], 'payslip_finalised' );
 			if ( is_wp_error( $r ) ) return $r;

@@ -175,12 +175,17 @@ class WB_Rest {
 		wb_ledger_write( 'private_doc_opened', 'wb_' . $kind, $id, null, [ 'user' => $uid ] );
 		if ( 'payslip' === $kind ) {
 			$ps = WB_CCT::get( 'wb_payslips', $id );
-			if ( '' !== (string) $ps['pdf_key'] && WB_Storage::exists( (string) $ps['pdf_key'] ) ) WB_Storage::stream( (string) $ps['pdf_key'], 'payslip-' . $ps['period'] . '.html' );
+			if ( '' !== (string) $ps['pdf_key'] && WB_Storage::exists( (string) $ps['pdf_key'] ) ) WB_Storage::stream( (string) $ps['pdf_key'], 'payslip-' . $ps['period'] . '.' . pathinfo( (string) $ps['pdf_key'], PATHINFO_EXTENSION ), true );
 			$run = (array) WB_CCT::get( 'wb_pay_runs', (int) $ps['run_id'] );   // a draft: shown, not stored
 			self::send_html( WB_Payroll::payslip_html( $ps, $run, (array) WB_CCT::get( 'wb_staff', (int) $ps['staff_id'] ), (array) WB_CCT::first( 'wb_payroll_profiles', [ 'staff_id' => (int) $ps['staff_id'] ] ), WB_Setup::brand() ), 'payslip-draft-' . $ps['period'] . '.html' );
 		}
 		if ( 'invoice' === $kind ) {
 			$inv = WB_CCT::get( 'wb_invoices', $id );
+			// 1.1.0: the PDF when there is one (made now if the engine is here); the HTML page otherwise
+			if ( class_exists( 'WB_Docs' ) && WB_Pdf::available() && WB_Docs::ensure( 'invoice', $id ) ) {
+				$inv = WB_CCT::get( 'wb_invoices', $id );
+				if ( '' !== (string) $inv['pdf_key'] && WB_Storage::exists( (string) $inv['pdf_key'] ) ) WB_Storage::stream( (string) $inv['pdf_key'], sanitize_file_name( (string) $inv['invoice_number'] ) . '.pdf', true );
+			}
 			self::send_html( WB_Portal::invoice_html( $inv ), sanitize_file_name( (string) $inv['invoice_number'] ) . '.html' );
 		}
 		self::send_html( WB_Portal::statement_html( $id ), 'statement-' . wb_today() . '.html' );

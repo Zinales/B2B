@@ -1,5 +1,27 @@
 # wb-core changelog
 
+## 1.1.0 — 8 October 2026
+Documents as PDF (Zina, 8 October: "please convert to pdf").
+- **Quotes, invoices, credit notes, delivery notes and purchase orders are made as PDF** on this
+  server by the Dompdf engine now bundled in `lib/dompdf` (pure PHP, nothing to install; DejaVu
+  Sans so any name renders; remote fetches off; file access confined to the plugin and the private
+  folder). One letterhead from System Settings: name, registration and VAT numbers, address, logo,
+  and two new fields there, **Bank details on invoices** (the "Pay to" box, with the invoice number
+  as the reference) and a **footer line**. Lines with code, words, quantity, each and amount; VAT
+  shown once at the frozen rate; the total in rand. A delivery note has quantities and a line to
+  sign, no money. A purchase order goes to the supplier for the attention of its contact.
+- A PDF is made when the document is issued (quote sent, invoice issued, credit note approved,
+  delivery note issued, purchase order sent), after the transaction has committed, filed in
+  `wb_documents` so the portal, the tokened download and the audit trail treat it like any file,
+  and pointed at by the row's `pdf_key`. **Download PDF** on the ⋯ menu makes it on demand for
+  anything issued before 1.1.0. An issued document is immutable, so its PDF is made once.
+- **Payslips are PDF** from this release when a run is finalised. If the engine ever fails, the
+  HTML version stands and nothing is lost.
+- The portal's "Download invoice" serves the PDF.
+- Tests: regress-pdf.php (21): the words and numbers on each kind, typed text never runs as
+  markup, and the engine itself renders an invoice and Unicode names to real PDF bytes, so a
+  broken `lib/` fails the build here and not on a client's first invoice.
+
 ## 1.0.1 — 8 October 2026
 - **The product is B2BGro** (Zina, 8 October). The plugin, the documents and the front page footer
   ("built on B2BGro") say so. The code prefix stays `wb_` — an internal name, like Kaycie's `kc_`;

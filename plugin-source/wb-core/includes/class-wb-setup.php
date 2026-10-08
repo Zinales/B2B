@@ -68,12 +68,13 @@ class WB_Setup {
 	const FONTS = [ 'Poppins', 'Inter', 'Mulish', 'Hanken Grotesk', 'DM Sans', 'Lato', 'Open Sans', 'Roboto', 'system' ];
 
 	const TEXT_FIELDS = [ 'display_name', 'legal_name', 'reg_number', 'vat_number' ];
-	const AREA_FIELDS = [ 'physical_address', 'postal_address' ];
+	const AREA_FIELDS = [ 'physical_address', 'postal_address', 'bank_details', 'doc_footer' ];
 
 	public static function defaults(): array {
 		return [
 			'display_name' => '', 'legal_name' => '', 'reg_number' => '', 'vat_registered' => 'yes', 'vat_number' => '',
 			'physical_address' => '', 'postal_address' => '', 'logo_key' => '',
+			'bank_details' => '', 'doc_footer' => '',   // 1.1.0: printed on invoices (pay to) and on every document (footer line)
 			'colors' => self::DEFAULT_COLORS, 'font_heading' => 'Poppins', 'font_body' => 'Poppins', 'colors_saved_at' => '',
 			'portal_company_docs' => 'hidden',   // 0.2.2: hidden | all_customers (company-wide certificates etc.)
 			'welcome_home' => 'yes',             // 0.3.1: the welcome page is the site's front page
@@ -373,6 +374,8 @@ class WB_Setup {
 			. WB_Render::field( 'vat_number', 'VAT number', 'text', $b['vat_number'], [ 'note' => '10 digits, starting with 4.' ] )
 			. WB_Render::field( 'physical_address', 'Physical address', 'textarea', $b['physical_address'], [ 'rows' => 3 ] )
 			. WB_Render::field( 'postal_address', 'Postal address', 'textarea', $b['postal_address'], [ 'rows' => 3 ] )
+			. WB_Render::field( 'bank_details', 'Bank details on invoices', 'textarea', $b['bank_details'], [ 'rows' => 3, 'placeholder' => "FNB · Cheque · 62012345678 · Branch 250655", 'note' => 'Printed in the "Pay to" box on every invoice, with the invoice number as the reference.' ] )
+			. WB_Render::field( 'doc_footer', 'Footer line on documents', 'textarea', $b['doc_footer'], [ 'rows' => 2, 'placeholder' => 'Goods remain our property until paid in full. E&OE.' ] )
 			. '<label class="wb-field"><span>Logo (PNG, JPG or WebP, up to 512 KB)</span><input type="file" name="logo" accept="image/png,image/jpeg,image/webp">'
 			. ( '' !== $b['logo_key'] ? '<small>A logo is on file. Choose a new one only to replace it.</small>' : '' ) . '</label>'
 			. '<div id="wb-setup-look"></div>';

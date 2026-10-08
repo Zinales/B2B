@@ -118,10 +118,16 @@ Notifications: most staff dashboards show `[wb_notify_bar]` (the newest few, unr
 `[wb_notifications]` is the full list with *mark as read*, and can go on any dashboard page
 (for example under `[wb_home]`); none of the shipped pages uses it yet.
 
-## Known limits in 0.2.0
-- No PDFs are generated for quotes, invoices, credit notes or delivery notes yet (`pdf_key`
-  columns are ready; the download route serves any filed document).
-- Payslips are stored as self-contained HTML pages, not PDF. PDF payslips come later.
+## Documents as PDF (1.1.0)
+Quotes, invoices, credit notes, delivery notes, purchase orders and payslips are made as PDF on this
+server by the Dompdf engine in `lib/dompdf` (pure PHP; DejaVu Sans, so any name renders; remote
+fetches off; file access confined to the plugin and the private folder). A PDF is made when the
+document is issued, after the transaction commits, filed in `wb_documents` (so the portal and the
+tokened download work as for any file) and pointed at by the row's `pdf_key`; the ⋯ menu's
+"Download PDF" makes it on demand for anything issued before 1.1.0. If the engine fails the HTML
+version stands. The letterhead, the "Pay to" box and the footer line come from System Settings.
+
+## Known limits
 - IRP5 certificates and the EMP501 reconciliation figures are not built yet; the owner prepares
   them from the finalised payslips. Nothing is ever submitted to SARS.
 - Storage driver is `local` only; the R2 driver can be added behind `wb_storage_driver` without schema change.
