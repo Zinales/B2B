@@ -252,6 +252,21 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-check-row input{width:18px;height:18px;accent-color:var(--wb-primary)}
 .wb-send-attach{background:var(--wb-tint);padding:.5rem .8rem;border-radius:var(--wb-r);font-size:var(--wb-fs-sm)}
 .wb-tpl{border:1px solid var(--wb-line);border-radius:var(--wb-r);padding:.6rem .9rem;margin:0 0 var(--wb-s3)}
+/* ---- the floor: signature and picking (1.7.0) ---- */
+.wb-sign{grid-column:1/-1;display:flex;flex-direction:column;gap:.4rem;align-items:flex-start}
+.wb-sign-label{margin:0;font-weight:600}
+.wb-sign canvas{width:100%;max-width:600px;aspect-ratio:3/1;border:1.5px dashed var(--wb-muted);border-radius:var(--wb-r);background:#fff;touch-action:none;cursor:crosshair}
+.wb-sign small{color:var(--wb-muted)}
+.wb-sign-lines{grid-column:1/-1;margin:0;padding-left:1.2rem}
+/* ---- the confirm sheet (1.7.0) ---- */
+.wb-sheet{border:1px solid var(--wb-line);border-radius:var(--wb-r);padding:1.2rem 1.3rem;max-width:30rem;width:calc(100% - 2rem);background:var(--wb-card);color:var(--wb-ink)}
+.wb-sheet::backdrop{background:rgba(11,31,58,.45)}
+.wb-sheet-q{margin:0 0 .6rem;font-size:var(--wb-fs-lg);font-weight:600}
+.wb-sheet-danger{margin:0 0 .6rem;color:var(--wb-bad);font-weight:600}
+.wb-sheet-why{display:flex;flex-direction:column;gap:.3rem;margin:0 0 .8rem}
+.wb-sheet-why textarea{width:100%;font:inherit;padding:.5rem;border:1px solid var(--wb-line);border-radius:var(--wb-r)}
+.wb-sheet-acts{display:flex;justify-content:flex-end;gap:.6rem;flex-wrap:wrap}
+.wb-app .wb-btn-danger,.wb-btn-danger{background:var(--wb-bad);border-color:var(--wb-bad);color:#fff}
 /* ---- the list control: search, chips, sort, pager (1.5.0) ---- */
 .wb-listbar{display:flex;align-items:center;gap:.5rem;margin:0 0 .6rem;flex-wrap:wrap}
 .wb-listbar-q{flex:1 1 16rem;max-width:26rem;margin:0}
@@ -486,6 +501,8 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 }
 
 /* ---- How-to: the flows and the walkthroughs (1.3.0) ---- */
+.wb-guide-start{background:var(--wb-tint);padding:.7rem .9rem;border-radius:var(--wb-r);margin:0 0 var(--wb-s4)}
+kbd{font:inherit;font-size:.85em;padding:.05rem .4rem;border:1px solid var(--wb-line);border-bottom-width:2px;border-radius:4px;background:var(--wb-card)}
 .wb-guide-toc{display:grid;grid-template-columns:1fr 1fr;gap:var(--wb-s3) var(--wb-s5);padding:var(--wb-s4);background:var(--wb-card);border:1px solid var(--wb-line);border-radius:var(--wb-r);margin:0 0 var(--wb-s5)}
 .wb-guide-toc ul{list-style:none;margin:0;padding:0}
 .wb-guide-toc li{margin:0 0 var(--wb-s2)}

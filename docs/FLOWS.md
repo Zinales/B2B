@@ -12,7 +12,7 @@ Everything in the sale is typed once, on the quote. The order, the invoice and t
 4. **Orders.** Acceptance builds the order (ORD) from the quote's frozen lines, prices and price sources. A declined quote is marked declined; a quote past its valid-until date is marked expired by the nightly run.
 5. **Invoices.** The invoice (INV) is issued from the order, with the VAT rate of that moment frozen on it. By default this happens on acceptance. Under Settings, "Invoice when" can be set to "the goods leave" instead; a cash customer is always invoiced on acceptance so they can pay before collecting. "Issue invoice" on the order's menu issues it by hand.
 6. **Orders.** The release check decides whether goods may leave: an account on hold or closed, no; the invoice paid, yes; a cash customer who has not paid, no; a customer on terms, yes while nothing is overdue and everything they owe, this order included, is inside their credit limit. "Release for collection / delivery" runs it and puts the stock aside.
-7. **Deliveries.** Issue the delivery or collection note (DN) for the quantities going out, or "Issue note for everything left". Issuing it takes the stock off the books, there and then. Record who signed for it when it is back.
+7. **Deliveries.** Print the picking list from the order's menu: what to take, how many, where it was last put away, and which need a batch written down. Then issue the delivery or collection note (DN) for the quantities going out, or "Issue note for everything left". Issuing it takes the stock off the books, there and then. "Sign for it" records who took the goods, with their signature from a finger on a phone or a mouse.
 8. **Orders.** When every line has been delivered and the invoice is paid or inside its terms, close the order. An order can be cancelled at any point before goods have left.
 9. **Quotes.** At the counter, "Quick sale" does all of this in one press for goods paid and taken now: the quote, the order, the invoice, the payment, the release and the signed collection note, each with its own number. A price that needs approval cannot be a counter sale; if any step is refused it stops there and says which.
 
@@ -63,7 +63,7 @@ A purchase order tells the supplier what you want and tells the cashflow what yo
 1. **Purchasing.** See what to reorder (the open reorder alerts) and what is on its way.
 2. **Purchasing.** Raise a purchase order: the supplier, the products and quantities, the expected date. It is numbered PO, and it resolves the reorder alerts it covers.
 3. **Purchasing.** "Mark sent" once it has gone to the supplier; the PDF is made then. The open order is counted as a committed payment in the cashflow, on the supplier's terms.
-4. **Purchasing.** Receive it when it arrives under "Receive stock", line by line, with what actually came. Each receipt is a stock movement that adds to on hand. A short delivery leaves the order open for the rest.
+4. **Purchasing.** Receive it when it arrives under "Receive stock", line by line, with what actually came, where it was put away, and for a product tracked by batch the batch number and its expiry, typed as printed on the goods. Each receipt is a stock movement that adds to on hand. A short delivery leaves the order open for the rest.
 5. **Purchasing.** Cancel an order the supplier will not fill; the cashflow drops it that night.
 
 The rules it keeps:
@@ -93,8 +93,9 @@ A customer record carries the terms, the credit limit, the price tier and the ac
 2. **Customers.** Click a customer's name anywhere to open their page: what they owe and how late, their terms, limit and tier, then their open invoices, quotes, orders, payments, contacts, the timeline, their own prices and their documents.
 3. **Customers.** Under "Contacts and portal logins", a contact's menu has "Give a portal login (sends the set-password email now)". The email goes out only when that is pressed, never by itself. The same menu can send it again, or turn the login off.
 4. **Your account.** The customer signs in and sees their open quotes (to accept or decline), unpaid invoices with due dates, orders, deliveries, their statement and the datasheets for what they buy.
-5. **Your account.** "Ask for a quote" makes a draft quote for the rep; it is never sent by itself. "Ask for this change" under their details sends a request that staff approve under "Contact changes customers asked for"; nothing is written to the customer record directly.
-6. **Marketing.** Every portal sign-in, call and visit is a touchpoint on the customer's timeline.
+5. **Your account.** Under Order, the customer sees their products at their own price with the stock in words (in stock, low, to order), searches the rest of the range, and presses "Put these in my basket" on any past order to order it again. "Ask for a quote for these" turns the basket into a draft quote for the rep; it is never sent or accepted by itself. A price that would need approval shows as "Price on request".
+6. **Your account.** "Ask for this change" under their details sends a request that staff approve under "Contact changes customers asked for"; nothing is written to the customer record directly.
+7. **Marketing.** Every portal sign-in, call and visit is a touchpoint on the customer's timeline.
 
 The rules it keeps:
 

@@ -32,7 +32,7 @@ class WB_Guide {
 				[ 'orders', 'Acceptance builds the order (ORD) from the quote\'s frozen lines, prices and price sources. A declined quote is marked declined; a quote past its valid-until date is marked expired by the nightly run.' ],
 				[ 'invoices', 'The invoice (INV) is issued from the order, with the VAT rate of that moment frozen on it. By default this happens on acceptance. Under Settings, "Invoice when" can be set to "the goods leave" instead; a cash customer is always invoiced on acceptance so they can pay before collecting. "Issue invoice" on the order\'s menu issues it by hand.' ],
 				[ 'orders', 'The release check decides whether goods may leave: an account on hold or closed, no; the invoice paid, yes; a cash customer who has not paid, no; a customer on terms, yes while nothing is overdue and everything they owe, this order included, is inside their credit limit. "Release for collection / delivery" runs it and puts the stock aside.' ],
-				[ 'deliveries', 'Issue the delivery or collection note (DN) for the quantities going out, or "Issue note for everything left". Issuing it takes the stock off the books, there and then. Record who signed for it when it is back.' ],
+				[ 'deliveries', 'Print the picking list from the order\'s menu: what to take, how many, where it was last put away, and which need a batch written down. Then issue the delivery or collection note (DN) for the quantities going out, or "Issue note for everything left". Issuing it takes the stock off the books, there and then. "Sign for it" records who took the goods, with their signature from a finger on a phone or a mouse.' ],
 				[ 'orders', 'When every line has been delivered and the invoice is paid or inside its terms, close the order. An order can be cancelled at any point before goods have left.' ],
 				[ 'quotes', 'At the counter, "Quick sale" does all of this in one press for goods paid and taken now: the quote, the order, the invoice, the payment, the release and the signed collection note, each with its own number. A price that needs approval cannot be a counter sale; if any step is refused it stops there and says which.' ],
 			],
@@ -70,7 +70,7 @@ class WB_Guide {
 				[ 'purchasing', 'See what to reorder (the open reorder alerts) and what is on its way.' ],
 				[ 'purchasing', 'Raise a purchase order: the supplier, the products and quantities, the expected date. It is numbered PO, and it resolves the reorder alerts it covers.' ],
 				[ 'purchasing', '"Mark sent" once it has gone to the supplier; the PDF is made then. The open order is counted as a committed payment in the cashflow, on the supplier\'s terms.' ],
-				[ 'purchasing', 'Receive it when it arrives under "Receive stock", line by line, with what actually came. Each receipt is a stock movement that adds to on hand. A short delivery leaves the order open for the rest.' ],
+				[ 'purchasing', 'Receive it when it arrives under "Receive stock", line by line, with what actually came, where it was put away, and for a product tracked by batch the batch number and its expiry, typed as printed on the goods. Each receipt is a stock movement that adds to on hand. A short delivery leaves the order open for the rest.' ],
 				[ 'purchasing', 'Cancel an order the supplier will not fill; the cashflow drops it that night.' ],
 			],
 			[ 'Received quantities are typed once, at the door; the stock level is never typed.' ],
@@ -93,7 +93,8 @@ class WB_Guide {
 				[ 'customers', 'Click a customer\'s name anywhere to open their page: what they owe and how late, their terms, limit and tier, then their open invoices, quotes, orders, payments, contacts, the timeline, their own prices and their documents.' ],
 				[ 'customers', 'Under "Contacts and portal logins", a contact\'s menu has "Give a portal login (sends the set-password email now)". The email goes out only when that is pressed, never by itself. The same menu can send it again, or turn the login off.' ],
 				[ 'portal', 'The customer signs in and sees their open quotes (to accept or decline), unpaid invoices with due dates, orders, deliveries, their statement and the datasheets for what they buy.' ],
-				[ 'portal', '"Ask for a quote" makes a draft quote for the rep; it is never sent by itself. "Ask for this change" under their details sends a request that staff approve under "Contact changes customers asked for"; nothing is written to the customer record directly.' ],
+				[ 'portal', 'Under Order, the customer sees their products at their own price with the stock in words (in stock, low, to order), searches the rest of the range, and presses "Put these in my basket" on any past order to order it again. "Ask for a quote for these" turns the basket into a draft quote for the rep; it is never sent or accepted by itself. A price that would need approval shows as "Price on request".' ],
+				[ 'portal', '"Ask for this change" under their details sends a request that staff approve under "Contact changes customers asked for"; nothing is written to the customer record directly.' ],
 				[ 'marketing', 'Every portal sign-in, call and visit is a touchpoint on the customer\'s timeline.' ],
 			],
 			[ 'A portal login belongs to exactly one contact and through it to one customer; everything is scoped to that customer and fails closed.', 'Customer-facing email is never automatic.' ],
@@ -303,7 +304,8 @@ class WB_Guide {
 
 	/** [wb_howto] — the How-to screen: the flows, then the walkthroughs. */
 	public static function render(): string {
-		$h = '<nav class="wb-guide-toc" aria-label="On this page"><span class="wb-kicker">The flows</span><ul>';
+		$h = '<p class="wb-guide-start">New here? Start with <a href="#wb-howto-sale">Sell something from quote to delivery</a>, then look at <a href="' . esc_url( WB_Workspace::url( 'home' ) ) . '">Today</a>. Keys: <kbd>/</kbd> goes to the search box, <kbd>n</kbd> to the screen\'s main action, <kbd>Esc</kbd> closes a menu.</p>';
+		$h .= '<nav class="wb-guide-toc" aria-label="On this page"><span class="wb-kicker">The flows</span><ul>';
 		foreach ( self::FLOWS as $k => $f ) $h .= '<li><a href="#wb-flow-' . esc_attr( $k ) . '">' . esc_html( $f[0] ) . '</a></li>';
 		$h .= '</ul><span class="wb-kicker">Walkthroughs</span><ul>';
 		foreach ( self::HOWTO as $k => $w ) $h .= '<li><a href="#wb-howto-' . esc_attr( $k ) . '">' . esc_html( $w[0] ) . '</a></li>';

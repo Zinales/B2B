@@ -1,5 +1,30 @@
 # wb-core changelog
 
+## 1.7.0 — 9 October 2026
+The last part of the review's roadmap.
+- **Customers order from their account** (WB_Portal_Shop): their products at their own price
+  with the stock in words (in stock, low, part in stock, to order; never the number), a search
+  across the whole range, "Put these in my basket" on any past order, and a basket that becomes a
+  request for a quote: a draft for the rep, priced by both checks, never sent or accepted by
+  itself. A price that would need approval shows as "Price on request". Replaces the five-row
+  request form.
+- **The picking list** (WB_Floor): a PDF per released order from its menu: what to take, how many,
+  where it was last put away, which need a batch written down, boxes to tick, picked by and
+  checked by.
+- **Sign for it**: a delivery or collection note is signed with a finger on a phone or with the
+  mouse; the signature is kept as a small PNG in the private folder and "See the signature" opens
+  it. Without the script, the name alone is recorded as before.
+- **Batches at the door**: receiving takes the batch number as printed on the goods, and its
+  expiry; a new number starts a batch, a known one is found.
+- **The confirm sheet**: every "are you sure?" asks in the page, in words, with the button named
+  for what it does ("Issue the note", not OK), the "cannot be undone" line in red, and a reason box
+  where one is needed. The browser's own box stays only where the script is not loaded.
+- **Keys**: / goes to the search box, n to the screen's main action, Escape closes a menu. Never
+  while typing in a field. Listed on the How-to screen.
+- **The demo's first visit** lands on the first walkthrough, with Today one click away.
+- Build gate 2b now also drives the script in a real browser (tools/js-check.js, 13 behaviours).
+- Tests: regress-portal-shop.php (16), regress-floor.php (18).
+
 ## 1.6.0 — 9 October 2026
 The second part of the review's roadmap.
 - **Chase** at the top of Invoices: everything owed by how late (not yet due, 1–30, 31–60, 61–90,

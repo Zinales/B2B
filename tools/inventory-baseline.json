@@ -521,9 +521,11 @@
   "wb/v1/health",
   "wb/v1/payroll-bank-file",
   "wb/v1/pdf",
+  "wb/v1/picking",
   "wb/v1/private",
   "wb/v1/products",
-  "wb/v1/quote-accept"
+  "wb/v1/quote-accept",
+  "wb/v1/signature"
  ],
  "shortcodes": [
   "wb_cashflow",
@@ -549,6 +551,7 @@
   "wb_portal_invoices",
   "wb_portal_quotes",
   "wb_portal_request",
+  "wb_portal_shop",
   "wb_products",
   "wb_purchasing",
   "wb_quotes",

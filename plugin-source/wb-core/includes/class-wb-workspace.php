@@ -57,7 +57,7 @@ class WB_Workspace {
 	];
 
 	/** The portal is its own address and frame (no staff menu). */
-	const PORTAL = [ 'Your account', 'Quotes to accept, invoices to pay, your statement and the datasheets for what you buy.', 'wb_portal', '', '[wb_portal]', [] ];
+	const PORTAL = [ 'Your account', 'Order at your own prices, accept quotes, pay invoices, and find your statement and the datasheets for what you buy.', 'wb_portal', '', '[wb_portal]', [] ];
 
 	public static function init(): void {
 		add_action( 'init', [ __CLASS__, 'rewrite' ] );

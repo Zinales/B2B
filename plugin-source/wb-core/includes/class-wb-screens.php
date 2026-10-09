@@ -354,7 +354,17 @@ class WB_Screens {
 	}
 
 	private static function do_po_receive() {
-		$r = WB_Stock::receive_po_line( absint( self::p( 'po_line_id' ) ), (float) self::p( 'qty' ), absint( self::p( 'batch_id', 0 ) ), (string) self::p( 'location' ) );
+		$batch = absint( self::p( 'batch_id', 0 ) );
+		$no    = strtoupper( sanitize_text_field( (string) self::p( 'batch_no' ) ) );
+		if ( ! $batch && '' !== $no ) {   // 1.7.0: a batch number typed at the door finds its batch, or starts one
+			$line = WB_CCT::get( 'wb_po_lines', absint( self::p( 'po_line_id' ) ) );
+			$po   = $line ? WB_CCT::get( 'wb_purchase_orders', (int) $line['po_id'] ) : null;
+			if ( ! $line ) return new WP_Error( 'wb_not_found', 'Purchase order line not found.' );
+			$b = WB_CCT::first( 'wb_batches', [ 'product_id' => (int) $line['product_id'], 'batch_no' => $no ] );
+			$batch = $b ? (int) $b['_ID'] : (int) WB_CCT::insert( 'wb_batches', [ 'product_id' => (int) $line['product_id'], 'batch_no' => $no, 'received_at' => wb_now(), 'expiry_at' => sanitize_text_field( (string) self::p( 'expiry_at' ) ), 'supplier_id' => (int) ( $po['supplier_id'] ?? 0 ) ], 'batch_created' );
+			if ( $batch <= 0 ) return new WP_Error( 'wb_batch', 'The batch could not be recorded.' );
+		}
+		$r = WB_Stock::receive_po_line( absint( self::p( 'po_line_id' ) ), (float) self::p( 'qty' ), $batch, (string) self::p( 'location' ) );
 		return is_wp_error( $r ) ? $r : [ 'msg' => 'Received. Stock is up.' ];
 	}
 
@@ -610,7 +620,7 @@ class WB_Screens {
 		$oid = absint( $_GET['order'] ?? 0 );
 		if ( $oid && ( $o = WB_CCT::get( 'wb_orders', $oid ) ) ) $h .= self::order_detail( $o );
 		return $h . WB_List::render( 'wb_orders', [ [ 'key' => 'order_number', 'render' => fn( $v, $r ) => '<a href="' . esc_url( add_query_arg( 'order', (int) $r['_ID'] ) ) . '">' . esc_html( (string) $v ) . '</a>' ], [ 'key' => 'customer_id', 'label' => 'Customer', 'render' => fn( $v ) => self::customer_link( (int) $v ) ], 'status', 'fulfilment', 'required_by', [ 'key' => 'total', 'type' => 'money' ] ],
-			[ 'cct' => 'wb_orders', 'actions' => [ 'order_open', 'order_invoice', 'order_release', 'order_ship_all', 'order_close', 'order_cancel' ], 'empty' => 'No orders yet. Orders appear when a quote is accepted.', 'what' => 'orders',
+			[ 'cct' => 'wb_orders', 'actions' => [ 'order_open', 'order_pick', 'order_invoice', 'order_release', 'order_ship_all', 'order_close', 'order_cancel' ], 'empty' => 'No orders yet. Orders appear when a quote is accepted.', 'what' => 'orders',
 				'placeholder' => 'Order number or customer', 'search' => [ 'order_number' ], 'search_in' => [ 'customer_id' => [ 'wb_customers', 'name' ] ],
 				'statuses' => [ 'awaiting_payment' => 'Awaiting payment', 'ready' => 'Ready', 'part_delivered' => 'Part delivered', 'delivered' => 'Delivered', 'closed' => 'Closed', 'cancelled' => 'Cancelled' ] ] );
 	}
@@ -635,7 +645,7 @@ class WB_Screens {
 			$body .= $f . WB_Render::form_close( 'Issue the note', 'Issue this note? The stock leaves the books now.' );
 		}
 		$dns   = WB_CCT::find( 'wb_delivery_notes', [ 'order_id' => (int) $o['_ID'] ] );
-		$body .= WB_Render::render_table( $dns, [ 'dn_number', 'type', 'issued_at', 'status', 'collected_by_name' ], [ 'cct' => 'wb_delivery_notes', 'actions' => [ 'pdf_dn', 'dn_signed' ] ] );
+		$body .= WB_Render::render_table( $dns, [ 'dn_number', 'type', 'issued_at', 'status', 'collected_by_name' ], [ 'cct' => 'wb_delivery_notes', 'actions' => [ 'dn_sign', 'pdf_dn', 'dn_signature' ] ] );
 		return self::fold( 'Order ' . $o['order_number'], $body, true );
 	}
 
@@ -695,12 +705,12 @@ class WB_Screens {
 
 	public static function deliveries( $atts = [] ): string {
 		if ( $g = self::gate( 'wb_issue_delivery_notes' ) ) return $g;
-		$h   = WB_RowActions::notice();
+		$h   = WB_RowActions::notice() . WB_Floor::sign_panel();   // 1.7.0: sign with a finger
 		$oid = absint( $_GET['order'] ?? 0 );
 		if ( $oid && ( $o = WB_CCT::get( 'wb_orders', $oid ) ) ) $h .= self::order_detail( $o );
 		$ready = WB_CCT::find( 'wb_orders', [ 'status' => [ 'ready', 'part_delivered' ] ], [ 'order' => 'ASC' ] );
-		$h    .= '<h3>Ready to go out</h3>' . WB_Render::render_table( $ready, [ 'order_number', [ 'key' => 'customer_id', 'render' => fn( $v ) => esc_html( self::customer_name( $v ) ) ], 'status', 'fulfilment', 'required_by' ], [ 'cct' => 'wb_orders', 'actions' => [ 'order_open', 'order_ship_all', 'order_close' ], 'empty' => 'Nothing released yet.' ] );
-		return $h . '<h3>Notes</h3>' . WB_List::render( 'wb_delivery_notes', [ 'dn_number', [ 'key' => 'order_id', 'label' => 'Order', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_orders', (int) $v )['order_number'] ?? '' ) ) ], 'type', 'issued_at', 'status', 'collected_by_name' ], [ 'cct' => 'wb_delivery_notes', 'actions' => [ 'pdf_dn', 'dn_signed' ], 'empty' => 'No notes yet.', 'what' => 'notes', 'placeholder' => 'Note number or who signed', 'search' => [ 'dn_number', 'collected_by_name' ] ] );
+		$h    .= '<h3>Ready to go out</h3>' . WB_Render::render_table( $ready, [ 'order_number', [ 'key' => 'customer_id', 'render' => fn( $v ) => esc_html( self::customer_name( $v ) ) ], 'status', 'fulfilment', 'required_by' ], [ 'cct' => 'wb_orders', 'actions' => [ 'order_pick', 'order_open', 'order_ship_all', 'order_close' ], 'empty' => 'Nothing released yet.' ] );
+		return $h . '<h3>Notes</h3>' . WB_List::render( 'wb_delivery_notes', [ 'dn_number', [ 'key' => 'order_id', 'label' => 'Order', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_orders', (int) $v )['order_number'] ?? '' ) ) ], 'type', 'issued_at', 'status', 'collected_by_name' ], [ 'cct' => 'wb_delivery_notes', 'actions' => [ 'dn_sign', 'pdf_dn', 'dn_signature' ], 'empty' => 'No notes yet.', 'what' => 'notes', 'placeholder' => 'Note number or who signed', 'search' => [ 'dn_number', 'collected_by_name' ] ] );
 	}
 
 	public static function stock( $atts = [] ): string {
@@ -766,7 +776,7 @@ class WB_Screens {
 				if ( $left > 0 ) $open[ (int) $l['_ID'] ] = $po['po_number'] . ' · ' . self::product_name( $l['product_id'] ) . ' · ' . $left . ' to come';
 			}
 		}
-		$h .= self::fold( 'Receive stock', WB_Render::form_open( 'po_receive' ) . WB_Render::field( 'po_line_id', 'Line', 'select', '', [ 'options' => $open ] ) . WB_Render::field( 'qty', 'Quantity received', 'number' ) . WB_Render::field( 'batch_id', 'Batch (if tracked)', 'select', '', [ 'options' => WB_Render::options( 'wb_batches', 'batch_no' ) ] ) . WB_Render::field( 'location', 'Put away at' ) . WB_Render::form_close( 'Receive' ) );
+		$h .= self::fold( 'Receive stock', WB_Render::form_open( 'po_receive' ) . WB_Render::field( 'po_line_id', 'Line', 'select', '', [ 'options' => $open ] ) . WB_Render::field( 'qty', 'Quantity received', 'number' ) . WB_Render::field( 'batch_no', 'Batch number (if the product is tracked by batch)', 'text', '', [ 'placeholder' => 'As printed on the goods' ] ) . WB_Render::field( 'expiry_at', 'Batch expires', 'date' ) . WB_Render::field( 'location', 'Put away at' ) . WB_Render::form_close( 'Receive' ) );
 		return $h;
 	}
 

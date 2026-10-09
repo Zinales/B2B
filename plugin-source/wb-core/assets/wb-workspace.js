@@ -6,6 +6,13 @@
  *     or barcode), each with this customer's price, where it comes from and what is in stock. The
  *     arrow keys move, Enter chooses, Escape closes. With data-wb-pick-into the choice is added to
  *     a textarea of lines (purchase orders) instead.
+ *  2. Signature (1.7.0): a box marked data-wb-sign takes a finger or mouse signature and puts it in
+ *     the form as a small PNG. Without it the name alone is recorded.
+ *  3. Keys (1.7.0): "/" goes to the search box, "n" to the screen's main action, Escape closes a
+ *     menu or the confirm sheet. Never while typing in a field.
+ *  4. The confirm sheet (1.7.0): a form that asks "are you sure?" (data-wb-confirm, data-wb-danger,
+ *     data-wb-reason) asks in the page, in words, with the button named for what it does, instead of
+ *     the browser's box. The older handler stands down when this one is here.
  */
 (function () {
   "use strict";
@@ -82,4 +89,56 @@
   }
 
   document.querySelectorAll("[data-wb-pick]").forEach(picker);
+
+  /* 2. signature ---------------------------------------------------------------- */
+  document.querySelectorAll("[data-wb-sign]").forEach(function (box) {
+    var c = box.querySelector("canvas"), out = box.querySelector("input[type=hidden]"), ctx = c.getContext("2d"), drawing = false, inked = false;
+    ctx.lineWidth = 2.5; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#0B1F3A";
+    function at(e) { var r = c.getBoundingClientRect(); return [(e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height]; }
+    c.addEventListener("pointerdown", function (e) { drawing = true; c.setPointerCapture(e.pointerId); var p = at(e); ctx.beginPath(); ctx.moveTo(p[0], p[1]); e.preventDefault(); });
+    c.addEventListener("pointermove", function (e) { if (!drawing) return; var p = at(e); ctx.lineTo(p[0], p[1]); ctx.stroke(); inked = true; e.preventDefault(); });
+    function end() { if (!drawing) return; drawing = false; if (inked) out.value = c.toDataURL("image/png"); }
+    c.addEventListener("pointerup", end); c.addEventListener("pointercancel", end); c.addEventListener("pointerleave", end);
+    box.querySelector("[data-wb-sign-clear]").addEventListener("click", function () { ctx.clearRect(0, 0, c.width, c.height); inked = false; out.value = ""; });
+  });
+
+  /* 4. the confirm sheet ---------------------------------------------------------- */
+  var sheet = null;
+  function ask(opts, done) {
+    if (!sheet) {
+      sheet = document.createElement("dialog"); sheet.className = "wb-sheet";
+      sheet.innerHTML = '<form method="dialog"><p class="wb-sheet-q"></p><p class="wb-sheet-danger" hidden>This cannot be undone.</p><label class="wb-field wb-sheet-why" hidden><span></span><textarea rows="3"></textarea></label><div class="wb-sheet-acts"><button value="no" class="wb-btn wb-btn-ghost">Cancel</button><button value="yes" class="wb-btn wb-sheet-go"></button></div></form>';
+      document.body.appendChild(sheet);
+    }
+    sheet.querySelector(".wb-sheet-q").textContent = opts.question;
+    sheet.querySelector(".wb-sheet-danger").hidden = !opts.danger;
+    var why = sheet.querySelector(".wb-sheet-why"), ta = why.querySelector("textarea");
+    why.hidden = !opts.reason; why.querySelector("span").textContent = opts.reason || ""; ta.value = ""; ta.required = !!opts.reason;
+    var go = sheet.querySelector(".wb-sheet-go"); go.textContent = opts.go; go.classList.toggle("wb-btn-danger", !!opts.danger);
+    sheet.onclose = function () { if (sheet.returnValue === "yes") done(ta.value.trim()); };
+    sheet.showModal(); (opts.reason ? ta : go).focus();
+  }
+  window.wbSheet = true;   // the older browser-box handler stands down
+  document.addEventListener("submit", function (e) {
+    var f = e.target; if (f.dataset.wbAsked) { delete f.dataset.wbAsked; return; }
+    var s = e.submitter, q = f.getAttribute("data-wb-confirm") || (s && s.getAttribute("data-wb-confirm"));
+    var danger = !!f.getAttribute("data-wb-danger"), reason = f.getAttribute("data-wb-reason");
+    if (!q && !danger && !reason) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var words = (s && (s.textContent || s.value || "").trim()) || "Go ahead";
+    ask({ question: q || (reason ? "Before it is done:" : "Are you sure?"), danger: danger, reason: reason, go: words }, function (why) {
+      if (reason) { if (!why) return; var r = f.querySelector("input[name=wb_reason]"); if (r) r.value = why; }
+      f.dataset.wbAsked = "1";
+      if (f.requestSubmit) f.requestSubmit(s || undefined); else f.submit();
+    });
+  }, true);
+
+  /* 3. keys ----------------------------------------------------------------------- */
+  document.addEventListener("keydown", function (e) {
+    var t = e.target, typing = t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+    if (e.key === "Escape") { document.querySelectorAll(".wb-kebab.is-open").forEach(function (k) { k.classList.remove("is-open"); var b = k.querySelector(".wb-kebab-btn"); if (b) { b.setAttribute("aria-expanded", "false"); b.focus(); } }); return; }
+    if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === "/") { var q = document.querySelector(".wb-listbar-q input, .wb-pick input[type=text]"); if (q) { e.preventDefault(); q.focus(); q.select(); } }
+    else if (e.key === "n") { var a = document.querySelector(".wb-head-acts a, .wb-head-acts button"); if (a) { e.preventDefault(); a.click(); } }
+  });
 })();

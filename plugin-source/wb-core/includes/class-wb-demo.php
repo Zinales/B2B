@@ -158,13 +158,16 @@ class WB_Demo {
 	/** /workspace/demo/: sign the visitor in as the demo login and land on Today. Never for a closed demo. */
 	public static function enter(): void {
 		if ( ! self::demo_open() ) return;
-		$uid = (int) self::login_setting()['user_id'];
-		if ( ! is_user_logged_in() ) {
+		$uid   = (int) self::login_setting()['user_id'];
+		$first = ! is_user_logged_in();
+		if ( $first ) {
 			wp_set_current_user( $uid );
 			wp_set_auth_cookie( $uid, false );
 			wb_ledger_write( 'demo_entered', 'wb_demo', $uid, null, [ 'ip' => (string) ( $_SERVER['REMOTE_ADDR'] ?? '' ) ] );
 		}
-		wp_safe_redirect( WB_Workspace::url( 'home' ) );
+		// 1.7.0: a first visit lands on the first walkthrough, with Today one click away; the 24
+		// things waiting on Today are honest but too many to start with.
+		wp_safe_redirect( $first ? WB_Workspace::url( 'howto' ) . '#wb-howto-sale' : WB_Workspace::url( 'home' ) );
 		exit;
 	}
 

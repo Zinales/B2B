@@ -398,8 +398,8 @@ class WB_Portal {
 	public static function full( $atts = [] ): string {
 		[ $c, $g ] = self::gate();
 		if ( ! $c ) return $g;
-		return self::home() . '<h2>Quotes</h2>' . self::quotes() . '<h2>Invoices and statement</h2>' . self::invoices() . '<h2>Datasheets</h2>' . self::datasheets()
-			. '<h2>Ask for a quote</h2>' . self::request() . '<h2>My details</h2>' . self::details();
+		return self::home() . '<h2 id="wb-order">Order</h2>' . WB_Portal_Shop::render() . '<h2>Quotes</h2>' . self::quotes() . '<h2>Invoices and statement</h2>' . self::invoices() . '<h2>Datasheets</h2>' . self::datasheets()
+			. '<h2>My details</h2>' . self::details();   // 1.7.0: ordering (your prices, order again, a basket) replaces the five-row request form
 	}
 
 	/** Staff panel on the Customers screen: contacts, portal logins, change requests. */

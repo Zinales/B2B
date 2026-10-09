@@ -101,6 +101,11 @@ def gate_pages():
             fail('accessibility check failed:\n' + out[-4000:])
         last = [l for l in out.strip().splitlines() if l.strip()][-1:] or ['']
         print('2b. Pages      ' + last[0].strip())
+        code, out = run([node, os.path.join(ROOT, 'tools', 'js-check.js')], cwd=ROOT)
+        if code != 0:
+            fail('the workspace script misbehaved:\n' + out[-3000:])
+        last = [l for l in out.strip().splitlines() if l.strip()][-1:] or ['']
+        print('2b. Script     ' + last[0].strip())
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
