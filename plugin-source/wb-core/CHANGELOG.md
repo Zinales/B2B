@@ -1,5 +1,8 @@
 # wb-core changelog
 
+## 1.7.3 — 9 October 2026
+- The "Keep me posted" button sits at its own width instead of stretching.
+
 ## 1.7.2 — 9 October 2026
 - The demo password is **demo-user007** (Zina, 9 October). It replaces the one 1.7.1 made by itself
   (demo-1234), and is set on the demo login when the demo opens, when Settings is saved and every

@@ -492,7 +492,7 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-wrap .wb-optin{margin:0}
 .wb-optin h2{margin:0 0 .3rem}
 .wb-optin-form{display:grid;grid-template-columns:1fr 1fr;gap:.7rem 1rem;align-items:end}
-.wb-optin-form .wb-optin-consent,.wb-optin-form .wb-btn{grid-column:1/-1;justify-self:start}
+.wb-optin-form .wb-optin-consent,.wb-app .wb-optin-form .wb-btn{grid-column:1/-1;justify-self:start;width:auto}
 .wb-optin-consent{align-items:flex-start;font-size:var(--wb-fs-sm);color:var(--wb-ink)}
 .wb-optin-consent input{margin-top:.2rem;flex:none}
 .wb-optin-hp{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
