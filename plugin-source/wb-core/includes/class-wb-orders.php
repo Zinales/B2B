@@ -233,6 +233,49 @@ class WB_Orders {
 		return $res;
 	}
 
+	/**
+	 * What a line edit means for its price (1.5.0). Pure. $line: the frozen line; $qty; $typed: the
+	 * price in the box (null when left empty). Returns [ changed, manual price or null ]:
+	 *   a typed price that differs from the line's → that price, manual;
+	 *   an unchanged price on a manual line → the same price, still manual;
+	 *   otherwise → null, so the customer's rules price the new quantity.
+	 */
+	public static function line_edit( array $line, float $qty, ?float $typed ): array {
+		$price   = (float) $line['unit_price'];
+		$manual  = 'manual' === (string) ( $line['price_source'] ?? '' );
+		$retyped = null !== $typed && abs( $typed - $price ) > 0.004;
+		$requty  = abs( $qty - (float) $line['qty'] ) > 0.0001;
+		if ( ! $retyped && ! $requty ) return [ false, null ];
+		if ( $retyped ) return [ true, round( $typed, 2 ) ];
+		return [ true, $manual ? $price : null ];
+	}
+
+	/**
+	 * Change a draft line's quantity and/or price, and put it through both checks again (1.5.0, the
+	 * quote line editor). A quantity of 0 removes the line. @return 'changed'|'same'|WP_Error
+	 */
+	public static function update_quote_line( int $line_id, float $qty, ?float $typed_price = null ) {
+		if ( ! current_user_can( 'wb_create_quotes' ) ) return new WP_Error( 'wb_forbidden', 'You cannot write quotes.' );
+		$line = WB_CCT::get( 'wb_quote_lines', $line_id );
+		$q    = $line ? WB_CCT::get( 'wb_quotes', (int) $line['quote_id'] ) : null;
+		if ( ! $q || 'draft' !== $q['status'] ) return new WP_Error( 'wb_quote_locked', 'Only a draft quote can be changed. A sent quote is a record of what was offered.' );
+		if ( $qty < 0 ) return new WP_Error( 'wb_bad_line', 'A quantity cannot be less than nothing.' );
+		if ( $qty <= 0 ) { $r = self::remove_quote_line( $line_id ); return is_wp_error( $r ) ? $r : 'changed'; }
+		[ $changed, $manual ] = self::line_edit( $line, $qty, $typed_price );
+		if ( ! $changed ) return 'same';
+		$p = WB_Pricing::price_for( (int) $q['customer_id'], (int) $line['product_id'], $qty, wb_today(), $manual );
+		if ( is_wp_error( $p ) ) return $p;
+		$res = WB_CCT::update( 'wb_quote_lines', $line_id, [
+			'qty' => $qty, 'unit_price' => (float) $p['unit_price'], 'price_source' => null !== $manual ? 'manual' : (string) $p['price_source'], 'floor_price' => (float) $p['floor_price'],
+			'below_floor' => $p['below_floor'] ? 'yes' : 'no', 'out_of_date' => $p['out_of_date'] ? 'yes' : 'no', 'list_price' => (float) $p['list_price'],
+			'cost_price' => (float) $p['cost_price'], 'discount_pct' => (float) $p['discount_pct'], 'line_total' => (float) $p['line_total'],
+			'priced_by_user_id' => get_current_user_id(), 'approval_id' => 0,   // a new price needs its own approval
+		], 'quote_line_repriced' );
+		if ( is_wp_error( $res ) ) return $res;
+		self::retotal_quote( (int) $q['_ID'] );
+		return 'changed';
+	}
+
 	/** Remove a draft line (soft: archived). */
 	public static function remove_quote_line( int $line_id ) {
 		if ( ! current_user_can( 'wb_create_quotes' ) ) return new WP_Error( 'wb_forbidden', 'You cannot write quotes.' );

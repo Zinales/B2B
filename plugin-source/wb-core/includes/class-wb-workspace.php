@@ -145,6 +145,7 @@ class WB_Workspace {
 	public static function assets(): void {
 		if ( '' === self::requested() ) return;
 		wp_enqueue_style( 'wb-workspace', plugins_url( 'assets/wb-workspace.css', WB_PLUGIN_FILE ), [ 'wb-dashboard' ], WB_VERSION );
+		wp_enqueue_script( 'wb-workspace', plugins_url( 'assets/wb-workspace.js', WB_PLUGIN_FILE ), [], WB_VERSION, true );   // 1.5.0: product search; every form works without it
 		$theme = get_theme_root_uri();
 		$st    = wp_styles();
 		foreach ( (array) $st->queue as $h ) {
@@ -180,7 +181,8 @@ class WB_Workspace {
 		$s = self::screen( $slug );
 		if ( ! $s ) return [ 404, self::page( $slug, 'Not found', '', wb_notice( 'warn', 'There is no screen at this address.' ) ) ];
 		if ( ! current_user_can( $s[2] ) ) return [ 403, self::page( $slug, $s[0], $s[1], self::no_access( $slug ) ) ];
-		return [ 200, self::page( $slug, $s[0], $s[1], do_shortcode( $s[4] ) . ( class_exists( 'WB_Guide' ) ? WB_Guide::fold( $slug ) : '' ) ) ];
+		$send = class_exists( 'WB_Send' ) ? WB_Send::panel( $slug ) : '';   // 1.5.0: "Send by email" opens here, above the screen
+		return [ 200, self::page( $slug, $s[0], $s[1], $send . do_shortcode( $s[4] ) . ( class_exists( 'WB_Guide' ) ? WB_Guide::fold( $slug ) : '' ) ) ];
 	}
 
 	/**

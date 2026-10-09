@@ -92,7 +92,7 @@ class WB_Demo {
 	const LOGIN_OPTION = 'wb_demo_login';
 	const USER_META    = 'wb_demo_login';
 	/** Panel actions a shared login must never run: they change the tenant, not the sample. */
-	const BLOCKED_PANELS = [ 'setup_save', 'setup_reset', 'dashboards', 'settings', 'tables_create', 'leave_types', 'record_import' ];
+	const BLOCKED_PANELS = [ 'setup_save', 'setup_reset', 'dashboards', 'settings', 'tables_create', 'leave_types', 'record_import', 'send_templates' ];
 
 	public static function init(): void {
 		add_shortcode( 'wb_demo', [ __CLASS__, 'shortcode' ] );

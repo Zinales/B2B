@@ -66,7 +66,28 @@ function add_action( ...$a ) {} function add_filter( ...$a ) {} function add_sho
 function wb_notice( string $kind, string $msg ): string { return '<div class="wb-notice wb-' . $kind . '" role="status">' . $msg . '</div>'; }
 class WB_Storage { public static function exists( $k ) { return false; } }
 class WB_Tables { public static function all_present() { return true; } }
-class WB_CCT { public static function count( ...$a ) { return 3; } }
+/** 1.5.0: a small in-memory company so the quote editor and the customer page render for real. */
+class WB_CCT {
+	public static function count( ...$a ) { return 3; }
+	public static function columns( $s ) { return [ '_ID', 'name', 'status', 'account_status', 'quote_number', 'invoice_number' ]; }
+	public static function get( $s, $id ) {
+		$rows = [ 'wb_customers' => [ '_ID' => 7, 'name' => 'Karoo Agri (Pty) Ltd', 'account_status' => 'open', 'payment_terms_days' => 30, 'credit_limit' => 80000, 'price_tier_id' => 0, 'journey_stage' => 'repeat', 'region' => 'Western Cape', 'notes' => '' ],
+			'wb_quotes' => [ '_ID' => 9, 'quote_number' => 'QUO-2026-000012', 'customer_id' => 7, 'status' => 'draft', 'pricing_check_status' => 'needs_approval', 'valid_until' => '2026-11-08', 'subtotal' => 1460, 'vat' => 219, 'total' => 1679 ] ];
+		return $rows[ $s ] ?? null;
+	}
+	public static function first( ...$a ) { return null; }
+	public static function find( $s, $w = [], $o = [] ) {
+		if ( 'wb_invoices' === $s ) return [ [ '_ID' => 31, 'invoice_number' => 'INV-2026-000031', 'customer_id' => 7, 'issued_at' => '2026-07-01', 'due_at' => '2026-07-31', 'total' => 2000, 'amount_paid' => 500, 'amount_credited' => 0, 'status' => 'overdue' ],
+			[ '_ID' => 44, 'invoice_number' => 'INV-2026-000044', 'customer_id' => 7, 'issued_at' => '2026-09-20', 'due_at' => '2026-10-20', 'total' => 1000, 'amount_paid' => 0, 'amount_credited' => 0, 'status' => 'issued' ] ];
+		if ( 'wb_contacts' === $s ) return [ [ '_ID' => 1, 'first_name' => 'Thandi', 'last_name' => 'Mokoena', 'role_title' => 'Buyer', 'email' => 'thandi@karooagri.example', 'phone' => '082 123 4567', 'is_primary' => 'true', 'portal_wp_user_id' => 0 ] ];
+		if ( 'wb_touchpoints' === $s ) return [ [ 'happened_at' => '2026-10-02 10:00:00', 'type' => 'call', 'summary' => 'Asked about epoxy lead times', 'next_action' => 'Send the datasheet', 'next_action_date' => '2026-10-06' ] ];
+		return [];
+	}
+}
+class WB_RowActions { public static function cell( ...$a ) { return '<button type="submit" class="wb-menuitem" role="menuitem">Ask for price approval</button>'; } public static function menuitem( $i, $l, $o = [] ) { return '<a class="wb-menuitem" role="menuitem" href="#">' . $l . '</a>'; } public static function notice() { return ''; } }
+function rest_url( $p = '' ) { return 'https://b2b.test/wp-json/' . $p; } function wp_create_nonce( $a ) { return 'n'; } function wb_today() { return '2026-10-09'; }
+function remove_query_arg( $k, $u = '' ) { return $u; }
+function wb_return_field() { return ""; }
 function wb_truthy( $v ) { return in_array( strtolower( (string) $v ), [ '1', 'yes', 'true', 'on' ], true ); }
 /** The real stylesheets and the default brand tokens, as the plugin would print them. */
 function wp_head() {
@@ -76,6 +97,13 @@ function wp_head() {
 }
 /** A stand-in panel with the primitives every screen uses, so the frame's content area is not empty. */
 function do_shortcode( $s ) {
+	if ( '[wb_notify_bar][wb_quotes]' === $s ) {   // 1.5.0: the real quote line editor, a draft with a broken line
+		$q = WB_CCT::get( 'wb_quotes', 9 );
+		$lines = [ [ '_ID' => 31, 'description' => 'ADH-EP200 Epoxy adhesive 200 ml', 'qty' => '10', 'unit_price' => 129, 'price_source' => 'tier', 'line_total' => 1290, 'floor_price' => 109.85, 'cost_price' => 84.5, 'list_price' => 129, 'below_floor' => 'no', 'out_of_date' => 'no' ],
+			[ '_ID' => 32, 'description' => 'FST-HN16 Hex nut M16 (box of 100)', 'qty' => '2', 'unit_price' => 85, 'price_source' => 'manual', 'line_total' => 170, 'floor_price' => 288, 'cost_price' => 240, 'list_price' => 410.4, 'below_floor' => 'yes', 'out_of_date' => 'no' ] ];
+		return WB_Render::fold( 'Quote QUO-2026-000012', WB_Quote_Editor::draft( $q, $lines ), [ 'open' => true ] ) . WB_Render::fold( 'New quote', WB_Quote_Editor::new_form( 7 ), [ 'open' => true, 'id' => 'wb-add' ] );
+	}
+	if ( '[wb_notify_bar][wb_customers]' === $s ) return WB_Pages::customer( 7 );   // 1.5.0: the customer's own page
 	if ( '[wb_howto]' === $s ) return WB_Guide::render();   // the How-to screen is pure words, so the real thing is rendered
 	if ( '[wb_setup]' === $s ) return WB_Setup::checklist_card() . do_shortcode( '' );   // the set-up checklist (six of eight done, as a new site looks)
 	return '<div class="wb-panel"><h2>Panel</h2><p class="wb-muted">Showing the newest 50.</p>'
@@ -89,7 +117,7 @@ function do_shortcode( $s ) {
 }
 
 $base = WB_PLUGIN_DIR . 'includes/';
-foreach ( [ 'roles', 'setup', 'workspace', 'welcome', 'render', 'needs', 'demo', 'guide' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
+foreach ( [ 'roles', 'setup', 'workspace', 'welcome', 'render', 'needs', 'demo', 'guide', 'pricing', 'quote-editor', 'pages', 'send', 'records', 'invoices', 'orders', 'screens', 'documents', 'docs', 'datasheets', 'statements' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
 
 function caps_of( string $role ): array {
 	if ( 'administrator' === $role ) return WB_Roles::staff_caps();
@@ -107,6 +135,7 @@ $pages = [
 	[ 'home-owner', 'home', 'wb_owner' ],
 	[ 'quotes-sales', 'quotes', 'wb_sales' ],
 	[ 'howto-sales', 'howto', 'wb_sales' ],
+	[ 'customer-page-owner', 'customers', 'wb_owner' ],
 	[ 'setup-owner', 'setup', 'wb_owner' ],
 	[ 'payroll-refused-sales', 'setup', 'wb_sales' ],
 	[ 'home-refused-customer', 'home', 'wb_customer' ],

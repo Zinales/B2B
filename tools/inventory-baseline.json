@@ -522,6 +522,7 @@
   "wb/v1/payroll-bank-file",
   "wb/v1/pdf",
   "wb/v1/private",
+  "wb/v1/products",
   "wb/v1/quote-accept"
  ],
  "shortcodes": [

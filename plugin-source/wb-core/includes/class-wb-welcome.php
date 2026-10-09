@@ -60,8 +60,8 @@ class WB_Welcome {
 	/** What the demo shows you, in the order a first visit should take. */
 	const DEMO_STEPS = [
 		[ 'Today', 'What is waiting on you, the week in numbers, and where to start.' ],
-		[ 'Write a quote', 'Pick a customer and watch both price checks run as you type.' ],
-		[ 'Accept it', 'The order and the invoice appear by themselves, numbered in sequence.' ],
+		[ 'Write a quote', 'Find products as you type, with this customer\'s own price and the stock beside each one.' ],
+		[ 'Send it, accept it', 'Email it with the PDF attached, then accept it: the order and the invoice appear, numbered in sequence.' ],
 		[ 'Match the money', 'Load the bank statement and see payments find their invoices.' ],
 		[ 'Look at Integrity', 'Every adjustment, write-off and hand-match, by person, for the month.' ],
 	];

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: B2BGro — Core
  * Description: The engine for a B2B wholesale business: hash-chained audit ledger, gapless document numbering, roles by dashboard, the two pricing checks, stock as a ledger, the quote → order → invoice → payment → delivery state machine, bank-statement matching, demand and cashflow forecasting, staff time/leave/KPIs, private document storage, the Setup screen (brand + first-run checklist), bank CSV mapping, the customer portal and South African payroll. Serves its own screens at /workspace/ and /portal/ (no pages to create). Business data lives in JetEngine CCTs (wp_jet_cct_wb_*); engine records in plugin tables (wp_wb_*).
- * Version: 1.4.0
+ * Version: 1.5.0
  * Author: GroB2B
  * Requires PHP: 8.0
  * Requires at least: 6.4
@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WB_VERSION', '1.4.0' );
+define( 'WB_VERSION', '1.5.0' );
 define( 'WB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WB_PLUGIN_FILE', __FILE__ );
 
@@ -41,7 +41,12 @@ require_once WB_PLUGIN_DIR . 'includes/class-wb-import.php';        // 0.3.6 upl
 require_once WB_PLUGIN_DIR . 'includes/class-wb-demo-seed.php';     // 1.2.0 a year of trading for the demo, through the real engines
 require_once WB_PLUGIN_DIR . 'includes/class-wb-needs.php';         // 0.3.4 what is waiting on a person: Today, the menu count, the top bar
 require_once WB_PLUGIN_DIR . 'includes/class-wb-integrity.php';     // the monthly Integrity report (§8)
-require_once WB_PLUGIN_DIR . 'includes/class-wb-render.php';        // tables, chips, notices (primitives, never hand markup)
+require_once WB_PLUGIN_DIR . 'includes/class-wb-render.php';
+require_once WB_PLUGIN_DIR . 'includes/class-wb-list.php';
+require_once WB_PLUGIN_DIR . 'includes/class-wb-pages.php';
+require_once WB_PLUGIN_DIR . 'includes/class-wb-quote-editor.php';
+require_once WB_PLUGIN_DIR . 'includes/class-wb-statements.php';   // 1.5.0 a customer's statement as a PDF
+require_once WB_PLUGIN_DIR . 'includes/class-wb-send.php';         // 1.5.0 a person sends a document by email: templates, recipients, the record  // 1.5.0 find a product as you type; quote lines edited in place         // 1.5.0 a page for each customer and each product          // 1.5.0 search, status filter, sort and paging for every list        // tables, chips, notices (primitives, never hand markup)
 require_once WB_PLUGIN_DIR . 'includes/class-wb-rowactions.php';    // the ⋯ menu actions registry
 require_once WB_PLUGIN_DIR . 'includes/class-wb-screens.php';       // dashboard shortcodes + panel POST handlers
 require_once WB_PLUGIN_DIR . 'includes/class-wb-rest.php';          // wb/v1
@@ -99,6 +104,8 @@ add_action( 'plugins_loaded', function () {
 	WB_Import::init();
 	WB_Docs::init();
 	WB_Datasheets::init();
+	WB_Quote_Editor::init();
+	WB_Send::init();
 	WB_Guide::init();
 	WB_Setup::init();
 	WB_Portal::init();

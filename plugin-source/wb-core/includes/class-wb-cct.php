@@ -103,6 +103,24 @@ class WB_CCT {
 		$sql  = [ '1=1' ];
 		$args = [];
 		foreach ( $where as $key => $val ) {
+			if ( '_search' === $key ) {   // 1.5.0: one search word across columns: (a LIKE %q% OR b LIKE %q% OR customer_id IN (…))
+				$q = trim( (string) ( $val['q'] ?? '' ) );
+				if ( '' === $q ) continue;
+				global $wpdb;
+				$or = [];
+				foreach ( (array) ( $val['cols'] ?? [] ) as $c ) {
+					if ( ! in_array( (string) $c, $cols, true ) ) continue;
+					$or[]   = "`{$c}` LIKE %s";
+					$args[] = '%' . $wpdb->esc_like( $q ) . '%';
+				}
+				foreach ( (array) ( $val['ids'] ?? [] ) as $c => $ids ) {
+					$ids = array_values( array_filter( array_map( 'intval', (array) $ids ) ) );
+					if ( ! in_array( (string) $c, $cols, true ) || ! $ids ) continue;
+					$or[] = "`{$c}` IN (" . implode( ',', $ids ) . ')';
+				}
+				$sql[] = $or ? '(' . implode( ' OR ', $or ) . ')' : '1=0';   // nothing searchable → nothing matches, never everything
+				continue;
+			}
 			$parts = preg_split( '/\s+/', trim( (string) $key ), 2 );
 			$col   = (string) $parts[0];
 			$op    = strtoupper( (string) ( $parts[1] ?? ( is_array( $val ) ? 'IN' : '=' ) ) );

@@ -26,9 +26,9 @@ class WB_Guide {
 		'sell' => [ 'Selling: from a quote to the goods going out',
 			'Everything in the sale is typed once, on the quote. The order, the invoice and the delivery note are built from it, never retyped, and each gets its number in sequence the moment it is issued.',
 			[
-				[ 'quotes', 'Write a quote: pick the customer, add lines. As each line is added, check one finds the price this customer pays (their own rule, else their category rule, else their price tier, else the list price) and check two makes sure the product allows it (not below the floor of cost plus the lowest margin, not above the list price, and inside the product\'s price dates).' ],
+				[ 'quotes', 'Write a quote: choose the customer, then find each product by typing part of its code or name; the list shows this customer\'s price, where it comes from and what is in stock. As each line is added, check one finds the price this customer pays (their own rule, else their category rule, else their price tier, else the list price) and check two makes sure the product allows it (not below the floor of cost plus the lowest margin, not above the list price, and inside the product\'s price dates). Quantities and prices can be changed on the lines and saved in one press; every changed line is checked again.' ],
 				[ 'quotes', 'A line that breaks check two cannot go out. Press "Ask for price approval" and a second person decides under "Prices waiting for your approval"; the Why column says in words what is wrong. A typed price is a manual price and goes through the same check.' ],
-				[ 'quotes', 'Press "Mark sent and get the acceptance link". The quote is frozen, numbered QUO, its PDF is made, and the link lets the customer accept without a login for seven days. Customers with a portal login also see it under their account. If the customer tells you by phone, press "Record acceptance".' ],
+				[ 'quotes', 'Press "Send by email": the customer\'s contact is ticked, the message is filled from your template, the PDF is attached, and the acceptance link goes in the message. Sending freezes the quote. The link lets the customer accept without a login for seven days; customers with a portal login also see it under their account. If it went out another way, "Mark sent and get the acceptance link" does the same without the email. If the customer tells you by phone, press "Record acceptance".' ],
 				[ 'orders', 'Acceptance builds the order (ORD) from the quote\'s frozen lines, prices and price sources. A declined quote is marked declined; a quote past its valid-until date is marked expired by the nightly run.' ],
 				[ 'invoices', 'The invoice (INV) is issued from the order, with the VAT rate of that moment frozen on it. By default this happens on acceptance. Under Settings, "Invoice when" can be set to "the goods leave" instead; a cash customer is always invoiced on acceptance so they can pay before collecting. "Issue invoice" on the order\'s menu issues it by hand.' ],
 				[ 'orders', 'The release check decides whether goods may leave: an account on hold or closed, no; the invoice paid, yes; a cash customer who has not paid, no; a customer on terms, yes while nothing is overdue and everything they owe, this order included, is inside their credit limit. "Release for collection / delivery" runs it and puts the stock aside.' ],
@@ -45,7 +45,8 @@ class WB_Guide {
 				[ 'payments', 'An unmatched payment is matched by hand under "Match a payment by hand", with a note saying why. Hand matches are listed apart in the Integrity report. Cash or card taken at the counter is recorded under its own fold and matched at once.' ],
 				[ 'invoices', 'As money arrives the invoice moves from issued to part paid to paid. At 02:00 the nightly run marks anything past its due date overdue, which blocks that customer\'s next release until it is settled.' ],
 				[ 'invoices', 'A correction is a credit note. Press "Ask for a credit note" against the invoice with the amount and the reason; a different person approves it under "Credit notes waiting for approval". Only on approval does it take its CRN number and PDF, so the series stays gapless, and the invoice\'s outstanding amount drops.' ],
-				[ 'portal', 'A customer with a login sees their open invoices, downloads any invoice or credit note, and their statement (STM), from their account.' ],
+				[ 'customers', 'Each customer\'s page shows what they owe and how late, in five columns from not yet due to over 90 days. "Send a statement" or, when something is late, "Send a reminder" emails the statement PDF with the words from your template.' ],
+				[ 'portal', 'A customer with a login sees their open invoices, downloads any invoice or credit note, and their statement, from their account.' ],
 			],
 			[ 'A match always records who, how and when. Automatic matches are by reference only.', 'A credit note is asked for by one person and approved by another; the request never changes the invoice by itself.' ],
 		],
@@ -86,7 +87,8 @@ class WB_Guide {
 		'customer' => [ 'Customers and their portal',
 			'A customer record carries the terms, the credit limit, the price tier and the account status that the release check reads. Each customer can be given a login that shows them only their own account.',
 			[
-				[ 'customers', 'Add a customer with their payment terms (0 days is a cash customer), credit limit, price tier and status. Add their contacts. Archive, never delete.' ],
+				[ 'customers', 'Add a customer with their payment terms (0 days is a cash customer), credit limit, price tier and status. Add their contacts, and tick who receives invoices and who receives datasheets: those are the people ticked when you send. Archive, never delete.' ],
+				[ 'customers', 'Click a customer\'s name anywhere to open their page: what they owe and how late, their terms, limit and tier, then their open invoices, quotes, orders, payments, contacts, the timeline, their own prices and their documents.' ],
 				[ 'customers', 'Under "Contacts and portal logins", a contact\'s menu has "Give a portal login (sends the set-password email now)". The email goes out only when that is pressed, never by itself. The same menu can send it again, or turn the login off.' ],
 				[ 'portal', 'The customer signs in and sees their open quotes (to accept or decline), unpaid invoices with due dates, orders, deliveries, their statement and the datasheets for what they buy.' ],
 				[ 'portal', '"Ask for a quote" makes a draft quote for the rep; it is never sent by itself. "Ask for this change" under their details sends a request that staff approve under "Contact changes customers asked for"; nothing is written to the customer record directly.' ],
@@ -133,6 +135,7 @@ class WB_Guide {
 				[ 'settings', 'Tax rate, numbering, when to invoice (on acceptance or when goods leave), the lowest margin and quote validity, which alert groups may email, and the demo switch.' ],
 				[ 'settings', 'Who can do what: tick the screens each person works in. A person\'s menu shows only those, and a screen they cannot open says who can give it to them.' ],
 				[ 'products', 'Load the master tables: categories, price tiers, products, customers, contacts, suppliers, staff, leave types, KPIs. Type them in on each screen, or download the template, fill it, "Check file" and then "Validate and import". A file with one problem imports nothing and lists the problems by row.' ],
+				[ 'settings', 'Email templates: the words each "Send by email" starts with, for quotes, invoices, credit notes, statements, reminders and datasheets. The details fill themselves in. The site must be able to send email (an SMTP plugin is the reliable way).' ],
 				[ 'setup', 'Business clock and nightly jobs: set a real server cron for wp-cron so the 02:00 run (overdue sweep, quote expiry, reorder alerts, demand and cashflow, chain check, the Integrity report on the first) is reliable.' ],
 			],
 			[ 'Imports are all or nothing and ledgered as one entry.', 'Settings are configuration, kept apart from business data, and every change is recorded.' ],
@@ -173,13 +176,13 @@ class WB_Guide {
 	 */
 	const HOWTO = [
 		'sale' => [ 'Sell something from quote to delivery', 'Sales and the owner', [
-			[ 'quotes', 'Press "New quote". Choose a customer (Karoo Agri is on 30-day terms; Bayside Hardware is a cash customer) and save.' ],
-			[ 'quotes', 'Add a line: a product and a quantity. Read the price and its source on the line. Add a second line, then "Set price" to a figure well below cost: the line is marked and the Why column tells you what rule it breaks.' ],
+			[ 'quotes', 'Press "New quote". Choose a customer (Karoo Agri is on 30-day terms; Bayside Hardware is a cash customer). In Product, type "epoxy": the list shows each match with Karoo Agri\'s price and the stock. Choose one, give a quantity, and press "Start the quote".' ],
+			[ 'quotes', 'Add a second product the same way. Then type a price well below cost in its Price each box and press "Save changes": the line turns red and says, in a sentence, which rule it breaks.' ],
 			[ 'quotes', 'On that line press "Ask for price approval" with a reason. Sign in as someone else (or, in the demo, read it under "Prices waiting for your approval") and approve or decline it.' ],
-			[ 'quotes', 'Press "Mark sent and get the acceptance link" on the quote\'s menu. Open the PDF from the same menu. Then press "Record acceptance" to stand in for the customer.' ],
+			[ 'quotes', 'Press "Send by email" on the quote\'s menu. Read who is ticked and the message, then press Send. In the demo nothing leaves; it is recorded on the customer\'s timeline as if it had gone. Then press "Record acceptance" to stand in for the customer.' ],
 			[ 'orders', 'Find the order. It carries the quote\'s lines and prices. Open the invoice from its menu: issued, numbered, with VAT frozen.' ],
 			[ 'orders', 'Press "Release for collection / delivery". A terms customer inside their limit is released and the stock is put aside; a cash customer is refused until the invoice is paid.' ],
-			[ 'deliveries', 'Issue the note for the quantities going out and record who signed. Watch the product\'s on hand drop on the Stock screen.' ],
+			[ 'deliveries', 'Issue the note for the quantities going out and record who signed. Watch the product\'s on hand drop on its page.' ],
 			[ 'orders', 'Close the order once everything has gone and the invoice is paid or inside its terms.' ],
 		], 'sell' ],
 		'match' => [ 'Match a bank statement', 'Accounts', [
@@ -188,6 +191,18 @@ class WB_Guide {
 			[ 'payments', 'Under "To match", each suggested payment names the invoice it looks like; press "Confirm suggested match" if it is right.' ],
 			[ 'payments', 'For an unmatched payment, use "Match a payment by hand": choose the invoice and give a note. It will be listed in the Integrity report as a hand match.' ],
 			[ 'invoices', 'Open Invoices: the matched invoices now read paid or part paid.' ],
+		], 'money' ],
+		'find' => [ 'Find anything', 'Everyone', [
+			[ 'invoices', 'Type part of a number or a customer\'s name in the search box above any list and press Search. The words stay in the box; Clear puts the whole list back.' ],
+			[ 'invoices', 'Press a status chip (Overdue, Part paid) to see only those. Press it again, or All, to see everything. Search and chip work together: "karoo" and Overdue shows Karoo Agri\'s late invoices.' ],
+			[ 'invoices', 'Press a column heading to sort by it; press it again to turn it round. Long lists come in pages of fifty with Previous and Next. Every one of these is in the address, so a filtered list can be bookmarked or sent to a colleague.' ],
+			[ 'customers', 'Click a customer\'s name in any list to open their page; click a product code to open the product\'s.' ],
+		], 'know' ],
+		'chase' => [ 'Chase a customer who is late', 'Accounts', [
+			[ 'invoices', 'Press the Overdue chip on Invoices. Click the customer\'s name on a late invoice.' ],
+			[ 'customers', 'Their page shows what they owe and how late, and every open invoice with what is still owing on it.' ],
+			[ 'customers', 'Press "Send a reminder". Their accounts contact is ticked, the message is filled in, and the statement PDF is attached. Send it.' ],
+			[ 'customers', 'The reminder is on their timeline with the date and who it went to. When their payment comes in on the bank statement it matches the invoice by its number.' ],
 		], 'money' ],
 		'credit' => [ 'Issue a credit note', 'Accounts and a second approver', [
 			[ 'invoices', 'Open "Ask for a credit note". Choose the invoice, the amount and the reason, and press "Ask for the credit note".' ],

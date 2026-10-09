@@ -6,9 +6,9 @@ _Written by tools/guide-md.php from WB_Guide::FLOWS; edit the class, not this fi
 
 Everything in the sale is typed once, on the quote. The order, the invoice and the delivery note are built from it, never retyped, and each gets its number in sequence the moment it is issued.
 
-1. **Quotes.** Write a quote: pick the customer, add lines. As each line is added, check one finds the price this customer pays (their own rule, else their category rule, else their price tier, else the list price) and check two makes sure the product allows it (not below the floor of cost plus the lowest margin, not above the list price, and inside the product's price dates).
+1. **Quotes.** Write a quote: choose the customer, then find each product by typing part of its code or name; the list shows this customer's price, where it comes from and what is in stock. As each line is added, check one finds the price this customer pays (their own rule, else their category rule, else their price tier, else the list price) and check two makes sure the product allows it (not below the floor of cost plus the lowest margin, not above the list price, and inside the product's price dates). Quantities and prices can be changed on the lines and saved in one press; every changed line is checked again.
 2. **Quotes.** A line that breaks check two cannot go out. Press "Ask for price approval" and a second person decides under "Prices waiting for your approval"; the Why column says in words what is wrong. A typed price is a manual price and goes through the same check.
-3. **Quotes.** Press "Mark sent and get the acceptance link". The quote is frozen, numbered QUO, its PDF is made, and the link lets the customer accept without a login for seven days. Customers with a portal login also see it under their account. If the customer tells you by phone, press "Record acceptance".
+3. **Quotes.** Press "Send by email": the customer's contact is ticked, the message is filled from your template, the PDF is attached, and the acceptance link goes in the message. Sending freezes the quote. The link lets the customer accept without a login for seven days; customers with a portal login also see it under their account. If it went out another way, "Mark sent and get the acceptance link" does the same without the email. If the customer tells you by phone, press "Record acceptance".
 4. **Orders.** Acceptance builds the order (ORD) from the quote's frozen lines, prices and price sources. A declined quote is marked declined; a quote past its valid-until date is marked expired by the nightly run.
 5. **Invoices.** The invoice (INV) is issued from the order, with the VAT rate of that moment frozen on it. By default this happens on acceptance. Under Settings, "Invoice when" can be set to "the goods leave" instead; a cash customer is always invoiced on acceptance so they can pay before collecting. "Issue invoice" on the order's menu issues it by hand.
 6. **Orders.** The release check decides whether goods may leave: an account on hold or closed, no; the invoice paid, yes; a cash customer who has not paid, no; a customer on terms, yes while nothing is overdue and everything they owe, this order included, is inside their credit limit. "Release for collection / delivery" runs it and puts the stock aside.
@@ -30,7 +30,8 @@ Money is matched to invoices from the bank statement, and the system never guess
 3. **Payments.** An unmatched payment is matched by hand under "Match a payment by hand", with a note saying why. Hand matches are listed apart in the Integrity report. Cash or card taken at the counter is recorded under its own fold and matched at once.
 4. **Invoices.** As money arrives the invoice moves from issued to part paid to paid. At 02:00 the nightly run marks anything past its due date overdue, which blocks that customer's next release until it is settled.
 5. **Invoices.** A correction is a credit note. Press "Ask for a credit note" against the invoice with the amount and the reason; a different person approves it under "Credit notes waiting for approval". Only on approval does it take its CRN number and PDF, so the series stays gapless, and the invoice's outstanding amount drops.
-6. **Your account.** A customer with a login sees their open invoices, downloads any invoice or credit note, and their statement (STM), from their account.
+6. **Customers.** Each customer's page shows what they owe and how late, in five columns from not yet due to over 90 days. "Send a statement" or, when something is late, "Send a reminder" emails the statement PDF with the words from your template.
+7. **Your account.** A customer with a login sees their open invoices, downloads any invoice or credit note, and their statement, from their account.
 
 The rules it keeps:
 
@@ -86,11 +87,12 @@ The rules it keeps:
 
 A customer record carries the terms, the credit limit, the price tier and the account status that the release check reads. Each customer can be given a login that shows them only their own account.
 
-1. **Customers.** Add a customer with their payment terms (0 days is a cash customer), credit limit, price tier and status. Add their contacts. Archive, never delete.
-2. **Customers.** Under "Contacts and portal logins", a contact's menu has "Give a portal login (sends the set-password email now)". The email goes out only when that is pressed, never by itself. The same menu can send it again, or turn the login off.
-3. **Your account.** The customer signs in and sees their open quotes (to accept or decline), unpaid invoices with due dates, orders, deliveries, their statement and the datasheets for what they buy.
-4. **Your account.** "Ask for a quote" makes a draft quote for the rep; it is never sent by itself. "Ask for this change" under their details sends a request that staff approve under "Contact changes customers asked for"; nothing is written to the customer record directly.
-5. **Marketing.** Every portal sign-in, call and visit is a touchpoint on the customer's timeline.
+1. **Customers.** Add a customer with their payment terms (0 days is a cash customer), credit limit, price tier and status. Add their contacts, and tick who receives invoices and who receives datasheets: those are the people ticked when you send. Archive, never delete.
+2. **Customers.** Click a customer's name anywhere to open their page: what they owe and how late, their terms, limit and tier, then their open invoices, quotes, orders, payments, contacts, the timeline, their own prices and their documents.
+3. **Customers.** Under "Contacts and portal logins", a contact's menu has "Give a portal login (sends the set-password email now)". The email goes out only when that is pressed, never by itself. The same menu can send it again, or turn the login off.
+4. **Your account.** The customer signs in and sees their open quotes (to accept or decline), unpaid invoices with due dates, orders, deliveries, their statement and the datasheets for what they buy.
+5. **Your account.** "Ask for a quote" makes a draft quote for the rep; it is never sent by itself. "Ask for this change" under their details sends a request that staff approve under "Contact changes customers asked for"; nothing is written to the customer record directly.
+6. **Marketing.** Every portal sign-in, call and visit is a touchpoint on the customer's timeline.
 
 The rules it keeps:
 
@@ -149,7 +151,8 @@ An owner sets the company up once; everything after that is day-to-day work. The
 2. **Settings.** Tax rate, numbering, when to invoice (on acceptance or when goods leave), the lowest margin and quote validity, which alert groups may email, and the demo switch.
 3. **Settings.** Who can do what: tick the screens each person works in. A person's menu shows only those, and a screen they cannot open says who can give it to them.
 4. **Products.** Load the master tables: categories, price tiers, products, customers, contacts, suppliers, staff, leave types, KPIs. Type them in on each screen, or download the template, fill it, "Check file" and then "Validate and import". A file with one problem imports nothing and lists the problems by row.
-5. **System Settings.** Business clock and nightly jobs: set a real server cron for wp-cron so the 02:00 run (overdue sweep, quote expiry, reorder alerts, demand and cashflow, chain check, the Integrity report on the first) is reliable.
+5. **Settings.** Email templates: the words each "Send by email" starts with, for quotes, invoices, credit notes, statements, reminders and datasheets. The details fill themselves in. The site must be able to send email (an SMTP plugin is the reliable way).
+6. **System Settings.** Business clock and nightly jobs: set a real server cron for wp-cron so the 02:00 run (overdue sweep, quote expiry, reorder alerts, demand and cashflow, chain check, the Integrity report on the first) is reliable.
 
 The rules it keeps:
 

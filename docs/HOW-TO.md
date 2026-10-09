@@ -6,13 +6,13 @@ _Written by tools/guide-md.php from WB_Guide::HOWTO; edit the class, not this fi
 
 For sales and the owner. Part of _Selling: from a quote to the goods going out_.
 
-1. **Quotes.** Press "New quote". Choose a customer (Karoo Agri is on 30-day terms; Bayside Hardware is a cash customer) and save.
-2. **Quotes.** Add a line: a product and a quantity. Read the price and its source on the line. Add a second line, then "Set price" to a figure well below cost: the line is marked and the Why column tells you what rule it breaks.
+1. **Quotes.** Press "New quote". Choose a customer (Karoo Agri is on 30-day terms; Bayside Hardware is a cash customer). In Product, type "epoxy": the list shows each match with Karoo Agri's price and the stock. Choose one, give a quantity, and press "Start the quote".
+2. **Quotes.** Add a second product the same way. Then type a price well below cost in its Price each box and press "Save changes": the line turns red and says, in a sentence, which rule it breaks.
 3. **Quotes.** On that line press "Ask for price approval" with a reason. Sign in as someone else (or, in the demo, read it under "Prices waiting for your approval") and approve or decline it.
-4. **Quotes.** Press "Mark sent and get the acceptance link" on the quote's menu. Open the PDF from the same menu. Then press "Record acceptance" to stand in for the customer.
+4. **Quotes.** Press "Send by email" on the quote's menu. Read who is ticked and the message, then press Send. In the demo nothing leaves; it is recorded on the customer's timeline as if it had gone. Then press "Record acceptance" to stand in for the customer.
 5. **Orders.** Find the order. It carries the quote's lines and prices. Open the invoice from its menu: issued, numbered, with VAT frozen.
 6. **Orders.** Press "Release for collection / delivery". A terms customer inside their limit is released and the stock is put aside; a cash customer is refused until the invoice is paid.
-7. **Deliveries.** Issue the note for the quantities going out and record who signed. Watch the product's on hand drop on the Stock screen.
+7. **Deliveries.** Issue the note for the quantities going out and record who signed. Watch the product's on hand drop on its page.
 8. **Orders.** Close the order once everything has gone and the invoice is paid or inside its terms.
 
 ## Match a bank statement
@@ -24,6 +24,24 @@ For accounts. Part of _Getting paid: the bank statement, matching and credit not
 3. **Payments.** Under "To match", each suggested payment names the invoice it looks like; press "Confirm suggested match" if it is right.
 4. **Payments.** For an unmatched payment, use "Match a payment by hand": choose the invoice and give a note. It will be listed in the Integrity report as a hand match.
 5. **Invoices.** Open Invoices: the matched invoices now read paid or part paid.
+
+## Find anything
+
+For everyone. Part of _Knowing: demand, cashflow and the Integrity report_.
+
+1. **Invoices.** Type part of a number or a customer's name in the search box above any list and press Search. The words stay in the box; Clear puts the whole list back.
+2. **Invoices.** Press a status chip (Overdue, Part paid) to see only those. Press it again, or All, to see everything. Search and chip work together: "karoo" and Overdue shows Karoo Agri's late invoices.
+3. **Invoices.** Press a column heading to sort by it; press it again to turn it round. Long lists come in pages of fifty with Previous and Next. Every one of these is in the address, so a filtered list can be bookmarked or sent to a colleague.
+4. **Customers.** Click a customer's name in any list to open their page; click a product code to open the product's.
+
+## Chase a customer who is late
+
+For accounts. Part of _Getting paid: the bank statement, matching and credit notes_.
+
+1. **Invoices.** Press the Overdue chip on Invoices. Click the customer's name on a late invoice.
+2. **Customers.** Their page shows what they owe and how late, and every open invoice with what is still owing on it.
+3. **Customers.** Press "Send a reminder". Their accounts contact is ticked, the message is filled in, and the statement PDF is attached. Send it.
+4. **Customers.** The reminder is on their timeline with the date and who it went to. When their payment comes in on the bank statement it matches the invoice by its number.
 
 ## Issue a credit note
 

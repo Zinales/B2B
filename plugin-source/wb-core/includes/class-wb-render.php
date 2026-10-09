@@ -166,8 +166,17 @@ class WB_Render {
 			$specs[] = $s;
 		}
 
+		$sort = (array) ( $opts['sort'] ?? [] );   // 1.5.0: [ by, dir, keys, href fn(key) ] → sortable heads
 		$h = '<table class="wb-list' . ( $cards ? ' wb-list--cards' : '' ) . '"><thead><tr>';
-		foreach ( $specs as $s ) $h .= '<th class="wb-col-' . esc_attr( $s['type'] ) . '">' . esc_html( (string) $s['label'] ) . '</th>';
+		foreach ( $specs as $s ) {
+			$k    = (string) $s['key'];
+			$head = esc_html( (string) $s['label'] );
+			if ( $sort && in_array( $k, (array) ( $sort['keys'] ?? [] ), true ) && is_callable( $sort['href'] ?? null ) ) {
+				$on   = $k === (string) ( $sort['by'] ?? '' );
+				$head = '<a class="wb-sort' . ( $on ? ' is-on is-' . esc_attr( (string) $sort['dir'] ) : '' ) . '" href="' . esc_url( (string) call_user_func( $sort['href'], $k ) ) . '">' . $head . '<span class="wb-sort-ic" aria-hidden="true"></span>' . ( $on ? '<span class="wb-sr"> (sorted ' . ( 'asc' === $sort['dir'] ? 'ascending' : 'descending' ) . ')</span>' : '' ) . '</a>';
+			}
+			$h .= '<th class="wb-col-' . esc_attr( $s['type'] ) . '"' . ( $sort && $k === (string) ( $sort['by'] ?? '' ) ? ' aria-sort="' . ( 'asc' === $sort['dir'] ? 'ascending' : 'descending' ) . '"' : '' ) . '>' . $head . '</th>';
+		}
 		if ( $has_actions ) $h .= '<th class="wb-col-actions" aria-label="Actions"></th>';
 		$h .= '</tr></thead><tbody>';
 		foreach ( $rows as $row ) {
@@ -198,13 +207,19 @@ class WB_Render {
 
 	/* ---------- form helpers (panels post to themselves: nonce + PRG) ---------- */
 
+	/** A quantity or a percentage as people write it: 10, 2.5, 0.25, never 10.0000 (1.5.0). */
+	public static function num( $v ): string {
+		$s = rtrim( rtrim( number_format( (float) $v, 4, '.', '' ), '0' ), '.' );
+		return '-0' === $s ? '0' : $s;
+	}
+
 	public static function form_open( string $action, bool $files = false ): string {
 		return '<form method="post" class="wb-form"' . ( $files ? ' enctype="multipart/form-data"' : '' ) . '>'
 			. wp_nonce_field( 'wb_panel_' . $action, '_wbp', true, false ) . '<input type="hidden" name="wb_panel" value="' . esc_attr( $action ) . '">' . wb_return_field();
 	}
 
 	public static function field( string $name, string $label, string $type = 'text', $value = '', array $opts = [] ): string {
-		$id  = 'wb-' . sanitize_html_class( $name );
+		$id  = (string) ( $opts['id'] ?? 'wb-' . sanitize_html_class( $name ) );   // 1.5.0: two forms on one screen may share a field name
 		$req = ! empty( $opts['required'] ) ? ' required' : '';
 		$h   = '<label class="wb-field" for="' . esc_attr( $id ) . '"><span>' . esc_html( $label ) . ( '' !== $req ? ' <span class="wb-req" aria-hidden="true">*</span>' : '' ) . '</span>';
 		if ( 'select' === $type ) {

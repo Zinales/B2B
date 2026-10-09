@@ -55,12 +55,12 @@ Everything else (data design, controls, engines) is designed for this product on
 merits and recorded in `System Integrity Framework/`.
 
 ## Where we are (8 October 2026)
-wb-core 1.3.0 is version one for market: the engines, the screens in the Brandzgro look with
+wb-core 1.5.0 is version one for market: the engines, the screens in the Brandzgro look with
 Kaycie's anatomy, every master record typed or uploaded, a public front page with a shared demo,
 the system's own sign-in page, every numbered document as a PDF (1.1.0), a year of demo trading
 played through the real engines (1.2.0), and the flows explained in the program itself: the How-to
 screen, a "How this screen fits in" fold on every screen, and `docs/FLOWS.md` / `docs/HOW-TO.md`
-written from the same words (1.3.0). Still open: the real product name in table names (a one-time
+written from the same words (1.3.0), datasheets as data rendered on demand (1.4.0), and the five gaps from the UX review closed: search, filter, sort and paging on every list, a page per customer and product, a quote line editor that finds products as you type, Send by email with templates, and statements (1.5.0). The rest of the review's roadmap follows in 1.6 and 1.7. Still open: the real product name in table names (a one-time
 migration after the first live client), IRP5/EMP501 figures, and the items in
 `docs/BUILD-PATTERNS.md` §5 not yet ticked (2.5, 2.6, 2.10; 2.4 only partly). The 1.2.0 seed has
 not yet been run against a WordPress database: this build environment has no MySQL server, so the

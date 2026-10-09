@@ -1,5 +1,41 @@
 # wb-core changelog
 
+## 1.5.0 — 9 October 2026
+The five gaps from the review of 9 October (docs/review-2026-10-09/UX-REVIEW.md), closed.
+- **Search, filter, sort and paging on every list** (WB_List): a search box that looks in the
+  numbers, names and codes and in the customer's or supplier's name; the status chips as filters;
+  sortable column heads (press again to turn round); pages of fifty with "Showing 51 to 100 of 812".
+  All by plain links in the address, so a filtered list can be bookmarked or sent, and works on a
+  phone without the script. A search that finds nothing says so and offers the way back. On
+  Customers, Products, Quotes, Orders, Invoices, delivery notes, purchase orders and the contact log.
+- **A page for each customer**: what they owe and how late (not yet due, 1–30, 31–60, 61–90, over
+  90 days), credit left, terms, tier, stage and last order; then their open invoices, quotes,
+  orders, payments, contacts, the timeline, their own prices and their documents; "Write a quote"
+  and "Send a reminder" at the top. Every customer name in every list opens it. **A page for each
+  product**: price, cost and the lowest price allowed, available, put aside and on order, the
+  specification, the datasheet, its stock movements, where it is quoted, and the customers with
+  their own price.
+- **Writing a quote** (WB_Quote_Editor): find a product by typing part of its code, name or
+  barcode; each match shows this customer's price, where it comes from, the stock, and a warning
+  when that price would need approval. A draft's quantities and prices are edited on the lines and
+  saved in one press; each changed line goes through both checks again (a typed price is manual; a
+  manual price stays manual when only the quantity changes). The broken rule is said on the line.
+  Pasting "code, quantity" lines stays, folded away. The same product search fills purchase orders.
+- **Send by email** (WB_Send) on quotes, invoices, credit notes, statements, reminders and
+  datasheets: the customer's right contacts ticked (accounts for invoices, the buyer for quotes,
+  whoever receives datasheets), another address can be typed, a copy to yourself, the subject and
+  message from the company's template with the details filled in, the PDF attached. A draft quote
+  is marked sent and its acceptance link goes in the message. Recorded on the timeline and in the
+  audit trail. Nothing is sent by itself; in the demo nothing leaves the building. Templates under
+  Settings › Email templates.
+- **Statements** (WB_Statements): an open-item statement PDF with days late, the ageing and the bank
+  details, made fresh whenever it is asked for.
+- The front page and quick actions now say what is true ("find products as you type").
+- Fixed: a quantity of 10 could show as 1 where trailing zeros were trimmed (WB_Render::num()).
+- Tests: regress-list.php (62), regress-quote-editor.php (37), regress-send.php (58). The
+  accessibility gate renders the real quote editor and customer page (it caught the line table
+  scrolling sideways on a phone; lines are now cards there).
+
 ## 1.4.0 — 8 October 2026
 Datasheets as data (Zina, 8 October: "datasheet data stored in tables, converted to PDFs, easier to
 update in bulk … or upload a datasheet, or link it to the online datasheet database").
