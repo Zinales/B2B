@@ -1,5 +1,9 @@
 # wb-core changelog
 
+## 1.7.5 — 9 October 2026
+- How it works: the contents box shows each heading over its own list, and visitors see one hint, not two.
+- The setting-up flow is called "Setting up: the company, who can do what, and the IT part".
+
 ## 1.7.4 — 9 October 2026
 - **How it works on the front page** (Zina: "can we add it to the menu on the home page"): the
   top menu of the front page and the sign-in page has "How it works" beside "Sign in", and the

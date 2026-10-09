@@ -94,7 +94,7 @@ For sales. Part of _Customers and their portal_.
 
 ## Load your products and customers from a spreadsheet
 
-For the owner, once. Part of _Setting up: the company, the tables, who can do what_.
+For the owner, once. Part of _Setting up: the company, who can do what, and the IT part_.
 
 1. **Products.** Open "Upload categories from a file" (the fold under Categories) and download the template. Fill it, save as CSV, choose it and press "Check file (no import)". Fix what it lists, then "Validate and import". Then do the same for Price tiers, then Products.
 2. **Customers.** Customers next, then Contacts (a contact names its customer by the exact name or the _ID).
@@ -129,7 +129,7 @@ For the owner, monthly. Part of _Knowing: demand, cashflow and the Integrity rep
 
 ## Set up a new company
 
-For the owner, once. Part of _Setting up: the company, the tables, who can do what_.
+For the owner, once. Part of _Setting up: the company, who can do what, and the IT part_.
 
 1. **System Settings.** Company details, logo and colours, bank details and the document footer. Save and read the checklist.
 2. **Settings.** Tax rate, numbering prefixes, when to invoice, the lowest margin and quote validity. Leave the alert emails off until you want them.

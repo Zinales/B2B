@@ -147,7 +147,7 @@ The rules it keeps:
 - Draft, checked by a different person, finalised. A finalised payslip cannot be changed.
 - Bank details and tax numbers are encrypted at rest.
 
-## Setting up: the company, the tables, who can do what
+## Setting up: the company, who can do what, and the IT part
 
 An owner sets the company up once; everything after that is day-to-day work. The checklist under System Settings shows what is still to do.
 

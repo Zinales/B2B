@@ -182,7 +182,7 @@ class WB_Workspace {
 		if ( 'howto' === $slug && ! is_user_logged_in() ) {   // 1.7.4, Zina: "add it to the menu on the home page"
 			$demo = class_exists( 'WB_Demo' ) && WB_Demo::demo_open();
 			$lead = '<p class="wb-guide-start">The steps link to the screens they happen on. ' . ( $demo ? '<a href="' . esc_url( home_url( '/workspace/demo/' ) ) . '">Try the demo</a> to follow them, or <a href="' . esc_url( self::signin_url( self::url( 'howto' ) ) ) . '">sign in</a>.' : '<a href="' . esc_url( self::signin_url( self::url( 'howto' ) ) ) . '">Sign in</a> to follow them.' ) . '</p>';
-			return [ 200, self::page( 'howto', 'How it works', 'Every flow in plain words, then walkthroughs: one thing to press or read per step.', $lead . ( class_exists( 'WB_Guide' ) ? WB_Guide::render() : '' ) ) ];
+			return [ 200, self::page( 'howto', 'How it works', 'Every flow in plain words, then walkthroughs: one thing to press or read per step.', $lead . ( class_exists( 'WB_Guide' ) ? WB_Guide::render( true ) : '' ) ) ];
 		}
 		$s = self::screen( $slug );
 		if ( ! $s ) return [ 404, self::page( $slug, 'Not found', '', wb_notice( 'warn', 'There is no screen at this address.' ) ) ];

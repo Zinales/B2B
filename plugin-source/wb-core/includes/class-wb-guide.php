@@ -132,7 +132,7 @@ class WB_Guide {
 			],
 			[ 'Draft, checked by a different person, finalised. A finalised payslip cannot be changed.', 'Bank details and tax numbers are encrypted at rest.' ],
 		],
-		'setup' => [ 'Setting up: the company, the tables, who can do what',
+		'setup' => [ 'Setting up: the company, who can do what, and the IT part',
 			'An owner sets the company up once; everything after that is day-to-day work. The checklist under System Settings shows what is still to do.',
 			[
 				[ 'setup', 'Company details: name, registration and VAT numbers, address, logo, colours (checked for contrast), bank details and the footer line that go on every document.' ],
@@ -304,13 +304,13 @@ class WB_Guide {
 	}
 
 	/** [wb_howto] — the How-to screen: the flows, then the walkthroughs. */
-	public static function render(): string {
-		$h = '<p class="wb-guide-start">New here? Start with <a href="#wb-howto-sale">Sell something from quote to delivery</a>, then look at <a href="' . esc_url( WB_Workspace::url( 'home' ) ) . '">Today</a>. Keys: <kbd>/</kbd> goes to the search box, <kbd>n</kbd> to the screen\'s main action, <kbd>Esc</kbd> closes a menu.</p>';
-		$h .= '<nav class="wb-guide-toc" aria-label="On this page"><span class="wb-kicker">The flows</span><ul>';
+	public static function render( bool $public = false ): string {
+		$h = $public ? '' : '<p class="wb-guide-start">New here? Start with <a href="#wb-howto-sale">Sell something from quote to delivery</a>, then look at <a href="' . esc_url( WB_Workspace::url( 'home' ) ) . '">Today</a>. Keys: <kbd>/</kbd> goes to the search box, <kbd>n</kbd> to the screen\'s main action, <kbd>Esc</kbd> closes a menu.</p>';
+		$h .= '<nav class="wb-guide-toc" aria-label="On this page"><div><span class="wb-kicker">The flows</span><ul>';
 		foreach ( self::FLOWS as $k => $f ) $h .= '<li><a href="#wb-flow-' . esc_attr( $k ) . '">' . esc_html( $f[0] ) . '</a></li>';
-		$h .= '</ul><span class="wb-kicker">Walkthroughs</span><ul>';
+		$h .= '</ul></div><div><span class="wb-kicker">Walkthroughs</span><ul>';
 		foreach ( self::HOWTO as $k => $w ) $h .= '<li><a href="#wb-howto-' . esc_attr( $k ) . '">' . esc_html( $w[0] ) . '</a></li>';
-		$h .= '</ul></nav>';
+		$h .= '</ul></div></nav>';
 
 		$h .= '<section class="wb-guide" aria-labelledby="wb-guide-flows"><h2 id="wb-guide-flows">How the work flows</h2><p class="wb-muted">Each flow in the order it happens. The name on the left of a step is the screen it is done on.</p>';
 		foreach ( self::FLOWS as $k => [ $title, $idea, $steps, $rules ] ) {
