@@ -248,7 +248,7 @@ class WB_Render {
 			$h .= '<textarea id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '" rows="' . (int) ( $opts['rows'] ?? 4 ) . '" placeholder="' . esc_attr( (string) ( $opts['placeholder'] ?? '' ) ) . '"' . $req . '>' . esc_textarea( (string) $value ) . '</textarea>';
 		} else {
 			$step = 'number' === $type ? ' step="' . esc_attr( (string) ( $opts['step'] ?? 'any' ) ) . '"' : '';
-			$h   .= '<input id="' . esc_attr( $id ) . '" type="' . esc_attr( $type ) . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( (string) $value ) . '" placeholder="' . esc_attr( (string) ( $opts['placeholder'] ?? '' ) ) . '"' . $step . $req . '>';
+			$h   .= '<input id="' . esc_attr( $id ) . '" type="' . esc_attr( $type ) . '"' . ( ! empty( $opts['readonly'] ) ? ' readonly aria-readonly="true"' : '' ) . ' name="' . esc_attr( $name ) . '" value="' . esc_attr( (string) $value ) . '" placeholder="' . esc_attr( (string) ( $opts['placeholder'] ?? '' ) ) . '"' . $step . $req . '>';
 		}
 		if ( ! empty( $opts['note'] ) ) $h .= '<small>' . esc_html( (string) $opts['note'] ) . '</small>';
 		return $h . '</label>';

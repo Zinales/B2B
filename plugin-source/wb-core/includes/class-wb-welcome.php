@@ -96,7 +96,7 @@ class WB_Welcome {
 			. '<h1 class="wb-display">Quote it, sell it, ship it, get paid.<br>Typed ' . self::underline( 'once' ) . '.</h1>'
 			. '<p class="wb-lede">For businesses that sell technical products to other businesses: every customer has its own prices, every product has a datasheet, and stock and cash are watched closely.</p>'
 			. '<div class="wb-hero-actions">' . $actions . '</div>'
-			. ( '' !== $demo && ! $in ? '<p class="wb-small">The demo is a shared sample company. Click anything; it resets every night.</p>' : '' )
+			. ( '' !== $demo && ! $in ? '<p class="wb-small">The demo is a shared sample company. Click anything; it resets every night. Or sign in as <strong>' . esc_html( WB_Demo::login_name() ) . '</strong> with the password <strong>' . esc_html( WB_Demo::password() ) . '</strong>.</p>' : '' )
 			. '</div></section>';
 
 		$h .= '<section class="wb-sec wb-sec--cream wb-areas" aria-labelledby="wb-what"><div class="wb-wrap"><span class="wb-kicker">What it does</span><h2 id="wb-what">Six kinds of work, one place.</h2><div class="wb-area-grid">';

@@ -127,9 +127,9 @@ function caps_of( string $role ): array {
 
 $pages = [
 	[ 'welcome-signed-out', 'welcome', null ],
-	[ 'welcome-demo-open', 'welcome', null, [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ] ] ],
+	[ 'welcome-demo-open', 'welcome', null, [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ], WB_Demo::PASS_OPTION => 'demo-4821' ] ],
 	[ 'sign-in', 'sign-in', null ],
-	[ 'sign-in-demo-open', 'sign-in', null, [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ] ] ],
+	[ 'sign-in-demo-open', 'sign-in', null, [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ], WB_Demo::PASS_OPTION => 'demo-4821' ] ],
 	[ 'welcome-owner', 'welcome', 'wb_owner' ],
 	[ 'welcome-customer', 'welcome', 'wb_customer' ],
 	[ 'home-owner', 'home', 'wb_owner' ],

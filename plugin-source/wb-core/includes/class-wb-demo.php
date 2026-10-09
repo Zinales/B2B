@@ -91,6 +91,14 @@ class WB_Demo {
 	/** 0.3.7: the shared demo login. Option: [ 'enabled' => 'yes'|'no', 'user_id' => int ]. */
 	const LOGIN_OPTION = 'wb_demo_login';
 	const USER_META    = 'wb_demo_login';
+	/**
+	 * 1.7.1 (Zina: "we don't have demo login details captured for users, so they can't access the
+	 * demo"): the demo login has a password the owner chooses, shown on the sign-in page and the
+	 * front page, so a visitor can also type it into the ordinary form. It is public on purpose: the
+	 * login cannot change settings, staff files or pay, never reaches wp-admin, cannot reset its own
+	 * password, and the data goes back to the sample every night.
+	 */
+	const PASS_OPTION  = 'wb_demo_password';
 	/** Panel actions a shared login must never run: they change the tenant, not the sample. */
 	const BLOCKED_PANELS = [ 'setup_save', 'setup_reset', 'dashboards', 'settings', 'tables_create', 'leave_types', 'record_import', 'send_templates' ];
 
@@ -101,6 +109,44 @@ class WB_Demo {
 		add_action( 'admin_init', [ __CLASS__, 'no_admin' ] );
 		add_filter( 'wb_panel_handlers', function ( array $h ): array { $h['demo_login'] = [ __CLASS__, 'handle_login_setting' ]; return $h; } );
 		add_action( WB_Cron::HOOK, [ __CLASS__, 'nightly_reset' ], 50 );
+		add_filter( 'allow_password_reset', fn( $allow, $uid ) => self::is_demo_user( (int) $uid ) ? false : $allow, 10, 2 );   // a shared login keeps its shown password
+		add_filter( 'login_redirect', [ __CLASS__, 'after_form_login' ], 20, 3 );
+	}
+
+	/** Is this a password a visitor can read and type? 6 to 32 letters, digits or dashes. Pure. */
+	public static function valid_password( string $p ): bool {
+		return (bool) preg_match( '/^[A-Za-z0-9-]{6,32}$/', $p );
+	}
+
+	/** The shown password; one is made (easy to read and type) the first time it is asked for. */
+	public static function password(): string {
+		$p = (string) get_option( self::PASS_OPTION, '' );
+		if ( ! self::valid_password( $p ) ) {
+			$p = 'demo-' . wp_rand( 1000, 9999 );
+			update_option( self::PASS_OPTION, $p, false );
+		}
+		return $p;
+	}
+
+	/** The demo login's name as WordPress has it ('demo', or 'demo-xxxxxx' when 'demo' was taken). */
+	public static function login_name(): string {
+		$u = get_userdata( (int) self::login_setting()['user_id'] );
+		return $u && ! empty( $u->user_login ) ? (string) $u->user_login : 'demo';
+	}
+
+	/** Make sure the demo login's password is the shown one (only written when it differs). */
+	public static function sync_password(): void {
+		$uid = (int) self::login_setting()['user_id'];
+		$u   = $uid ? get_userdata( $uid ) : null;
+		if ( ! $u || ! self::is_demo_user( $uid ) ) return;
+		$p = self::password();
+		if ( ! wp_check_password( $p, (string) $u->user_pass, $uid ) ) wp_set_password( $p, $uid );
+	}
+
+	/** Signing in through the form as the demo: land where "Enter the demo" lands. */
+	public static function after_form_login( $to, $requested, $user ) {
+		if ( $user instanceof WP_User && self::is_demo_user( (int) $user->ID ) && self::demo_open() ) return WB_Workspace::url( 'howto' ) . '#wb-howto-sale';
+		return $to;
 	}
 
 	/* ------------------------------------------------------------ the shared demo login */
@@ -129,7 +175,7 @@ class WB_Demo {
 		if ( (int) $s['user_id'] > 0 && get_userdata( (int) $s['user_id'] ) ) return (int) $s['user_id'];
 		$login = 'demo';
 		if ( username_exists( $login ) ) $login = 'demo-' . wp_generate_password( 6, false );
-		$uid = wp_insert_user( [ 'user_login' => $login, 'user_pass' => wp_generate_password( 32, true, true ), 'display_name' => 'Demo visitor', 'first_name' => 'Demo', 'last_name' => 'Visitor', 'role' => 'wb_manager', 'user_email' => $login . '@' . wp_parse_url( home_url(), PHP_URL_HOST ) ] );
+		$uid = wp_insert_user( [ 'user_login' => $login, 'user_pass' => self::password(), 'display_name' => 'Demo visitor', 'first_name' => 'Demo', 'last_name' => 'Visitor', 'role' => 'wb_manager', 'user_email' => $login . '@' . wp_parse_url( home_url(), PHP_URL_HOST ) ] );
 		if ( is_wp_error( $uid ) ) return $uid;
 		update_user_meta( (int) $uid, self::USER_META, '1' );
 		update_user_meta( (int) $uid, 'show_admin_bar_front', 'false' );
@@ -144,15 +190,21 @@ class WB_Demo {
 	/** The Setup switch: open or close the demo (creating the login the first time it opens). */
 	public static function handle_login_setting() {
 		if ( ! current_user_can( 'manage_options' ) ) return new WP_Error( 'wb_forbidden', 'Only an administrator can open the demo.' );
-		$on = 'yes' === ( $_POST['demo_enabled'] ?? 'no' );
+		$on   = 'yes' === ( $_POST['demo_enabled'] ?? 'no' );
+		$pass = trim( (string) wp_unslash( $_POST['demo_password'] ?? '' ) );
+		if ( '' !== $pass ) {
+			if ( ! self::valid_password( $pass ) ) return new WP_Error( 'wb_demo_password', 'The demo password must be 6 to 32 letters, digits or dashes, so a visitor can read it and type it.' );
+			update_option( self::PASS_OPTION, $pass, false );
+		}
 		if ( $on ) {
 			$uid = self::ensure_login();
 			if ( is_wp_error( $uid ) ) return $uid;
+			self::sync_password();
 		}
 		$s = self::login_setting();
 		update_option( self::LOGIN_OPTION, [ 'enabled' => $on ? 'yes' : 'no', 'user_id' => (int) $s['user_id'] ], false );
 		wb_ledger_write( $on ? 'demo_opened' : 'demo_closed', 'wb_demo', (int) $s['user_id'] );
-		return [ 'msg' => $on ? 'The demo is open. "Try the demo" is on the front page.' : 'The demo is closed. The front page shows Sign in only.' ];
+		return [ 'msg' => $on ? 'The demo is open. Visitors sign in as ' . self::login_name() . ' with the password ' . self::password() . ', or press "Try the demo" on the front page.' : 'The demo is closed. The front page shows Sign in only.' ];
 	}
 
 	/** /workspace/demo/: sign the visitor in as the demo login and land on Today. Never for a closed demo. */
@@ -197,6 +249,7 @@ class WB_Demo {
 	/** Every night while the demo is open: back to the seed, so the sample stays the sample. */
 	public static function nightly_reset(): void {
 		if ( ! self::demo_open() ) return;
+		self::sync_password();
 		if ( self::is_seeded() ) self::wipe( true );
 		$r = self::seed( true );
 		wb_ledger_write( 'demo_reset', 'wb_demo', 0, null, [ 'ok' => ! is_wp_error( $r ) ] );
@@ -319,7 +372,10 @@ class WB_Demo {
 		if ( ! current_user_can( 'manage_options' ) ) return '';
 		$seeded = self::is_seeded();
 		$s   = self::login_setting();
-		$sw  = WB_Render::form_open( 'demo_login' ) . WB_Render::field( 'demo_enabled', 'Shared demo on the front page', 'select', self::demo_open() ? 'yes' : 'no', [ 'options' => [ 'no' => 'Closed', 'yes' => 'Open: "Try the demo" signs visitors in as a demo manager' ], 'note' => 'The demo login cannot change settings, staff files or pay, never reaches wp-admin, and the data goes back to the seed every night.' ] ) . WB_Render::form_close( 'Save' );
+		$sw  = WB_Render::form_open( 'demo_login' ) . WB_Render::field( 'demo_enabled', 'Shared demo on the front page', 'select', self::demo_open() ? 'yes' : 'no', [ 'options' => [ 'no' => 'Closed', 'yes' => 'Open: visitors sign in as the demo manager' ], 'note' => 'The demo login cannot change settings, staff files or pay, never reaches wp-admin, cannot reset its password, and the data goes back to the seed every night.' ] )
+			. WB_Render::field( 'demo_login_name', 'Demo login name', 'text', self::login_name(), [ 'id' => 'wb-demo-name', 'note' => 'Made by the system the first time the demo opens.', 'readonly' => true ] )
+			. WB_Render::field( 'demo_password', 'Demo password', 'text', self::password(), [ 'id' => 'wb-demo-pass', 'note' => 'Shown on the sign-in page and the front page, so visitors can type it. 6 to 32 letters, digits or dashes.' ] )
+			. WB_Render::form_close( 'Save' );
 		return WB_RowActions::notice() . $sw . '<form method="post" class="wb-inline-form">' . wp_nonce_field( 'wb_demo', '_wbd', true, false ) . wb_return_field()
 			. '<input type="hidden" name="wb_demo" value="' . ( $seeded ? 'wipe' : 'seed' ) . '">'
 			. '<button type="submit" class="wb-btn wb-btn-ghost" data-wb-confirm="' . esc_attr( $seeded ? 'Remove the demo data? Rows you made yourself are not touched.' : 'Load the demo data?' ) . '"' . ( $seeded ? ' data-wb-danger="1"' : '' ) . '>'

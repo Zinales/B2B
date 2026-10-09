@@ -252,9 +252,10 @@ class WB_Workspace {
 			. $form . '<p class="wb-small"><a href="' . esc_url( wp_lostpassword_url( $to ) ) . '">Forgotten your password?</a></p></section>';
 		if ( $demo ) {
 			$h .= '<section class="wb-card wb-card--quiet" aria-labelledby="wb-demo-h"><span class="wb-kicker">Just looking?</span><h2 id="wb-demo-h">The demo</h2>'
-				. '<label class="wb-field"><span>Signed in as</span><input type="text" value="Demo visitor (demo)" readonly aria-readonly="true"></label>'
-				. '<p class="wb-muted">A shared sample company with customers, products, quotes and a bank statement already in it. Click anything, break nothing. <strong>Whatever you save is kept for the day and cleared every night.</strong> Please do not enter real names or numbers.</p>'
-				. '<p class="wb-form-acts"><a class="wb-btn" href="' . esc_url( home_url( '/workspace/demo/' ) ) . '">Enter the demo</a></p></section>';
+				. '<dl class="wb-demo-creds"><div><dt>Login name</dt><dd><code>' . esc_html( WB_Demo::login_name() ) . '</code></dd></div><div><dt>Password</dt><dd><code>' . esc_html( WB_Demo::password() ) . '</code></dd></div></dl>'
+				. '<p class="wb-form-acts"><a class="wb-btn" href="' . esc_url( home_url( '/workspace/demo/' ) ) . '">Enter the demo</a></p>'
+				. '<p class="wb-small">Or type the login name and password into the form. You go in as a demo manager.</p>'
+				. '<p class="wb-muted">A shared sample company with customers, products, quotes and a bank statement already in it. Click anything, break nothing. <strong>Whatever you save is kept for the day and cleared every night.</strong> Please do not enter real names or numbers.</p></section>';
 		}
 		return $h . '</div>';
 	}

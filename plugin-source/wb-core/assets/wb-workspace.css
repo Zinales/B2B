@@ -488,6 +488,10 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-welcome-foot .wb-wrap{display:flex;justify-content:space-between;gap:1rem;align-items:center;font-size:var(--wb-fs-md);color:var(--wb-canvas-82)}
 .wb-app .wb-welcome-foot a{color:var(--wb-canvas);text-decoration:underline;text-underline-offset:.15em}
 .wb-builton{color:var(--wb-canvas-82)}
+.wb-demo-creds{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.4rem 0 .8rem}
+.wb-demo-creds dt{font-size:var(--wb-fs-xs);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--wb-muted)}
+.wb-demo-creds dd{margin:.2rem 0 0}
+.wb-demo-creds code{display:inline-block;font-size:var(--wb-fs-lg);font-weight:600;padding:.2rem .5rem;background:var(--wb-card);border:1px solid var(--wb-line);border-radius:var(--wb-r);color:var(--wb-ink);user-select:all}
 .wb-demo-ribbon{background:var(--wb-tint);border-bottom:1px solid var(--wb-line);color:var(--wb-ink);font-size:var(--wb-fs-sm);padding:.45rem var(--wb-s5);text-align:center}
 @media (max-width:640px){
  .wb-sec{padding:var(--wb-s5) 0}

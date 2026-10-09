@@ -1,5 +1,20 @@
 # wb-core changelog
 
+## 1.7.1 — 9 October 2026
+Demo login details (Zina: "we don't have demo login details captured for users, so they can't
+access the demo yet").
+- The demo login now has a **password the owner chooses**, kept under Settings beside the demo
+  switch with the login name. A readable one is made the first time (demo-1234). The demo login's
+  real password is set to it when the demo opens, when it is changed, and every night.
+- The **sign-in page shows the login name and the password** on the demo card, beside "Enter the
+  demo", and says they can be typed into the ordinary form. The **front page** shows them under
+  "Try the demo".
+- Signing in through the form as the demo lands on the first walkthrough, as the button does.
+- The demo login **cannot reset its password** (WordPress's lost-password is refused for it), so
+  the shown details keep working for everyone. It still cannot reach wp-admin or change settings,
+  staff files or pay, and the data goes back to the sample every night.
+- Tests: regress-frame checks the shown details and what a demo password may be.
+
 ## 1.7.0 — 9 October 2026
 The last part of the review's roadmap.
 - **Customers order from their account** (WB_Portal_Shop): their products at their own price

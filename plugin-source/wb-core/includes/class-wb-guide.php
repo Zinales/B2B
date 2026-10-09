@@ -157,7 +157,7 @@ class WB_Guide {
 		'demo' => [ 'The demo',
 			'The demo is a shared sample company with a year of trading behind it, played through the real engines, so every figure has a trail. The demo visitor can press anything; at 02:00 the data is wiped and the year is replayed.',
 			[
-				[ 'settings', 'The owner loads the demo data and opens the demo login under Settings. The front page then shows "Try the demo" and the sign-in page a ready demo visitor.' ],
+				[ 'settings', 'The owner loads the demo data and opens the demo login under Settings, where the demo\'s login name and password are shown and the password can be changed. The front page then shows "Try the demo" and the login details, and the sign-in page shows them beside an "Enter the demo" button. A visitor can press the button or type the details into the ordinary form.' ],
 				[ 'home', 'Today shows what the demo visitor can clear: prices to approve, payments to confirm, a stock correction, a stocktake to check, timesheets and leave, a draft pay run.' ],
 				[ 'quotes', 'Walk the sale: write a quote, send it, accept it, watch the order and invoice appear, match the money, release and deliver.' ],
 				[ '', 'Nightly: everything the demo wrote is removed (numbered documents are voided so the series stay gapless), and a fresh year is generated up to today.' ],
