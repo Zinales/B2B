@@ -157,7 +157,7 @@ An owner sets the company up once; everything after that is day-to-day work. The
 4. **Products.** Load the master tables: categories, price tiers, products, customers, contacts, suppliers, staff, leave types, KPIs. Type them in on each screen, or download the template, fill it, "Check file" and then "Validate and import". A file with one problem imports nothing and lists the problems by row.
 5. **Settings.** Email templates: the words each "Send by email" starts with, for quotes, invoices, credit notes, statements, reminders and datasheets. The details fill themselves in. The site must be able to send email (an SMTP plugin is the reliable way).
 6. **Customers.** Archive, never delete: an archived customer or product leaves the lists, and "Show archived" under the list brings them into view with "Restore" on each.
-7. **System Settings.** Business clock and nightly jobs: set a real server cron for wp-cron so the 02:00 run (overdue sweep, quote expiry, reorder alerts, demand and cashflow, chain check, the Integrity report on the first) is reliable.
+7. **Technical.** For IT, once, on the Technical screen: create the business tables, and check the PDF engine, the encryption key, the private folder, email and the nightly jobs. The owner never needs this screen; WordPress administrators have it. A real server cron for wp-cron makes the 02:00 run (overdue sweep, quote expiry, reorder alerts, demand and cashflow, chain check, the Integrity report on the first) is reliable.
 
 The rules it keeps:
 

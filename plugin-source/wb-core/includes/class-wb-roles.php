@@ -59,6 +59,7 @@ class WB_Roles {
 		'wb_view_integrity'       => 'See the Integrity report',
 		'wb_export_data'          => 'Export data',
 		'wb_manage_settings'      => 'Change settings and who can do what',
+		'wb_technical'            => 'Technical setup (IT): the business tables and the system checks',   // 1.7.4: administrators, not owners
 		'wb_view_payroll'         => 'See pay runs and payslips',
 		'wb_run_payroll'          => 'Prepare and finalise payroll, keep pay details',
 		'wb_check_payroll'        => 'Check a pay run someone else prepared',
@@ -86,7 +87,8 @@ class WB_Roles {
 	public static function map(): array {
 		$all     = self::staff_caps();
 		$manager = $all;
-		unset( $manager['wb_manage_settings'], $manager['wb_manage_staff'], $manager['wb_view_payroll'], $manager['wb_run_payroll'], $manager['wb_check_payroll'] );   // pay is the owner's unless ticked
+		unset( $all['wb_technical'] );   // 1.7.4: the tables are IT's, not the owner's; WordPress administrators hold it (sync())
+		unset( $manager['wb_technical'], $manager['wb_manage_settings'], $manager['wb_manage_staff'], $manager['wb_view_payroll'], $manager['wb_run_payroll'], $manager['wb_check_payroll'] );   // pay is the owner's unless ticked
 		return [
 			'wb_owner'     => [ 'label' => 'Owner', 'caps' => [ 'read' => true ] + $all ],
 			'wb_manager'   => [ 'label' => 'Manager', 'caps' => [ 'read' => true ] + $manager ],
@@ -139,6 +141,7 @@ class WB_Roles {
 			'export'      => [ 'label' => 'Export', 'caps' => [ 'wb_export_data' ] ],
 			'payroll'     => [ 'label' => 'Payroll', 'note' => 'Sees everyone\'s pay and bank details.', 'caps' => [ 'wb_view_payroll', 'wb_run_payroll' ] ],
 			'settings'    => [ 'label' => 'Settings', 'note' => 'Includes who can do what — give it only to people you would trust with everything.', 'caps' => [ 'wb_manage_settings' ] ],
+			'technical'   => [ 'label' => 'Technical setup (IT)', 'note' => 'The business tables and the system checks. Usually only the person who installs and looks after the site.', 'caps' => [ 'wb_technical' ] ],
 			// Authority modifiers. Approving never covers your own request (enforced in the engines).
 			'approve_pricing'     => [ 'label' => 'Approves prices below the floor', 'modifier' => true, 'caps' => [ 'wb_approve_pricing' ] ],
 			'approve_adjustments' => [ 'label' => 'Approves stock adjustments and write-offs', 'modifier' => true, 'caps' => [ 'wb_approve_adjustments' ] ],

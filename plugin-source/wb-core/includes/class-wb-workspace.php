@@ -52,7 +52,8 @@ class WB_Workspace {
 		'integrity'     => [ 'Integrity', 'Adjustments, write-offs, credit notes, hand-matched payments and below-floor prices — by person, every month.', 'wb_view_integrity', 'know', '[wb_integrity]', [ 'stock' => 'Stock', 'payments' => 'Payments' ] ],
 		'staff'         => [ 'Staff', 'Your own time and leave; approvals for those who give them. Nobody approves their own.', 'wb_access_workspace', 'team', '[wb_notify_bar][wb_staff]', [ 'home' => 'Today' ] ],
 		'payroll'       => [ 'Payroll', 'Calculates and records pay. Nothing is paid or sent to SARS by the system: you capture the EMP201 figures and upload the bank file yourself.', 'wb_access_workspace', 'team', '[wb_notify_bar][wb_payroll]', [ 'staff' => 'Timesheets and leave', 'cashflow' => 'Cashflow' ] ],
-		'setup'         => [ 'System Settings', 'Your company details, colours and logo, the business tables, and what is still to do before you start.', 'wb_manage_settings', 'admin', '[wb_setup]', [ 'settings' => 'Settings', 'payments' => 'Bank layout', 'payroll' => 'Payroll' ] ],
+		'technical'     => [ 'Technical', 'For IT: the business tables and the checks that the system has what it needs underneath.', 'wb_technical', 'admin', '[wb_technical]', [ 'setup' => 'System Settings' ] ],
+		'setup'         => [ 'System Settings', 'Your company details, colours and logo, and what is still to do before you start.', 'wb_manage_settings', 'admin', '[wb_setup]', [ 'settings' => 'Settings', 'payments' => 'Bank layout', 'payroll' => 'Payroll' ] ],
 		'settings'      => [ 'Settings', 'Tax, numbering, invoice timing, margins, alert emails (all off until you switch them on) and access.', 'wb_manage_settings', 'admin', '[wb_settings][wb_demo]', [ 'integrity' => 'Integrity report' ] ],
 	];
 
@@ -159,7 +160,7 @@ class WB_Workspace {
 		$slug = self::requested();
 		if ( '' === $slug ) return;
 		if ( 'demo' === $slug ) WB_Demo::enter();   // signs in and leaves; falls through to the 404 when the demo is closed
-		if ( ! is_user_logged_in() && ! in_array( $slug, [ 'welcome', 'sign-in' ], true ) ) {
+		if ( ! is_user_logged_in() && ! in_array( $slug, [ 'welcome', 'sign-in', 'howto' ], true ) ) {   // 1.7.4: How to is readable before signing in
 			wp_safe_redirect( self::signin_url( self::url( $slug ) ) );
 			exit;
 		}
@@ -178,6 +179,11 @@ class WB_Workspace {
 	public static function render( string $slug ): array {
 		if ( 'welcome' === $slug ) return [ 200, self::welcome_page() ];
 		if ( 'sign-in' === $slug ) return [ 200, self::page( 'sign-in', self::SIGNIN[0], self::SIGNIN[1], self::signin_content() ) ];
+		if ( 'howto' === $slug && ! is_user_logged_in() ) {   // 1.7.4, Zina: "add it to the menu on the home page"
+			$demo = class_exists( 'WB_Demo' ) && WB_Demo::demo_open();
+			$lead = '<p class="wb-guide-start">The steps link to the screens they happen on. ' . ( $demo ? '<a href="' . esc_url( home_url( '/workspace/demo/' ) ) . '">Try the demo</a> to follow them, or <a href="' . esc_url( self::signin_url( self::url( 'howto' ) ) ) . '">sign in</a>.' : '<a href="' . esc_url( self::signin_url( self::url( 'howto' ) ) ) . '">Sign in</a> to follow them.' ) . '</p>';
+			return [ 200, self::page( 'howto', 'How it works', 'Every flow in plain words, then walkthroughs: one thing to press or read per step.', $lead . ( class_exists( 'WB_Guide' ) ? WB_Guide::render() : '' ) ) ];
+		}
 		$s = self::screen( $slug );
 		if ( ! $s ) return [ 404, self::page( $slug, 'Not found', '', wb_notice( 'warn', 'There is no screen at this address.' ) ) ];
 		if ( ! current_user_can( $s[2] ) ) return [ 403, self::page( $slug, $s[0], $s[1], self::no_access( $slug ) ) ];
@@ -217,6 +223,7 @@ class WB_Workspace {
 			'portal'    => $in && current_user_can( 'wb_portal' ) ? self::portal_url() : '',
 			'setup'     => self::url( 'setup' ),
 			'demo'      => class_exists( 'WB_Demo' ) && WB_Demo::demo_open() ? home_url( '/workspace/demo/' ) : '',
+			'howto'     => ! $in || current_user_can( 'wb_access_workspace' ) ? self::url( 'howto' ) : '',
 		];
 		return self::page( 'welcome', '', '', WB_Welcome::content( WB_Setup::display_name(), $links, $in && current_user_can( 'wb_manage_settings' ) ) );
 	}
@@ -314,6 +321,7 @@ class WB_Workspace {
 		'staff'         => '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
 		'payroll'       => '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
 		'setup'         => '<path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 14h4"/><path d="M10 8h4"/><path d="M18 16h4"/>',
+		'technical'     => '<rect x="3" y="4" width="18" height="12" rx="1"/><path d="M8 20h8"/><path d="M12 16v4"/><path d="m9 9 2 2-2 2"/><path d="M13 13h2"/>',
 		'settings'      => '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
 		'howto'         => '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
 		'signout'       => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
@@ -329,7 +337,7 @@ class WB_Workspace {
 		$can     = fn( string $cap ): bool => current_user_can( $cap );
 		$welcome = 'welcome' === $slug;
 		$signin  = 'sign-in' === $slug;
-		$portal  = 'portal' === $slug || $welcome || $signin;   // no staff menu on any of these
+		$portal  = 'portal' === $slug || $welcome || $signin || ( 'howto' === $slug && ! is_user_logged_in() );   // no staff menu on any of these
 		$name   = WB_Setup::display_name();
 		$logo   = WB_Setup::logo_data_uri();
 		$mark   = '' !== $logo ? '<img src="' . esc_attr( $logo ) . '" alt="">' : esc_html( strtoupper( substr( $name, 0, 1 ) ) ) /* first letter; no mbstring dependency */;
@@ -354,9 +362,11 @@ class WB_Workspace {
 				. '<a class="wb-side-item" href="' . esc_url( wp_logout_url( home_url( '/' ) ) ) . '">' . self::icon( 'signout' ) . '<span>Sign out</span></a></div></aside><div class="wb-scrim" data-wb-side-close></div>';
 		}
 
+		// 1.7.4: on the public pages the top menu leads to How it works too
+		$how = $portal && ( ! is_user_logged_in() || current_user_can( 'wb_access_workspace' ) ) ? '<a href="' . esc_url( self::url( 'howto' ) ) . '"' . ( 'howto' === $slug ? ' aria-current="page"' : '' ) . '>How it works</a><span class="wb-top-sep" aria-hidden="true">·</span>' : '';
 		$me  = is_user_logged_in()
-			? esc_html( $user->display_name ) . ' · <a href="' . esc_url( wp_logout_url( home_url( '/' ) ) ) . '">Sign out</a>'
-			: '<a href="' . esc_url( self::signin_url( self::url( 'home' ) ) ) . '">Sign in</a>';
+			? $how . esc_html( $user->display_name ) . ' · <a href="' . esc_url( wp_logout_url( home_url( '/' ) ) ) . '">Sign out</a>'
+			: $how . ( $signin ? '' : '<a href="' . esc_url( self::signin_url( self::url( 'home' ) ) ) . '">Sign in</a>' );
 		$crumb = '';
 		if ( ! $portal ) {
 			$crumb = '<nav aria-label="Breadcrumb"><ol class="wb-crumb"><li>' . ( 'home' === $slug ? '<span aria-current="page">Today</span>' : '<a href="' . esc_url( self::url( 'home' ) ) . '">Today</a>' ) . '</li>'

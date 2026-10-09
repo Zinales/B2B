@@ -92,7 +92,9 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-crumb{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:.35rem;color:var(--wb-muted)}
 .wb-crumb li+li::before{content:"›";margin-right:.35rem;color:var(--wb-line)}
 .wb-crumb [aria-current]{color:var(--wb-ink);font-weight:600}
-.wb-top-me{margin-left:auto;color:var(--wb-muted);text-align:right}
+.wb-top-me{margin-left:auto;color:var(--wb-muted);text-align:right;display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;justify-content:flex-end}
+.wb-top-sep{color:var(--wb-line)}
+.wb-welcome-foot .wb-wrap>span:last-child{display:flex;gap:1.2rem}
 .wb-app a.wb-top-wait{display:inline-flex;white-space:nowrap;align-items:center;gap:.4rem;padding:.3rem .7rem;border-radius:var(--wb-r-chip);border:1px solid var(--wb-line);background:var(--wb-card);color:var(--wb-ink);font-weight:600;font-size:var(--wb-fs-sm)}
 .wb-app a.wb-top-wait:hover{border-color:var(--wb-primary);color:var(--wb-primary)}
 .wb-top-wait b{min-width:1.3rem;padding:0 .35rem;border-radius:var(--wb-r-chip);background:var(--wb-primary);color:var(--wb-on-primary,#F7F3EE);text-align:center;font-size:var(--wb-fs-xs);line-height:1.5}
@@ -488,6 +490,12 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-welcome-foot .wb-wrap{display:flex;justify-content:space-between;gap:1rem;align-items:center;font-size:var(--wb-fs-md);color:var(--wb-canvas-82)}
 .wb-app .wb-welcome-foot a{color:var(--wb-canvas);text-decoration:underline;text-underline-offset:.15em}
 .wb-builton{color:var(--wb-canvas-82)}
+.wb-checks{list-style:none;margin:0 0 var(--wb-s4);padding:0;border:1px solid var(--wb-line);border-radius:var(--wb-r);background:var(--wb-card)}
+.wb-checks li{display:grid;grid-template-columns:auto 11rem 1fr;gap:.7rem;align-items:start;padding:.65rem .9rem;border-top:1px solid var(--wb-line)}
+.wb-checks li:first-child{border-top:0}
+.wb-check-dot{width:.7rem;height:.7rem;border-radius:50%;margin-top:.35rem;background:var(--wb-good)}
+.wb-checks li.is-warn .wb-check-dot{background:var(--wb-wait)}.wb-checks li.is-bad .wb-check-dot{background:var(--wb-bad)}
+@media (max-width:640px){.wb-checks li{grid-template-columns:auto 1fr}.wb-checks li>span:not(.wb-check-dot):not(.wb-sr){grid-column:2}}
 .wb-optin{max-width:40rem;margin:var(--wb-s5) auto 0}
 .wb-wrap .wb-optin{margin:0}
 .wb-optin h2{margin:0 0 .3rem}

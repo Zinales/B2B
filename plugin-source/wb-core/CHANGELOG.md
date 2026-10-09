@@ -1,5 +1,20 @@
 # wb-core changelog
 
+## 1.7.4 — 9 October 2026
+- **How it works on the front page** (Zina: "can we add it to the menu on the home page"): the
+  top menu of the front page and the sign-in page has "How it works" beside "Sign in", and the
+  front page's footer has it too. The How to page can be read before signing in, without the staff
+  menu; its steps say to try the demo, or sign in, to follow them.
+- **The business tables are IT's** (Zina: "the administrators don't need to see the business
+  tables; that is a back-end data function; if we expose it, it is an IT function"): a new
+  **Technical** screen under Admin holds the JetEngine business tables and the system checks (PDF
+  engine, encryption key, private folder, email with a test send, nightly jobs, audit trail,
+  versions). It is opened with a new capability, wb_technical, which WordPress administrators hold
+  and the owner and manager roles do not; it can be ticked for the person who looks after the site.
+  System Settings no longer shows the tables; the owner's checklist shows "Technical setup" only
+  while it is unfinished, with "ask the person who looks after the site".
+- Tests: regress-technical.php (17); regress-frame checks the public How it works page and links.
+
 ## 1.7.3 — 9 October 2026
 - The "Keep me posted" button sits at its own width instead of stretching.
 

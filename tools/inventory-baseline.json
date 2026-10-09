@@ -31,6 +31,7 @@
   "wb_run_reviews",
   "wb_run_stocktake",
   "wb_send_quotes",
+  "wb_technical",
   "wb_view_cashflow",
   "wb_view_customers",
   "wb_view_documents",
@@ -558,6 +559,7 @@
   "wb_settings",
   "wb_setup",
   "wb_staff",
-  "wb_stock"
+  "wb_stock",
+  "wb_technical"
  ]
 }

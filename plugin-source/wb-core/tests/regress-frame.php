@@ -198,6 +198,14 @@ ok( 'demo open: two cards, the demo visitor filled in, one button, the words abo
 ok( 'a password the system made by itself gives way to demo-user007', WB_Demo::password() === 'demo-user007' );
 $GLOBALS['T']['options'][ WB_Demo::PASS_CHOSEN ] = '1'; $GLOBALS['T']['options'][ WB_Demo::PASS_OPTION ] = 'demo-4821';
 ok( 'a password the owner chose is kept', WB_Demo::password() === 'demo-4821' );
+$GLOBALS['T']['logged_in'] = false; $GLOBALS['T']['caps'] = [];
+[ $st, $how ] = WB_Workspace::render( 'howto' );
+ok( 'How to is readable before signing in (1.7.4)', 200 === $st && false !== strpos( $how, 'How it works' ) && false !== strpos( $how, 'Walkthroughs' ) );
+ok( 'with no staff menu', false === strpos( $how, 'wb-side-nav' ) );
+ok( 'and the way to follow the steps', false !== strpos( $how, '>Try the demo</a> to follow them' ) );
+[ , $wel ] = WB_Workspace::render( 'welcome' );
+ok( 'the front page menu has How it works beside Sign in', false !== strpos( $wel, '<span class="wb-top-me"><a href="https://b2b.test/workspace/howto/">How it works</a>' ) && false !== strpos( $wel, '>Sign in</a></span></header>' ) );
+ok( 'and so does its footer', 2 === substr_count( $wel, '>How it works</a>' ) );
 ok( 'the demo login can also be typed into the form', false !== strpos( $html, 'Or type the login name and password into the form' ) );
 ok( 'a demo password is letters, digits or dashes a visitor can read', [ WB_Demo::valid_password( 'demo-4821' ), WB_Demo::valid_password( 'abc' ), WB_Demo::valid_password( 'has space 1' ), WB_Demo::valid_password( '<script>' ), WB_Demo::valid_password( str_repeat( 'a', 33 ) ) ] === [ true, false, false, false, false ] );
 $GLOBALS['T']['options'] = [];

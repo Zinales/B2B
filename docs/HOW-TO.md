@@ -135,5 +135,5 @@ For the owner, once. Part of _Setting up: the company, the tables, who can do wh
 2. **Settings.** Tax rate, numbering prefixes, when to invoice, the lowest margin and quote validity. Leave the alert emails off until you want them.
 3. **Settings.** Who can do what: tick the screens each person works in.
 4. **Products.** Load the master tables (see "Load your products and customers from a spreadsheet").
-5. **System Settings.** Add the encryption key to wp-config.php before payroll, and a real cron for the 02:00 run.
+5. **Technical.** IT adds the encryption key to wp-config.php before payroll and a real cron for the 02:00 run, and checks both on the Technical screen.
 

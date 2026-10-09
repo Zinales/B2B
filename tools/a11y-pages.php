@@ -130,6 +130,7 @@ $pages = [
 	[ 'welcome-signed-out', 'welcome', null ],
 	[ 'welcome-demo-open', 'welcome', null, [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ], WB_Demo::PASS_OPTION => 'demo-4821' ] ],
 	[ 'sign-in', 'sign-in', null ],
+	[ 'howto-public', 'howto', null, [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ], WB_Demo::PASS_OPTION => 'demo-user007' ] ],
 	[ 'sign-in-demo-open', 'sign-in', null, [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ], WB_Demo::PASS_OPTION => 'demo-4821' ] ],
 	[ 'welcome-owner', 'welcome', 'wb_owner' ],
 	[ 'welcome-customer', 'welcome', 'wb_customer' ],

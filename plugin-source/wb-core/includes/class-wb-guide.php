@@ -141,7 +141,7 @@ class WB_Guide {
 				[ 'products', 'Load the master tables: categories, price tiers, products, customers, contacts, suppliers, staff, leave types, KPIs. Type them in on each screen, or download the template, fill it, "Check file" and then "Validate and import". A file with one problem imports nothing and lists the problems by row.' ],
 				[ 'settings', 'Email templates: the words each "Send by email" starts with, for quotes, invoices, credit notes, statements, reminders and datasheets. The details fill themselves in. The site must be able to send email (an SMTP plugin is the reliable way).' ],
 				[ 'customers', 'Archive, never delete: an archived customer or product leaves the lists, and "Show archived" under the list brings them into view with "Restore" on each.' ],
-				[ 'setup', 'Business clock and nightly jobs: set a real server cron for wp-cron so the 02:00 run (overdue sweep, quote expiry, reorder alerts, demand and cashflow, chain check, the Integrity report on the first) is reliable.' ],
+				[ 'technical', 'For IT, once, on the Technical screen: create the business tables, and check the PDF engine, the encryption key, the private folder, email and the nightly jobs. The owner never needs this screen; WordPress administrators have it. A real server cron for wp-cron makes the 02:00 run (overdue sweep, quote expiry, reorder alerts, demand and cashflow, chain check, the Integrity report on the first) is reliable.' ],
 			],
 			[ 'Imports are all or nothing and ledgered as one entry.', 'Settings are configuration, kept apart from business data, and every change is recorded.' ],
 		],
@@ -173,7 +173,7 @@ class WB_Guide {
 		'orders' => [ 'sell' ], 'invoices' => [ 'sell', 'money' ], 'payments' => [ 'money' ], 'deliveries' => [ 'sell' ],
 		'products' => [ 'price', 'setup' ], 'stock' => [ 'stock' ], 'purchasing' => [ 'buy' ], 'documents' => [ 'price', 'trail' ],
 		'marketing' => [ 'know', 'customer' ], 'cashflow' => [ 'know' ], 'integrity' => [ 'know', 'stock', 'trail' ],
-		'staff' => [ 'team' ], 'payroll' => [ 'pay' ], 'setup' => [ 'setup' ], 'settings' => [ 'setup', 'demo' ],
+		'staff' => [ 'team' ], 'payroll' => [ 'pay' ], 'setup' => [ 'setup' ], 'technical' => [ 'setup' ], 'settings' => [ 'setup', 'demo' ],
 	];
 
 	/**
@@ -269,7 +269,7 @@ class WB_Guide {
 			[ 'settings', 'Tax rate, numbering prefixes, when to invoice, the lowest margin and quote validity. Leave the alert emails off until you want them.' ],
 			[ 'settings', 'Who can do what: tick the screens each person works in.' ],
 			[ 'products', 'Load the master tables (see "Load your products and customers from a spreadsheet").' ],
-			[ 'setup', 'Add the encryption key to wp-config.php before payroll, and a real cron for the 02:00 run.' ],
+			[ 'technical', 'IT adds the encryption key to wp-config.php before payroll and a real cron for the 02:00 run, and checks both on the Technical screen.' ],
 		], 'setup' ],
 	];
 

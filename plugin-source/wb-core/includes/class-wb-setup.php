@@ -336,7 +336,7 @@ class WB_Setup {
 		$maps = (array) get_option( 'wb_bank_mapping', [] );
 		$pay  = (array) get_option( 'wb_payroll', [] );
 		return [
-			'tables'   => [ 'Business tables', WB_Tables::all_present(), '#wb-setup-tables', 'The tables the system keeps its records in' ],   // 0.3.0: first, everything else needs them
+			'tables'   => [ 'Technical setup', WB_Tables::all_present(), WB_Workspace::url( 'technical' ), 'Done by IT when the site is installed' ],   // 1.7.4: IT's job; shown to the owner only while it is unfinished
 			'company'  => [ 'Company details', '' !== $b['legal_name'] && '' !== trim( $b['physical_address'] ), '#wb-setup-company', 'Legal name and address, on every document' ],
 			'colours'  => [ 'Colours and logo', '' !== (string) $b['colors_saved_at'], '#wb-setup-look', 'Your look, checked for contrast' ],
 			'vat'      => [ 'VAT', 'no' === $b['vat_registered'] || '' !== $b['vat_number'], '#wb-setup-company', 'Registered or not, and the number' ],
@@ -349,6 +349,8 @@ class WB_Setup {
 
 	public static function checklist_card(): string {
 		$items = self::checklist();
+		if ( ! empty( $items['tables'][1] ) ) unset( $items['tables'] );   // 1.7.4: once IT has done it, the owner never sees it
+		elseif ( isset( $items['tables'] ) && ! current_user_can( 'wb_technical' ) ) $items['tables'][3] = 'Ask the person who looks after the site to finish it';
 		$done  = count( array_filter( $items, fn( $i ) => $i[1] ) );
 		$all   = count( $items );
 		$pct   = $all ? (int) round( 100 * $done / $all ) : 0;
@@ -371,7 +373,6 @@ class WB_Setup {
 		if ( ! current_user_can( 'wb_manage_settings' ) ) return wb_notice( 'warn', 'This page is not part of your work. Ask the owner if you need it.' );
 		$b = self::brand();
 		$h = WB_RowActions::notice() . self::checklist_card() . self::page_clash_notice();
-		$h .= '<div id="wb-setup-tables"></div>' . self::fold( 'Business tables', WB_Tables::panel(), ! WB_Tables::all_present() );
 
 		$f = WB_Render::form_open( 'setup_save', true ) . '<div id="wb-setup-company"></div>'
 			. WB_Render::field( 'display_name', 'System name (what people see)', 'text', $b['display_name'], [ 'note' => 'Short. It is on the menu and the welcome page.', 'placeholder' => 'e.g. GroB2B' ] )
