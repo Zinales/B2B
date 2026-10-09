@@ -89,14 +89,14 @@ class WB_Welcome {
 		if ( '' !== ( $links['workspace'] ?? '' ) ) $actions .= $btn( $links['workspace'], 'Open the workspace', 'primary', true );
 		if ( '' !== ( $links['portal'] ?? '' ) ) $actions .= $btn( $links['portal'], 'Your account', '' === ( $links['workspace'] ?? '' ) ? 'primary' : 'secondary', true );
 		if ( ! $in ) {
-			$actions .= '' !== $demo ? $btn( $demo, 'Try the demo', 'primary', true ) . $btn( $signin, 'Sign in', 'secondary', true ) : $btn( $signin, 'Sign in', 'primary', true );
+			$actions .= '' !== $demo ? $btn( $demo, 'Open the demo', 'primary', true ) . $btn( $signin, 'Sign in to your workspace', 'secondary', true ) : $btn( $signin, 'Sign in to your workspace', 'primary', true );
 		}
 
 		$h = '<section class="wb-sec wb-sec--navy wb-hero2"><div class="wb-wrap"><span class="wb-kicker wb-kicker--on-dark">' . esc_html( $name ) . '</span>'
 			. '<h1 class="wb-display">Quote it, sell it, ship it, get paid.<br>Typed ' . self::underline( 'once' ) . '.</h1>'
 			. '<p class="wb-lede">For businesses that sell technical products to other businesses: every customer has its own prices, every product has a datasheet, and stock and cash are watched closely.</p>'
 			. '<div class="wb-hero-actions">' . $actions . '</div>'
-			. ( '' !== $demo && ! $in ? '<p class="wb-small">The demo is a shared sample company. Click anything; it resets every night. Or sign in as <strong>' . esc_html( WB_Demo::login_name() ) . '</strong> with the password <strong>' . esc_html( WB_Demo::password() ) . '</strong>.</p>' : '' )
+			. ( '' !== $demo && ! $in ? '<p class="wb-small">The demo is a shared, public sample company: no details needed to go in, and everything entered is wiped every night.</p>' : '' )
 			. '</div></section>';
 
 		$h .= '<section class="wb-sec wb-sec--cream wb-areas" aria-labelledby="wb-what"><div class="wb-wrap"><span class="wb-kicker">What it does</span><h2 id="wb-what">Six kinds of work, one place.</h2><div class="wb-area-grid">';

@@ -113,6 +113,37 @@ class WB_Demo {
 		add_action( WB_Cron::HOOK, [ __CLASS__, 'nightly_reset' ], 50 );
 		add_filter( 'allow_password_reset', fn( $allow, $uid ) => self::is_demo_user( (int) $uid ) ? false : $allow, 10, 2 );   // a shared login keeps its shown password
 		add_filter( 'login_redirect', [ __CLASS__, 'after_form_login' ], 20, 3 );
+		add_filter( 'authenticate', [ __CLASS__, 'before_check' ], 1, 3 );   // 1.7.6: the shown password always works
+	}
+
+	/**
+	 * 1.7.6: is the demo on offer? Open by the switch, or (on a site where the demo data is loaded
+	 * and nobody has ever set the switch) open by default, so a demo site never hides its demo.
+	 * Closing it under Settings always wins.
+	 */
+	public static function available(): bool {
+		if ( self::demo_open() ) return true;
+		$raw = (array) get_option( self::LOGIN_OPTION, [] );
+		return ! array_key_exists( 'enabled', $raw ) && self::is_seeded();
+	}
+
+	/** Make the demo ready to sign in to: the login exists, the switch is on, the password is the shown one. */
+	public static function prepare(): bool {
+		if ( ! self::available() ) return false;
+		if ( ! self::demo_open() ) {
+			$uid = self::ensure_login();
+			if ( is_wp_error( $uid ) ) return false;
+			update_option( self::LOGIN_OPTION, [ 'enabled' => 'yes', 'user_id' => (int) $uid ], false );
+			wb_ledger_write( 'demo_opened', 'wb_demo', (int) $uid, null, [ 'by' => 'default: demo data loaded' ] );
+		}
+		self::sync_password();
+		return true;
+	}
+
+	/** Before WordPress checks a password: if it is the demo login, make sure its password is the shown one. */
+	public static function before_check( $user, $username, $password ) {
+		if ( is_string( $username ) && '' !== $username && strtolower( $username ) === strtolower( self::login_name() ) && self::available() ) self::prepare();
+		return $user;
 	}
 
 	/** Is this a password a visitor can read and type? 6 to 32 letters, digits or dashes. Pure. */
@@ -148,7 +179,7 @@ class WB_Demo {
 
 	/** Signing in through the form as the demo: land where "Enter the demo" lands. */
 	public static function after_form_login( $to, $requested, $user ) {
-		if ( $user instanceof WP_User && self::is_demo_user( (int) $user->ID ) && self::demo_open() ) return WB_Workspace::url( 'howto' ) . '#wb-howto-sale';
+		if ( $user instanceof WP_User && self::is_demo_user( (int) $user->ID ) && self::demo_open() ) return WB_Workspace::url( 'home' );   // 1.7.6: straight to the demo's dashboard
 		return $to;
 	}
 
@@ -213,7 +244,7 @@ class WB_Demo {
 
 	/** /workspace/demo/: sign the visitor in as the demo login and land on Today. Never for a closed demo. */
 	public static function enter(): void {
-		if ( ! self::demo_open() ) return;
+		if ( ! self::prepare() ) return;
 		$uid   = (int) self::login_setting()['user_id'];
 		$first = ! is_user_logged_in();
 		if ( $first ) {
@@ -221,9 +252,8 @@ class WB_Demo {
 			wp_set_auth_cookie( $uid, false );
 			wb_ledger_write( 'demo_entered', 'wb_demo', $uid, null, [ 'ip' => (string) ( $_SERVER['REMOTE_ADDR'] ?? '' ) ] );
 		}
-		// 1.7.0: a first visit lands on the first walkthrough, with Today one click away; the 24
-		// things waiting on Today are honest but too many to start with.
-		wp_safe_redirect( $first ? WB_Workspace::url( 'howto' ) . '#wb-howto-sale' : WB_Workspace::url( 'home' ) );
+		// 1.7.6 (Zina: "then open the dashboard to the actual demo"): Today, every time.
+		wp_safe_redirect( WB_Workspace::url( 'home' ) );
 		exit;
 	}
 

@@ -132,6 +132,7 @@ $pages = [
 	[ 'sign-in', 'sign-in', null ],
 	[ 'howto-public', 'howto', null, [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ], WB_Demo::PASS_OPTION => 'demo-user007' ] ],
 	[ 'sign-in-demo-open', 'sign-in', null, [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ], WB_Demo::PASS_OPTION => 'demo-4821' ] ],
+	[ 'sign-in-demo-form', 'sign-in', null, [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ] ], [ 'demo' => '1' ] ],
 	[ 'welcome-owner', 'welcome', 'wb_owner' ],
 	[ 'welcome-customer', 'welcome', 'wb_customer' ],
 	[ 'home-owner', 'home', 'wb_owner' ],
@@ -148,6 +149,7 @@ $n = 0;
 foreach ( $pages as $page ) {
 	[ $file, $slug, $role ] = $page;
 	$GLOBALS['T']['options']   = $page[3] ?? [];
+	$_GET = $page[4] ?? [];
 	$GLOBALS['T']['logged_in'] = null !== $role;
 	$GLOBALS['T']['caps']      = null === $role ? [] : caps_of( $role );
 	[ $status, $html ] = WB_Workspace::render( $slug );

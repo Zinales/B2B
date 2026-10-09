@@ -1,5 +1,28 @@
 # wb-core changelog
 
+## 1.7.6 — 9 October 2026
+The way into the demo, for someone not signed in (Zina, 9 October: "it should still be open demo
+or see the workspace, and then the login screen, styled to match our design, not the WP screen,
+with the demo credentials applied and a note that everything is wiped every day and please don't
+enter sensitive information because it's public. Then open the dashboard to the actual demo.").
+- **The front page** offers "Open the demo" and "Sign in to your workspace".
+- **Open the demo** leads to the system's own sign-in page with one card: the demo's login name and
+  password already filled in, the note ("Shared and public. Everything entered in it is wiped every
+  night. Please do not enter real names, numbers or anything sensitive: anyone else in the demo can
+  see it."), and one button, "Open the demo", which signs in and opens the demo's Today.
+- **WordPress's login screen is never shown to a visitor**: wp-login.php sends them to the
+  system's sign-in page, keeping where they were going. WordPress keeps its screen only for the
+  form's post, lost and reset passwords, re-authentication and wp-admin's pop-up login.
+- **The sign-in form is the system's own**, in the system's look, posting to WordPress as before.
+- **A demo site never hides its demo**: when the demo data is loaded and nobody has set the demo
+  switch, the demo is on offer; the demo login is made, and its password set to the shown one, the
+  first time someone opens it. Closing it under Settings still wins.
+- The demo's password is put right just before WordPress checks it, so the shown one always works.
+- Signing in to the demo, by the button or the form, opens Today (it had opened the first
+  walkthrough; How it works is one click away in the menu).
+- Tests: regress-frame checks the demo's filled-in sign-in, the note, the button and the own form.
+  The accessibility gate renders the demo sign-in.
+
 ## 1.7.5 — 9 October 2026
 - How it works: the contents box shows each heading over its own list, and visitors see one hint, not two.
 - The setting-up flow is called "Setting up: the company, who can do what, and the IT part".

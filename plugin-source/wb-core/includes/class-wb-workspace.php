@@ -66,7 +66,13 @@ class WB_Workspace {
 		add_filter( 'query_vars', fn( array $v ): array => array_merge( $v, [ self::QV ] ) );
 		add_filter( 'redirect_canonical', fn( $url ) => self::requested() ? false : $url );
 		add_filter( 'login_url', [ __CLASS__, 'login_url' ], 10, 3 );
-		add_action( 'wp_login_failed', function () { if ( 0 === strpos( (string) wp_get_referer(), self::url( 'sign-in' ) ) ) { wp_safe_redirect( self::url( 'sign-in', [ 'login' => 'failed' ] ) ); exit; } } );
+		add_action( 'wp_login_failed', function ( $username = '' ) {
+			if ( 0 !== strpos( (string) wp_get_referer(), self::url( 'sign-in' ) ) ) return;
+			$demo = class_exists( 'WB_Demo' ) && strtolower( (string) $username ) === strtolower( WB_Demo::login_name() );
+			wp_safe_redirect( self::url( 'sign-in', [ 'login' => 'failed' ] + ( $demo ? [ 'demo' => 1 ] : [] ) ) );
+			exit;
+		} );
+		add_action( 'login_init', [ __CLASS__, 'own_login_page' ] );   // 1.7.6: WordPress's login screen is never shown to a visitor
 		add_filter( 'pre_get_document_title', fn( $t ) => self::requested() ? self::document_title() : $t, 99 );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'assets' ], 999 );
 		add_action( 'template_redirect', [ __CLASS__, 'serve' ], 20 );   // after every POST handler (5 and 10)
@@ -104,6 +110,21 @@ class WB_Workspace {
 	}
 
 	/* ================================================================== WordPress side */
+
+	/**
+	 * 1.7.6 (Zina: "the login screen needs to be styled to match our design, not the WP screen"):
+	 * a visitor who reaches wp-login.php to sign in is sent to the system's own sign-in page, with
+	 * where they were going kept. WordPress keeps its screen for what only it does: the form's own
+	 * post, lost and reset passwords, re-authentication and the pop-up login inside wp-admin.
+	 */
+	public static function own_login_page(): void {
+		if ( 'GET' !== strtoupper( (string) ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) ) return;
+		$action = (string) ( $_REQUEST['action'] ?? 'login' );
+		if ( ! in_array( $action, [ 'login', '' ], true ) || isset( $_REQUEST['interim-login'] ) || ! empty( $_REQUEST['reauth'] ) ) return;
+		$to = isset( $_REQUEST['redirect_to'] ) ? wp_validate_redirect( wp_unslash( (string) $_REQUEST['redirect_to'] ), '' ) : '';
+		wp_safe_redirect( self::signin_url( $to ) );
+		exit;
+	}
 
 	/** wp_login_url() → the system's page, except for wp-admin's own needs (re-auth, interim logins). */
 	public static function login_url( $url, $redirect, $force_reauth ) {
@@ -180,8 +201,8 @@ class WB_Workspace {
 		if ( 'welcome' === $slug ) return [ 200, self::welcome_page() ];
 		if ( 'sign-in' === $slug ) return [ 200, self::page( 'sign-in', self::SIGNIN[0], self::SIGNIN[1], self::signin_content() ) ];
 		if ( 'howto' === $slug && ! is_user_logged_in() ) {   // 1.7.4, Zina: "add it to the menu on the home page"
-			$demo = class_exists( 'WB_Demo' ) && WB_Demo::demo_open();
-			$lead = '<p class="wb-guide-start">The steps link to the screens they happen on. ' . ( $demo ? '<a href="' . esc_url( home_url( '/workspace/demo/' ) ) . '">Try the demo</a> to follow them, or <a href="' . esc_url( self::signin_url( self::url( 'howto' ) ) ) . '">sign in</a>.' : '<a href="' . esc_url( self::signin_url( self::url( 'howto' ) ) ) . '">Sign in</a> to follow them.' ) . '</p>';
+			$demo = class_exists( 'WB_Demo' ) && WB_Demo::available();
+			$lead = '<p class="wb-guide-start">The steps link to the screens they happen on. ' . ( $demo ? '<a href="' . esc_url( self::url( 'sign-in', [ 'demo' => 1 ] ) ) . '">Open the demo</a> to follow them, or <a href="' . esc_url( self::signin_url( self::url( 'howto' ) ) ) . '">sign in</a>.' : '<a href="' . esc_url( self::signin_url( self::url( 'howto' ) ) ) . '">Sign in</a> to follow them.' ) . '</p>';
 			return [ 200, self::page( 'howto', 'How it works', 'Every flow in plain words, then walkthroughs: one thing to press or read per step.', $lead . ( class_exists( 'WB_Guide' ) ? WB_Guide::render( true ) : '' ) ) ];
 		}
 		$s = self::screen( $slug );
@@ -222,7 +243,7 @@ class WB_Workspace {
 			'workspace' => $in && current_user_can( 'wb_access_workspace' ) ? self::url( 'home' ) : '',
 			'portal'    => $in && current_user_can( 'wb_portal' ) ? self::portal_url() : '',
 			'setup'     => self::url( 'setup' ),
-			'demo'      => class_exists( 'WB_Demo' ) && WB_Demo::demo_open() ? home_url( '/workspace/demo/' ) : '',
+			'demo'      => class_exists( 'WB_Demo' ) && WB_Demo::available() ? self::url( 'sign-in', [ 'demo' => 1 ] ) : '',   // 1.7.6: the demo's sign-in, filled in
 			'howto'     => ! $in || current_user_can( 'wb_access_workspace' ) ? self::url( 'howto' ) : '',
 		];
 		return self::page( 'welcome', '', '', WB_Welcome::content( WB_Setup::display_name(), $links, $in && current_user_can( 'wb_manage_settings' ) ) );
@@ -240,32 +261,59 @@ class WB_Workspace {
 	 * visitor, already filled in, one button to go in, and the words that say what happens to
 	 * what they save. Someone already signed in sees where they can go instead.
 	 */
+	/** The sign-in form, in the system's own look, posting to WordPress (passwords and lockouts stay WordPress's). */
+	private static function login_form( string $id, string $to, string $user = '', string $pass = '', string $button = 'Sign in', bool $remember = true ): string {
+		$post = function_exists( 'site_url' ) ? site_url( 'wp-login.php', 'login_post' ) : '/wp-login.php';
+		return '<form id="' . esc_attr( $id ) . '" class="wb-login" method="post" action="' . esc_url( $post ) . '">'
+			. '<p><label for="' . esc_attr( $id ) . '-user">Login name or email</label><input id="' . esc_attr( $id ) . '-user" type="text" name="log" autocomplete="username" required value="' . esc_attr( $user ) . '"' . ( '' !== $user ? ' readonly' : '' ) . '></p>'
+			. '<p><label for="' . esc_attr( $id ) . '-pass">Password</label><input id="' . esc_attr( $id ) . '-pass" type="' . ( '' !== $pass ? 'text' : 'password' ) . '" name="pwd" autocomplete="' . ( '' !== $pass ? 'off' : 'current-password' ) . '" required value="' . esc_attr( $pass ) . '"' . ( '' !== $pass ? ' readonly' : '' ) . '></p>'
+			. ( $remember ? '<p class="login-remember"><label><input type="checkbox" name="rememberme" value="forever"> Keep me signed in on this device</label></p>' : '' )
+			. '<input type="hidden" name="redirect_to" value="' . esc_attr( $to ) . '">'
+			. '<p><button type="submit" class="wb-btn">' . esc_html( $button ) . '</button></p></form>';
+	}
+
+	/** The words every demo visitor reads before going in (Zina, 9 October). */
+	const DEMO_NOTE = 'This demo is shared and public. Everything entered in it is wiped every night. Please do not enter real names, numbers or anything sensitive: anyone else in the demo can see it.';
+
+	/**
+	 * The sign-in page (1.0.0; 1.7.6). ?demo=1, which "Open the demo" leads to: one card, the demo's
+	 * login name and password already filled in, the note about the demo, and one button that opens
+	 * the demo's Today. Otherwise: the person's own login, and beside it the way into the demo.
+	 */
 	private static function signin_content(): string {
 		$to  = isset( $_GET['redirect_to'] ) ? wp_validate_redirect( wp_unslash( (string) $_GET['redirect_to'] ), '' ) : '';
 		$to  = '' !== $to ? $to : self::url( 'home' );
 		if ( is_user_logged_in() ) {
-			$h = '<div class="wb-signin"><section class="wb-card wb-card--lead"><h2>You are signed in</h2><p>' . esc_html( wp_get_current_user()->display_name ) . '</p><p class="wb-form-acts">'
+			return '<div class="wb-signin"><section class="wb-card wb-card--lead"><h2>You are signed in</h2><p>' . esc_html( wp_get_current_user()->display_name ) . '</p><p class="wb-form-acts">'
 				. ( current_user_can( 'wb_access_workspace' ) ? '<a class="wb-btn" href="' . esc_url( self::url( 'home' ) ) . '">Open the workspace</a>' : '' )
 				. ( current_user_can( 'wb_portal' ) ? '<a class="wb-btn' . ( current_user_can( 'wb_access_workspace' ) ? ' wb-btn-ghost' : '' ) . '" href="' . esc_url( self::portal_url() ) . '">Your account</a>' : '' )
 				. '<a class="wb-btn wb-btn-ghost" href="' . esc_url( wp_logout_url( home_url( '/' ) ) ) . '">Sign out</a></p></section></div>';
-			return $h;
 		}
 		$failed = isset( $_GET['login'] ) && 'failed' === $_GET['login'];
-		$demo   = class_exists( 'WB_Demo' ) && WB_Demo::demo_open();
-		$form   = function_exists( 'wp_login_form' ) ? wp_login_form( [ 'echo' => false, 'redirect' => $to, 'form_id' => 'wb-login', 'label_username' => 'Login name or email', 'label_password' => 'Password', 'label_remember' => 'Keep me signed in on this device', 'label_log_in' => 'Sign in', 'remember' => true ] ) : '';
+		$demo   = class_exists( 'WB_Demo' ) && WB_Demo::available();
+		if ( $demo && ! empty( $_GET['demo'] ) ) {
+			WB_Demo::prepare();   // the login exists and its password is the one shown
+			return '<div class="wb-signin"><section class="wb-card wb-card--lead" aria-labelledby="wb-demo-h"><span class="wb-kicker">Just looking?</span><h2 id="wb-demo-h">Open the demo</h2>'
+				. ( $failed ? wb_notice( 'err', 'The demo could not be opened just now. Try again in a moment.' ) : '' )
+				. '<div class="wb-demo-note" role="note"><strong>Shared and public.</strong> ' . esc_html( substr( self::DEMO_NOTE, strlen( 'This demo is shared and public. ' ) ) ) . '</div>'
+				. self::login_form( 'wb-login-demo', self::url( 'home' ), WB_Demo::login_name(), WB_Demo::password(), 'Open the demo', false )
+				. '<p class="wb-small">The demo\'s login is filled in for you. You go in as a demo manager, with a sample company\'s customers, products, quotes and a year of trading.</p>'
+				. '<p class="wb-small"><a href="' . esc_url( self::url( 'sign-in' ) ) . '">Sign in with your own login instead</a></p></section></div>';
+		}
 		$h  = '<div class="wb-signin' . ( $demo ? ' wb-signin--two' : '' ) . '">';
 		$h .= '<section class="wb-card wb-card--lead" aria-labelledby="wb-own"><h2 id="wb-own">Your login</h2>'
 			. ( $failed ? wb_notice( 'err', 'That login name or password is not right. Try again, or reset your password below.' ) : '' )
-			. $form . '<p class="wb-small"><a href="' . esc_url( wp_lostpassword_url( $to ) ) . '">Forgotten your password?</a></p></section>';
+			. self::login_form( 'wb-login', $to ) . '<p class="wb-small"><a href="' . esc_url( wp_lostpassword_url( $to ) ) . '">Forgotten your password?</a></p></section>';
 		if ( $demo ) {
 			$h .= '<section class="wb-card wb-card--quiet" aria-labelledby="wb-demo-h"><span class="wb-kicker">Just looking?</span><h2 id="wb-demo-h">The demo</h2>'
 				. '<dl class="wb-demo-creds"><div><dt>Login name</dt><dd><code>' . esc_html( WB_Demo::login_name() ) . '</code></dd></div><div><dt>Password</dt><dd><code>' . esc_html( WB_Demo::password() ) . '</code></dd></div></dl>'
-				. '<p class="wb-form-acts"><a class="wb-btn" href="' . esc_url( home_url( '/workspace/demo/' ) ) . '">Enter the demo</a></p>'
+				. '<p class="wb-form-acts"><a class="wb-btn" href="' . esc_url( self::url( 'sign-in', [ 'demo' => 1 ] ) ) . '">Open the demo</a></p>'
 				. '<p class="wb-small">Or type the login name and password into the form. You go in as a demo manager.</p>'
-				. '<p class="wb-muted">A shared sample company with customers, products, quotes and a bank statement already in it. Click anything, break nothing. <strong>Whatever you save is kept for the day and cleared every night.</strong> Please do not enter real names or numbers.</p></section>';
+				. '<p class="wb-muted">' . esc_html( self::DEMO_NOTE ) . '</p></section>';
 		}
 		return $h . '</div>' . ( class_exists( 'WB_Optin' ) ? WB_Optin::form( 'sign-in' ) : '' );   // 1.7.2: news, by choice, never needed for the demo
 	}
+
 
 	/**
 	 * The address of a screen, by slug (0.3.2, BUILD-PATTERNS §2.1): the one place that knows the
@@ -363,7 +411,7 @@ class WB_Workspace {
 		}
 
 		// 1.7.4: on the public pages the top menu leads to How it works too
-		$how = $portal && ( ! is_user_logged_in() || current_user_can( 'wb_access_workspace' ) ) ? '<a href="' . esc_url( self::url( 'howto' ) ) . '"' . ( 'howto' === $slug ? ' aria-current="page"' : '' ) . '>How it works</a><span class="wb-top-sep" aria-hidden="true">·</span>' : '';
+		$how = $portal && ( ! is_user_logged_in() || current_user_can( 'wb_access_workspace' ) ) ? '<a href="' . esc_url( self::url( 'howto' ) ) . '"' . ( 'howto' === $slug ? ' aria-current="page"' : '' ) . '>How it works</a>' . ( is_user_logged_in() || ! $signin ? '<span class="wb-top-sep" aria-hidden="true">·</span>' : '' ) : '';
 		$me  = is_user_logged_in()
 			? $how . esc_html( $user->display_name ) . ' · <a href="' . esc_url( wp_logout_url( home_url( '/' ) ) ) . '">Sign out</a>'
 			: $how . ( $signin ? '' : '<a href="' . esc_url( self::signin_url( self::url( 'home' ) ) ) . '">Sign in</a>' );
