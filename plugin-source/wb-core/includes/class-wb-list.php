@@ -26,6 +26,7 @@ class WB_List {
 			'by'  => preg_replace( '/[^a-z0-9_]/', '', strtolower( $v( 'by' ) ) ),
 			'dir' => 'asc' === strtolower( $v( 'dir' ) ) ? 'asc' : ( 'desc' === strtolower( $v( 'dir' ) ) ? 'desc' : '' ),
 			'pg'  => max( 1, (int) $v( 'pg' ) ),
+			'arch' => '1' === $v( 'arch' ),
 		];
 	}
 
@@ -70,8 +71,11 @@ class WB_List {
 		$base  = (string) ( $opts['base'] ?? WB_Workspace::url( WB_Workspace::requested() ?: 'home' ) );
 		$link  = fn( array $set ) => add_query_arg( self::args( $get, $ns, $set ), $base );
 
-		// the condition
+		// the condition (1.6.0: or the archived rows, when asked and the list allows it)
 		$where = (array) ( $opts['where'] ?? [] );
+		$arch  = ! empty( $opts['archive'] ) && in_array( 'record_status', $cols, true );
+		$show_arch = $arch && $st['arch'];
+		if ( $show_arch ) $where['record_status'] = 'archived';
 		if ( '' !== $st['st'] && '' !== $scol ) $where[ $scol ] = $st['st'];
 		if ( '' !== $st['q'] ) {
 			$search = (array) ( $opts['search'] ?? array_values( array_filter( [ is_array( $columns[0] ?? null ) ? (string) ( $columns[0]['key'] ?? '' ) : (string) ( $columns[0] ?? '' ), 'name' ], fn( $c ) => in_array( $c, $cols, true ) ) ) );
@@ -89,10 +93,14 @@ class WB_List {
 		$dir = '' !== $st['dir'] ? $st['dir'] : strtolower( (string) ( $opts['order'] ?? ( $by === (string) ( $opts['orderby'] ?? '_ID' ) ? 'desc' : 'asc' ) ) );
 
 		// the page
-		$total = WB_CCT::count( $slug, $where );
+		$total = WB_CCT::count( $slug, $where, ! $show_arch );
 		[ $from, $to, $pages ] = self::span( $total, $st['pg'], $per );
 		$page  = min( $st['pg'], $pages );
-		$rows  = $total ? WB_CCT::find( $slug, $where, [ 'orderby' => $by, 'order' => $dir, 'limit' => $per, 'offset' => ( $page - 1 ) * $per ] ) : [];
+		$rows  = $total ? WB_CCT::find( $slug, $where, [ 'orderby' => $by, 'order' => $dir, 'limit' => $per, 'offset' => ( $page - 1 ) * $per, 'active_only' => ! $show_arch ] ) : [];
+		if ( $rows && is_callable( $opts['prefetch'] ?? null ) ) call_user_func( $opts['prefetch'], $rows );   // one lookup for the page, not one per row
+		$archived_n = $arch && ! $show_arch ? WB_CCT::count( $slug, [ 'record_status' => 'archived' ], false ) : 0;
+		$arch_link  = $show_arch ? '<p class="wb-list-arch">Showing archived ' . esc_html( (string) ( $opts['what'] ?? 'rows' ) ) . '. <a href="' . esc_url( $link( [ 'arch' => '', 'pg' => '' ] ) ) . '">Back to the current list</a></p>'
+			: ( $archived_n > 0 ? '<p class="wb-list-arch"><a href="' . esc_url( $link( [ 'arch' => '1', 'pg' => '', 'st' => '' ] ) ) . '">Show archived (' . number_format( $archived_n ) . ')</a></p>' : '' );
 
 		// the bar: search + chips
 		$statuses = (array) ( $opts['statuses'] ?? ( '' !== $scol ? self::status_words( $slug, $scol ) : [] ) );
@@ -101,7 +109,7 @@ class WB_List {
 		$h .= '<label class="wb-listbar-q"><span class="wb-sr">Search ' . esc_html( (string) ( $opts['what'] ?? 'this list' ) ) . '</span><input type="search" name="' . esc_attr( $ns . 'q' ) . '" value="' . esc_attr( $st['q'] ) . '" placeholder="' . esc_attr( (string) ( $opts['placeholder'] ?? 'Search' ) ) . '"></label>'
 			. '<button type="submit" class="wb-btn wb-btn-sm wb-btn-ghost">Search</button>'
 			. ( '' !== $st['q'] ? '<a class="wb-listbar-clear" href="' . esc_url( $link( [ 'q' => '', 'pg' => '' ] ) ) . '">Clear</a>' : '' ) . '</form>';
-		if ( $statuses ) {
+		if ( $statuses && ! $show_arch ) {
 			$h .= '<nav class="wb-chips" aria-label="Filter by status"><a class="wb-chip-filter' . ( '' === $st['st'] ? ' is-on' : '' ) . '" href="' . esc_url( $link( [ 'st' => '', 'pg' => '' ] ) ) . '"' . ( '' === $st['st'] ? ' aria-current="true"' : '' ) . '>All</a>';
 			foreach ( $statuses as $val => $words ) {
 				$on = $st['st'] === (string) $val;
@@ -118,9 +126,10 @@ class WB_List {
 				return $h . WB_Render::state( 'empty', '' !== $st['q'] ? "Nothing matches '" . $st['q'] . "' among " . $amid . '.' : 'Nothing is ' . $amid . ' at the moment.', 'Clear the search or choose All.' )
 					. '<p class="wb-list-more"><a href="' . esc_url( $link( [ 'q' => '', 'st' => '', 'pg' => '' ] ) ) . '">Show everything</a></p>';
 			}
-			return $h . ( isset( $opts['empty'] ) ? WB_Render::state( 'empty', (string) $opts['empty'], (string) ( $opts['empty_note'] ?? '' ) ) : '' );
+			return $h . ( isset( $opts['empty'] ) ? WB_Render::state( 'empty', (string) $opts['empty'], (string) ( $opts['empty_note'] ?? '' ) ) : '' ) . $arch_link;
 		}
-		$topts = array_diff_key( $opts, array_flip( [ 'where', 'search', 'search_in', 'status', 'statuses', 'orderby', 'order', 'sortable', 'per', 'ns', 'base', 'get', 'what', 'placeholder' ] ) );
+		$topts = array_diff_key( $opts, array_flip( [ 'where', 'search', 'search_in', 'status', 'statuses', 'orderby', 'order', 'sortable', 'per', 'ns', 'base', 'get', 'what', 'placeholder', 'archive', 'prefetch' ] ) );
+		if ( $show_arch && ! empty( $topts['cct'] ) ) $topts['actions'] = [ 'restore_' . $topts['cct'] ];   // an archived row can only be restored
 		$topts['sort'] = [ 'by' => $by, 'dir' => $dir, 'keys' => $sortable, 'href' => fn( string $k ) => $link( [ 'by' => $k, 'dir' => $k === $by && 'asc' === $dir ? 'desc' : 'asc', 'pg' => '' ] ) ];
 		$h .= WB_Render::render_table( $rows, $columns, $topts );
 
@@ -132,7 +141,7 @@ class WB_List {
 		} elseif ( $total > 0 && ( '' !== $st['q'] || '' !== $st['st'] ) ) {
 			$h .= '<p class="wb-list-more">' . number_format( $total ) . ' found. <a href="' . esc_url( $link( [ 'q' => '', 'st' => '', 'pg' => '' ] ) ) . '">Show everything</a></p>';
 		}
-		return $h;
+		return $h . $arch_link;
 	}
 
 	/** The chip words for a status column, from the schema's options. */

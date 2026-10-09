@@ -140,10 +140,12 @@ class WB_Quote_Editor {
 		$qid = (int) $q['_ID'];
 		$h   = WB_Render::form_open( 'quote_lines' ) . '<input type="hidden" name="quote_id" value="' . $qid . '">'
 			. '<table class="wb-list wb-list--cards wb-lines"><thead><tr><th>Product</th><th class="wb-col-num">Quantity</th><th class="wb-col-num">Price each</th><th>From</th><th class="wb-col-money">Line total</th><th class="wb-col-actions" aria-label="Actions"></th></tr></thead><tbody>';
+		if ( class_exists( 'WB_Product_Images' ) ) WB_Product_Images::prime( $lines, 'product_id' );
 		foreach ( $lines as $l ) {
 			$lid  = (int) $l['_ID'];
 			$why  = WB_Pricing::explain( $l );
-			$h .= '<tr class="' . ( '' !== $why ? 'is-flagged' : '' ) . '"><td data-label="Product">' . esc_html( (string) $l['description'] )
+			$pic  = class_exists( 'WB_Product_Images' ) ? WB_Product_Images::thumb( WB_Product_Images::for_product( (int) $l['product_id'] ), '' ) : '';
+			$h .= '<tr class="' . ( '' !== $why ? 'is-flagged' : '' ) . '"><td data-label="Product">' . ( '' !== $pic ? '<span class="wb-with-thumb">' . $pic . '<span>' . esc_html( (string) $l['description'] ) . '</span></span>' : esc_html( (string) $l['description'] ) )
 				. ( '' !== $why ? '<p class="wb-line-why" role="note">' . esc_html( $why ) . '</p>' : '' ) . '</td>'
 				. '<td data-label="Quantity" class="wb-col-num"><label class="wb-sr" for="wb-q-' . $lid . '">Quantity of ' . esc_html( (string) $l['description'] ) . '</label><input id="wb-q-' . $lid . '" type="number" step="any" min="0" name="qty[' . $lid . ']" value="' . esc_attr( WB_Render::num( $l['qty'] ) ) . '"></td>'
 				. '<td data-label="Price each" class="wb-col-num"><label class="wb-sr" for="wb-p-' . $lid . '">Price each of ' . esc_html( (string) $l['description'] ) . '</label><input id="wb-p-' . $lid . '" type="number" step="0.01" min="0" name="price[' . $lid . ']" value="' . esc_attr( number_format( (float) $l['unit_price'], 2, '.', '' ) ) . '"></td>'

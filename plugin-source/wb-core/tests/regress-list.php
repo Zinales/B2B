@@ -41,10 +41,11 @@ class WB_CCT {
 		}
 		return true;
 	}
-	public static function count( $s, $where = [] ) { return count( array_filter( self::$rows, fn( $r ) => self::match( $r, $where ) ) ); }
+	public static function count( $s, $where = [], $active = true ) { return count( array_filter( self::$rows, fn( $r ) => self::match( $r, $where ) && ( ! $active || 'archived' !== $r['record_status'] ) ) ); }
 	public static function find( $s, $where = [], $o = [] ) {
 		if ( 'wb_customers' === $s ) return array_values( array_filter( [ [ '_ID' => 7, 'name' => 'Karoo Agri' ], [ '_ID' => 8, 'name' => 'Bayside Hardware' ] ], fn( $c ) => false !== stripos( $c['name'], $where['_search']['q'] ) ) );
-		$r = array_values( array_filter( self::$rows, fn( $r ) => self::match( $r, $where ) ) );
+		$active = ! array_key_exists( 'active_only', $o ) || $o['active_only'];
+		$r = array_values( array_filter( self::$rows, fn( $r ) => self::match( $r, $where ) && ( ! $active || 'archived' !== $r['record_status'] ) ) );
 		$by = $o['orderby'] ?? '_ID';
 		usort( $r, fn( $a, $b ) => ( 'asc' === strtolower( $o['order'] ?? 'desc' ) ? 1 : -1 ) * ( is_numeric( $a[ $by ] ) ? $a[ $by ] <=> $b[ $by ] : strcmp( $a[ $by ], $b[ $by ] ) ) );
 		return array_slice( $r, (int) ( $o['offset'] ?? 0 ), (int) ( $o['limit'] ?? 500 ) );
@@ -65,10 +66,10 @@ function section( string $t ): void { echo "-- {$t}\n"; }
 
 /* ============================================================ 1. pure */
 section( 'reading and linking' );
-eq( 'nothing asked', WB_List::read( [] ), [ 'q' => '', 'st' => '', 'by' => '', 'dir' => '', 'pg' => 1 ] );
-eq( 'everything asked', WB_List::read( [ 'q' => ' karoo ', 'st' => 'Overdue', 'by' => 'total', 'dir' => 'ASC', 'pg' => '3' ] ), [ 'q' => 'karoo', 'st' => 'overdue', 'by' => 'total', 'dir' => 'asc', 'pg' => 3 ] );
+eq( 'nothing asked', WB_List::read( [] ), [ 'q' => '', 'st' => '', 'by' => '', 'dir' => '', 'pg' => 1, 'arch' => false ] );
+eq( 'everything asked', WB_List::read( [ 'q' => ' karoo ', 'st' => 'Overdue', 'by' => 'total', 'dir' => 'ASC', 'pg' => '3' ] ), [ 'q' => 'karoo', 'st' => 'overdue', 'by' => 'total', 'dir' => 'asc', 'pg' => 3, 'arch' => false ] );
 eq( 'a prefix keeps two lists apart', WB_List::read( [ 'q' => 'x', 'poq' => 'acme' ], 'po' )['q'], 'acme' );
-eq( 'junk in the column and status is dropped', WB_List::read( [ 'by' => 'total; DROP', 'st' => "o'verdue" ] ), [ 'q' => '', 'st' => 'overdue', 'by' => 'totaldrop', 'dir' => '', 'pg' => 1 ] );
+eq( 'junk in the column and status is dropped', WB_List::read( [ 'by' => 'total; DROP', 'st' => "o'verdue" ] ), [ 'q' => '', 'st' => 'overdue', 'by' => 'totaldrop', 'dir' => '', 'pg' => 1, 'arch' => false ] );
 eq( 'a page below one is one', WB_List::read( [ 'pg' => '-4' ] )['pg'], 1 );
 eq( 'a long search is cut', strlen( WB_List::read( [ 'q' => str_repeat( 'a', 200 ) ] )['q'] ), 80 );
 eq( 'links keep the rest of the address', WB_List::args( [ 'quote' => '12', 'q' => 'k' ], '', [ 'st' => 'sent' ] ), [ 'quote' => '12', 'q' => 'k', 'st' => 'sent' ] );
@@ -141,6 +142,17 @@ has( 'an unknown sort falls back to the default', $h, 'INV-2026-000120' );
 $h = WB_List::render( 'wb_invoices', $cols, $o + [ 'get' => [ 'q' => 'zzz' ] ] );
 has( 'a search that finds nothing says so', $h, 'Nothing matches &#039;zzz&#039; among invoices.' );
 has( 'and offers the way back', $h, '>Show everything</a>' );
+WB_CCT::$rows[0]['record_status'] = 'archived';
+WB_CCT::$rows[1]['record_status'] = 'archived';
+$h = WB_List::render( 'wb_invoices', $cols, $o + [ 'get' => [], 'archive' => true, 'cct' => 'wb_invoices' ] );
+has( 'archived rows are not in the current list', $h, 'INV-2026-000001<', false );
+has( 'the way to the archived ones, with how many', $h, '?arch=1">Show archived (2)</a>' );
+$h = WB_List::render( 'wb_invoices', $cols, $o + [ 'get' => [ 'arch' => '1' ], 'archive' => true, 'cct' => 'wb_invoices' ] );
+eq( 'only the archived rows', substr_count( $h, '<tr>' ) - 1, 2 );
+has( 'and the way back', $h, '>Back to the current list</a>' );
+has( 'no status chips among archived rows', $h, 'class="wb-chips"', false );
+$h = WB_List::render( 'wb_invoices', $cols, $o + [ 'get' => [] ] );
+has( 'a list that does not offer archive shows no link', $h, 'Show archived', false );
 WB_CCT::$rows = [];
 $h = WB_List::render( 'wb_invoices', $cols, $o + [ 'get' => [], 'empty' => 'No invoices yet.' ] );
 has( 'an empty table keeps its own words', $h, 'No invoices yet.' );

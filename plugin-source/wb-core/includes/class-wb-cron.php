@@ -30,7 +30,7 @@ class WB_Cron {
 	}
 
 	/** The jobs registered by the engines themselves run inside WP's own loop; ours are wrapped. */
-	private static function safely( callable $job ): void {
+	public static function safely( callable $job ): void {
 		try {
 			$job();
 		} catch ( Throwable $e ) {

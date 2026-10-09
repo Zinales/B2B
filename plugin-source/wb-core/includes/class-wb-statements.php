@@ -51,6 +51,134 @@ class WB_Statements {
 		return $h . '</body></html>';
 	}
 
+	/**
+	 * Who to chase: open invoices grouped by customer, only those with something late, the most
+	 * overdue money first. [ [ customer_id, owes, overdue, oldest (days late), count ], … ]. Pure.
+	 */
+	public static function chase( array $invoices, string $today ): array {
+		$by = [];
+		$t  = strtotime( substr( $today, 0, 10 ) );
+		foreach ( $invoices as $i ) {
+			$left = round( (float) $i['total'] - (float) ( $i['amount_paid'] ?? 0 ) - (float) ( $i['amount_credited'] ?? 0 ), 2 );
+			if ( $left <= 0.004 ) continue;
+			$cid  = (int) $i['customer_id'];
+			$late = '' !== (string) ( $i['due_at'] ?? '' ) ? (int) floor( ( $t - strtotime( substr( (string) $i['due_at'], 0, 10 ) ) ) / 86400 ) : 0;
+			$by[ $cid ] = $by[ $cid ] ?? [ 'customer_id' => $cid, 'owes' => 0.0, 'overdue' => 0.0, 'oldest' => 0, 'count' => 0 ];
+			$by[ $cid ]['owes'] += $left;
+			if ( $late > 0 ) { $by[ $cid ]['overdue'] += $left; $by[ $cid ]['count']++; $by[ $cid ]['oldest'] = max( $by[ $cid ]['oldest'], $late ); }
+		}
+		$rows = array_values( array_filter( $by, fn( $r ) => $r['overdue'] > 0.004 ) );
+		foreach ( $rows as &$r ) { $r['owes'] = round( $r['owes'], 2 ); $r['overdue'] = round( $r['overdue'], 2 ); }
+		unset( $r );
+		usort( $rows, fn( $a, $b ) => [ $b['overdue'], $b['oldest'] ] <=> [ $a['overdue'], $a['oldest'] ] );
+		return $rows;
+	}
+
+	/** Is the monthly run due today? Pure: the day of the month matches and this month has not run. */
+	public static function run_due( string $today, int $day, string $last_run_month ): bool {
+		$day = min( 28, max( 1, $day ) );
+		return (int) substr( $today, 8, 2 ) >= $day && substr( $today, 0, 7 ) !== $last_run_month;
+	}
+
+	/* ------------------------------------------------------------------ the monthly statements */
+
+	const OPT_CUSTOMERS = 'wb_statement_monthly';   // customer ids switched on, one by one, by a person
+	const OPT_DAY       = 'wb_statement_day';
+	const OPT_RUN       = 'wb_statement_run';       // YYYY-MM of the last run
+
+	public static function init(): void {
+		add_action( WB_Cron::HOOK, fn() => WB_Cron::safely( [ __CLASS__, 'monthly_run' ] ), 60 );
+		add_filter( 'wb_panel_handlers', function ( array $h ): array {
+			$h['statement_monthly'] = [ __CLASS__, 'handle_toggle' ];
+			$h['statement_day']     = [ __CLASS__, 'handle_day' ];
+			return $h;
+		} );
+	}
+
+	public static function monthly_ids(): array {
+		return array_values( array_unique( array_filter( array_map( 'intval', (array) get_option( self::OPT_CUSTOMERS, [] ) ) ) ) );
+	}
+
+	public static function is_monthly( int $customer_id ): bool {
+		return in_array( $customer_id, self::monthly_ids(), true );
+	}
+
+	public static function handle_toggle() {
+		if ( ! current_user_can( 'wb_issue_invoices' ) ) return new WP_Error( 'wb_forbidden', 'Statements are not part of your work.' );
+		$cid = absint( $_POST['customer_id'] ?? 0 );
+		if ( ! WB_CCT::get( 'wb_customers', $cid ) ) return new WP_Error( 'wb_missing', 'That customer could not be found.' );
+		$on  = ! empty( $_POST['on'] );
+		$ids = array_values( array_diff( self::monthly_ids(), [ $cid ] ) );
+		if ( $on ) $ids[] = $cid;
+		update_option( self::OPT_CUSTOMERS, $ids, false );
+		wb_ledger_write( $on ? 'statement_monthly_on' : 'statement_monthly_off', 'wb_customers', $cid );
+		return [ 'msg' => $on ? 'A statement will be emailed to them on day ' . self::day() . ' of every month while they owe anything.' : 'Monthly statements are off for them.' ];
+	}
+
+	public static function day(): int {
+		return min( 28, max( 1, (int) get_option( self::OPT_DAY, 1 ) ) );
+	}
+
+	public static function handle_day() {
+		if ( ! current_user_can( 'wb_manage_settings' ) ) return new WP_Error( 'wb_forbidden', 'Only the owner can change this.' );
+		update_option( self::OPT_DAY, min( 28, max( 1, absint( $_POST['day'] ?? 1 ) ) ), false );
+		return [ 'msg' => 'Monthly statements go out on day ' . self::day() . '.' ];
+	}
+
+	/**
+	 * Nightly: on the chosen day, a statement to each customer a person switched on, while they owe
+	 * anything, to their contacts who receive invoices. Never on a site with the demo loaded (its
+	 * addresses are made up). Each send is on the customer's timeline and in the audit trail.
+	 */
+	public static function monthly_run(): void {
+		if ( ! self::run_due( wb_today(), self::day(), (string) get_option( self::OPT_RUN, '' ) ) ) return;
+		update_option( self::OPT_RUN, substr( wb_today(), 0, 7 ), false );   // first, so a failure never sends twice
+		if ( class_exists( 'WB_Demo' ) && WB_Demo::is_seeded() ) { wb_ledger_write( 'statement_run_skipped', 'wb_customers', 0, null, [ 'why' => 'demo data loaded' ] ); return; }
+		$sent = $skipped = 0;
+		$tpl  = WB_Send::templates()['statement'];
+		foreach ( self::monthly_ids() as $cid ) {
+			$data = self::data( $cid );
+			if ( ! $data || $data['d']['ageing']['total'] <= 0.004 ) { $skipped++; continue; }
+			$to = array_column( array_filter( WB_Send::recipients( WB_CCT::find( 'wb_contacts', [ 'customer_id' => $cid ], [ 'limit' => 200 ] ), 'statement' ), fn( $r ) => $r[2] ), 0 );
+			if ( ! $to ) { $skipped++; continue; }
+			$vars = [ 'company' => WB_Setup::display_name(), 'me' => WB_Setup::display_name(), 'date' => wb_today(), 'contact' => 'Sir or Madam', 'customer' => (string) $data['d']['customer']['name'],
+				'owing' => WB_Render::money( $data['d']['ageing']['total'] ), 'overdue' => WB_Render::money( $data['d']['ageing']['overdue'] ) ];
+			$r = WB_Send::deliver( 'statement', $cid, $data['d']['customer'], $data['d']['customer'], $to, WB_Send::fill( $tpl[0], $vars ), WB_Send::fill( $tpl[1], $vars ), false, false, '', true );
+			is_wp_error( $r ) ? $skipped++ : $sent++;
+		}
+		wb_ledger_write( 'statement_run', 'wb_customers', 0, null, [ 'sent' => $sent, 'skipped' => $skipped, 'month' => substr( wb_today(), 0, 7 ) ] );
+	}
+
+	/* ------------------------------------------------------------------ the Chase fold on Invoices */
+
+	public static function chase_fold(): string {
+		if ( ! current_user_can( 'wb_issue_invoices' ) ) return '';
+		$open = WB_CCT::find( 'wb_invoices', [ 'status' => [ 'issued', 'part_paid', 'overdue' ] ], [ 'limit' => 5000 ] );
+		$age  = WB_Pages::ageing( $open, wb_today() );
+		$rows = self::chase( $open, wb_today() );
+		foreach ( $rows as &$r ) {
+			$last = null;
+			foreach ( [ 'reminder', 'statement' ] as $k ) {
+				$t = WB_CCT::first( 'wb_touchpoints', [ 'customer_id' => $r['customer_id'], 'source_ref' => $k . ':' . $r['customer_id'] ], [ 'orderby' => 'happened_at' ] );
+				if ( $t && ( ! $last || $t['happened_at'] > $last ) ) $last = (string) $t['happened_at'];
+			}
+			$r['last'] = $last ? substr( $last, 0, 10 ) : '';
+		}
+		unset( $r );
+		$body = '<p class="wb-muted">Everything owed, by how late. Below it, every customer with something past its due date, the most overdue money first.</p>' . WB_Pages::ageing_strip( $age )
+			. WB_Render::render_table( $rows, [
+				[ 'key' => 'customer_id', 'label' => 'Customer', 'render' => fn( $v ) => WB_Screens::customer_link( (int) $v ) ],
+				[ 'key' => 'overdue', 'label' => 'Overdue', 'type' => 'money' ], [ 'key' => 'owes', 'label' => 'Owes in all', 'type' => 'money' ],
+				[ 'key' => 'oldest', 'label' => 'Oldest', 'render' => fn( $v, $r ) => esc_html( $v . ' days late' . ( $r['count'] > 1 ? ' (' . $r['count'] . ' invoices)' : '' ) ) ],
+				[ 'key' => 'last', 'label' => 'Last chased', 'render' => fn( $v ) => '' !== $v ? esc_html( $v ) : '<span class="wb-muted">not yet</span>' ],
+			], [ 'action_html' => fn( $r ) => WB_RowActions::menuitem( 'share', 'Send a reminder', [ 'href' => WB_Send::form_url( 'reminder', (int) $r['customer_id'] ) ] ) . WB_RowActions::menuitem( 'share', 'Send a statement', [ 'href' => WB_Send::form_url( 'statement', (int) $r['customer_id'] ) ] ) . WB_RowActions::menuitem( 'open', 'Open the customer', [ 'href' => WB_Workspace::url( 'customers', [ 'customer' => (int) $r['customer_id'] ] ) ] ),
+				'empty' => 'Nobody is late. Nothing to chase.' ] );
+		$n = count( self::monthly_ids() );
+		$body .= '<p class="wb-muted">Monthly statements: ' . ( $n ? $n . ' customer' . ( 1 === $n ? '' : 's' ) . ' get one by email on day ' . self::day() . ' while they owe anything.' : 'none switched on.' ) . ' Switch a customer on from their page.</p>';
+		if ( current_user_can( 'wb_manage_settings' ) ) $body .= WB_Render::form_open( 'statement_day' ) . WB_Render::field( 'day', 'Day of the month they go out', 'number', (string) self::day(), [ 'id' => 'wb-statement-day', 'note' => '1 to 28.' ] ) . WB_Render::form_close( 'Save the day' );
+		return WB_Render::fold( 'Chase', $body, [ 'open' => (bool) $rows, 'id' => 'wb-chase', 'kind' => 'lead', 'hint' => $rows ? 'R ' . WB_Render::money( $age['overdue'] ) . ' overdue, ' . count( $rows ) . ' customer' . ( 1 === count( $rows ) ? '' : 's' ) : 'nobody late' ] );
+	}
+
 	/** The live data for one customer. */
 	public static function data( int $customer_id ): ?array {
 		$c = WB_CCT::get( 'wb_customers', $customer_id );

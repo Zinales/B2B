@@ -267,15 +267,26 @@ class WB_Send {
 			$body = str_replace( '(the acceptance link is added when you send)', (string) $link, $body );
 			if ( false === strpos( $body, (string) $link ) ) $body .= "\n\nAccept the quote online: " . $link;
 		}
+		$res = self::deliver( $kind, $id, $row, $cust, $to, $subject, $body, ! empty( $_POST['copy_me'] ), $demo, $ctx[3]['number'] ?? '' );
+		if ( is_wp_error( $res ) ) return $res;
+		$_POST['_wb_return'] = remove_query_arg( [ 'send', 'id', 'customer' ], (string) ( $_POST['_wb_return'] ?? '' ) );
+		return [ 'msg' => $demo ? 'Recorded as sent. In the demo nothing leaves the building.' : $res . ' sent to ' . implode( ', ', $to ) . '.' ];
+	}
+
+	/**
+	 * Attach, send and record. Used by the form and by the monthly statement run ($by_system: no
+	 * person pressed Send, so no Reply-To or copy). @return string the words for what was sent, or WP_Error
+	 */
+	public static function deliver( string $kind, int $id, array $row, ?array $cust, array $to, string $subject, string $body, bool $copy_me, bool $demo, string $number = '', bool $by_system = false ) {
 		$file = self::attachment( $kind, $id, $row );
 		if ( is_wp_error( $file ) ) return $file;
 		[ $path, $temp, $name ] = $file;
 
-		$me      = wp_get_current_user();
+		$me      = $by_system ? null : wp_get_current_user();
 		$headers = [ 'Content-Type: text/plain; charset=UTF-8' ];
-		if ( ! empty( $me->user_email ) ) {
+		if ( $me && ! empty( $me->user_email ) ) {
 			$headers[] = 'Reply-To: ' . ( $me->display_name ? $me->display_name . ' ' : '' ) . '<' . $me->user_email . '>';
-			if ( ! empty( $_POST['copy_me'] ) ) $headers[] = 'Cc: ' . $me->user_email;
+			if ( $copy_me ) $headers[] = 'Cc: ' . $me->user_email;
 		}
 		$sent = true;
 		if ( ! $demo ) {
@@ -290,11 +301,10 @@ class WB_Send {
 		if ( $temp && '' !== $path ) @unlink( $path );
 		if ( ! $sent ) return new WP_Error( 'wb_mail', 'The email could not be handed to the mail server. Nothing was recorded as sent. Check the site\'s email settings (an SMTP plugin), then try again.' );
 
-		$cid = (int) ( $cust['_ID'] ?? 0 );
-		$what = self::KINDS[ $kind ][0] . ( isset( $ctx[3]['number'] ) ? ' ' . $ctx[3]['number'] : ( 'datasheet' === $kind ? ' ' . $row['sku'] : '' ) );
-		if ( $cid ) WB_Orders::touchpoint( $cid, self::KINDS[ $kind ][4], $what . ' emailed to ' . implode( ', ', $to ) . ( $demo ? ' (demo: not sent)' : '' ), $kind . ':' . $id );
-		wb_ledger_write( 'document_emailed', self::KINDS[ $kind ][3], $id, null, [ 'kind' => $kind, 'to' => $to, 'by' => get_current_user_id(), 'demo' => $demo ] );
-		$_POST['_wb_return'] = remove_query_arg( [ 'send', 'id', 'customer' ], (string) ( $_POST['_wb_return'] ?? '' ) );
-		return [ 'msg' => $demo ? 'Recorded as sent. In the demo nothing leaves the building.' : $what . ' sent to ' . implode( ', ', $to ) . '.' ];
+		$cid  = (int) ( $cust['_ID'] ?? 0 );
+		$what = self::KINDS[ $kind ][0] . ( '' !== $number ? ' ' . $number : ( 'datasheet' === $kind ? ' ' . $row['sku'] : '' ) );
+		if ( $cid ) WB_Orders::touchpoint( $cid, self::KINDS[ $kind ][4], $what . ' emailed to ' . implode( ', ', $to ) . ( $by_system ? ' (monthly statement)' : '' ) . ( $demo ? ' (demo: not sent)' : '' ), $kind . ':' . $id );
+		wb_ledger_write( 'document_emailed', self::KINDS[ $kind ][3], $id, null, [ 'kind' => $kind, 'to' => $to, 'by' => $by_system ? 0 : get_current_user_id(), 'system' => $by_system, 'demo' => $demo ] );
+		return $what;
 	}
 }

@@ -85,6 +85,22 @@ class WB_Render {
 		return number_format( (float) $v, 2, '.', ' ' );
 	}
 
+	/** Columns that hold a date or a moment, shown as "8 Oct 2026" (1.6.0). */
+	const DATE_COLS = [ 'valid_until', 'required_by', 'week_start', 'work_date', 'start_date', 'end_date', 'date_from', 'date_to', 'valid_from', 'valid_to', 'price_valid_from', 'price_valid_to', 'next_action_date', 'run_date', 'period_start', 'period_end', 'pay_date', 'revised_at' ];
+
+	/** A stored date as people read it: 2026-10-08 → 8 Oct 2026; with a time, the time is dropped. Anything else is left as it is. */
+	public static function date( $v ): string {
+		$v = (string) $v;
+		if ( ! preg_match( '/^(\d{4})-(\d{2})-(\d{2})/', $v, $m ) || '0000' === $m[1] ) return $v;
+		$t = gmmktime( 0, 0, 0, (int) $m[2], (int) $m[3], (int) $m[1] );
+		return gmdate( 'j M Y', $t );
+	}
+
+	/** Is this column a date? Its name says so (…_at, …_date, or one of DATE_COLS). */
+	public static function is_date_col( string $k ): bool {
+		return in_array( $k, self::DATE_COLS, true ) || '_at' === substr( $k, -3 ) || '_date' === substr( $k, -5 );
+	}
+
 	/** A status chip. The class comes from the stored value; the words are plain English. */
 	public static function chip( $val ): string {
 		$v = trim( (string) $val );
@@ -189,7 +205,9 @@ class WB_Render {
 				} elseif ( 'chip' === $s['type'] ) {
 					$cell = self::chip( $val );
 				} elseif ( 'money' === $s['type'] ) {
-					$cell = '' === (string) $val ? '' : esc_html( self::money( $val ) );
+					$cell = '' === (string) $val ? '' : 'R&nbsp;' . esc_html( self::money( $val ) );   // 1.6.0: money reads the same everywhere
+				} elseif ( is_scalar( $val ) && self::is_date_col( $k ) ) {
+					$cell = esc_html( self::date( $val ) );
 				} else {
 					$cell = esc_html( is_scalar( $val ) ? (string) $val : (string) wp_json_encode( $val ) );
 				}

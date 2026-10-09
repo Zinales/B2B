@@ -1,5 +1,31 @@
 # wb-core changelog
 
+## 1.6.0 — 9 October 2026
+The second part of the review's roadmap.
+- **Chase** at the top of Invoices: everything owed by how late (not yet due, 1–30, 31–60, 61–90,
+  over 90 days), then every customer with something late, the most overdue money first, with how
+  many invoices, the oldest, and when they were last chased; "Send a reminder" and "Send a
+  statement" from each. **Monthly statements**: switched on per customer from their page, emailed on
+  the day of the month the owner chooses while they owe anything, to their contacts who receive
+  invoices, on the timeline and in the audit trail. Never on a site with the demo data loaded.
+- **Quick sale at the counter** on Quotes: one press for goods paid and taken now. The quote, the
+  order, the invoice, the payment, the release and the signed collection note, each made by the
+  engine's own step with its own number and PDF. A price that needs approval, a closed account or
+  too little stock is refused before anything is written; a step refused later stops there and
+  says which, with everything before it on record.
+- **Today** shows two cards to people who see the money: this month so far against the same days
+  last year (sales before VAT, cash received), and the next four weeks of cash from last night's
+  forecast, week by week.
+- **Product pictures**: a JPG, PNG or WebP per product, kept in the WordPress media library and
+  linked to the product (no change to the JetEngine tables). Shown on the Products list, the
+  product's page, quote lines and the datasheet PDF. A replaced picture stays in the library.
+- **Dates and money read one way**: every date in a table as "8 Oct 2026", every amount as
+  "R 12 345.00".
+- **Show archived and Restore** on Customers and Products: archived rows leave the list, "Show
+  archived (n)" brings them into view, and "Restore" puts one back.
+- Tests: regress-today.php (37); regress-send.php adds the chase order and the monthly timing;
+  regress-list.php adds archived rows.
+
 ## 1.5.0 — 9 October 2026
 The five gaps from the review of 9 October (docs/review-2026-10-09/UX-REVIEW.md), closed.
 - **Search, filter, sort and paging on every list** (WB_List): a search box that looks in the

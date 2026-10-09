@@ -105,6 +105,22 @@ $clear = WB_Statements::html( [ 'invoices' => [] , 'ageing' => WB_Pages::ageing(
 eq( 'nothing owing says thank you', false !== strpos( $clear, 'Nothing is owing. Thank you.' ) && false === strpos( $clear, 'past its due date' ), true );
 eq( 'real PDF bytes', 0 === strpos( WB_Pdf::render( $h ), '%PDF' ), true );
 
+/* ============================================================ 6 */
+section( 'who to chase, and when the monthly run goes' );
+$i = fn( $cid, $total, $due, $paid = 0 ) => [ 'customer_id' => $cid, 'total' => $total, 'amount_paid' => $paid, 'amount_credited' => 0, 'due_at' => $due ];
+$rows = WB_Statements::chase( [ $i( 7, 2000, '2026-07-31', 500 ), $i( 7, 1000, '2026-10-20' ), $i( 8, 3000, '2026-09-30' ), $i( 9, 400, '2026-10-30' ), $i( 10, 100, '2026-06-01', 100 ), $i( 11, 1500, '2026-09-01' ) ], '2026-10-09' );
+eq( 'only customers with something late, most overdue money first', array_column( $rows, 'customer_id' ), [ 8, 7, 11 ] );
+eq( 'overdue and owed are kept apart', [ $rows[1]['overdue'], $rows[1]['owes'] ], [ 1500.0, 2500.0 ] );
+eq( 'the oldest is in days', $rows[1]['oldest'], 70 );
+eq( 'only late invoices are counted', $rows[1]['count'], 1 );
+eq( 'equal money: the older debt first', array_column( WB_Statements::chase( [ $i( 1, 100, '2026-10-01' ), $i( 2, 100, '2026-08-01' ) ], '2026-10-09' ), 'customer_id' ), [ 2, 1 ] );
+eq( 'nobody late', WB_Statements::chase( [ $i( 9, 400, '2026-10-30' ) ], '2026-10-09' ), [] );
+eq( 'due on the day', WB_Statements::run_due( '2026-11-01', 1, '2026-10' ), true );
+eq( 'not twice in a month', WB_Statements::run_due( '2026-11-02', 1, '2026-11' ), false );
+eq( 'a missed night still runs the next day', WB_Statements::run_due( '2026-11-02', 1, '2026-10' ), true );
+eq( 'not before the day', WB_Statements::run_due( '2026-11-04', 5, '2026-10' ), false );
+eq( 'a day past 28 is held at 28, so February runs', WB_Statements::run_due( '2027-02-28', 31, '2027-01' ), true );
+
 if ( is_dir( WP_CONTENT_DIR ) ) { foreach ( new RecursiveIteratorIterator( new RecursiveDirectoryIterator( WP_CONTENT_DIR, FilesystemIterator::SKIP_DOTS ), RecursiveIteratorIterator::CHILD_FIRST ) as $x ) $x->isDir() ? rmdir( $x ) : unlink( $x ); rmdir( WP_CONTENT_DIR ); }
 echo "\n{$pass} passed, {$fail} failed\n";
 exit( $fail ? 1 : 0 );

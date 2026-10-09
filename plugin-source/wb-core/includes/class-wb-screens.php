@@ -503,6 +503,7 @@ class WB_Screens {
 		}
 		if ( current_user_can( 'wb_manage_purchasing' ) ) $stats .= WB_Render::stat( 'Products to reorder', count( WB_Stock::open_alerts() ), WB_Workspace::url( 'purchasing' ), 'below the reorder point' );
 		if ( '' !== $stats ) $h .= '<div class="wb-stats">' . $stats . '</div>';
+		$h .= WB_Today::cards();   // 1.6.0: how is the month, and is cash fine
 		// Needs attention beside quick actions (Kaycie's Today).
 		$quick = '';
 		foreach ( self::QUICK as [ $cap, $slug, $anchor, $words, $note ] ) {
@@ -520,7 +521,7 @@ class WB_Screens {
 		if ( ( $cid = absint( $_GET['customer'] ?? 0 ) ) > 0 ) return $h . WB_Pages::customer( $cid );   // 1.5.0: the customer's own page
 		$none = 0 === WB_CCT::count( 'wb_customers' );
 		$h   .= WB_List::render( 'wb_customers', [ [ 'key' => 'name', 'render' => fn( $v, $r ) => self::customer_link( (int) $r['_ID'], (string) $v ) ], 'account_status', 'journey_stage', 'payment_terms_days', [ 'key' => 'credit_limit', 'type' => 'money' ], 'region' ],
-			[ 'cct' => 'wb_customers', 'actions' => [ 'customer_open', 'send_statement', 'edit_wb_customers', 'archive_wb_customers' ], 'empty' => 'No customers yet.', 'what' => 'customers', 'placeholder' => 'Name, trading name or region',
+			[ 'cct' => 'wb_customers', 'actions' => [ 'customer_open', 'send_statement', 'edit_wb_customers', 'archive_wb_customers' ], 'archive' => true, 'empty' => 'No customers yet.', 'what' => 'customers', 'placeholder' => 'Name, trading name or region',
 				'search' => [ 'name', 'trading_name', 'region', 'vat_number' ], 'status' => 'account_status', 'orderby' => 'name', 'order' => 'asc' ] );
 		$h .= WB_Records::fold( 'wb_customers', $none );   // first run: open
 		$h .= WB_Import::fold( 'wb_customers' );
@@ -534,12 +535,12 @@ class WB_Screens {
 		$none = 0 === WB_CCT::count( 'wb_products' );
 		$rows = ! $none;
 		$seeing_stock = current_user_can( 'wb_view_stock' );
-		$cols = [ [ 'key' => 'sku', 'render' => fn( $v, $r ) => '<a href="' . esc_url( WB_Workspace::url( 'products', [ 'product' => (int) $r['_ID'] ] ) ) . '">' . esc_html( (string) $v ) . '</a>' ], 'name', [ 'key' => 'list_price', 'type' => 'money' ] ];
+		$cols = [ [ 'key' => 'sku', 'render' => fn( $v, $r ) => '<a class="wb-with-thumb" href="' . esc_url( WB_Workspace::url( 'products', [ 'product' => (int) $r['_ID'] ] ) ) . '">' . WB_Product_Images::thumb( WB_Product_Images::for_product( (int) $r['_ID'] ), '' ) . '<span>' . esc_html( (string) $v ) . '</span></a>' ], 'name', [ 'key' => 'list_price', 'type' => 'money' ] ];
 		if ( current_user_can( 'wb_manage_pricing' ) ) { $cols[] = [ 'key' => 'cost_price', 'type' => 'money' ]; $cols[] = 'min_margin_pct'; }
 		if ( $seeing_stock ) $cols[] = [ 'key' => 'available', 'label' => 'Available', 'render' => fn( $v, $r ) => esc_html( rtrim( rtrim( number_format( WB_Stock::available( (int) $r['_ID'] ), 2, '.', ' ' ), '0' ), '.' ) ) ];
 		$cols[] = [ 'key' => '_ID', 'label' => 'Datasheet', 'type' => 'plain', 'render' => fn( $v, $r ) => WB_Datasheets::cell( WB_Datasheets::current( (int) $v, $r ) ) ];
 		$cols[] = 'status';
-		$h .= WB_List::render( 'wb_products', $cols, [ 'cct' => 'wb_products', 'actions' => [ 'product_open', 'edit_wb_products', 'datasheet_pdf', 'send_datasheet', 'product_docs', 'archive_wb_products' ], 'empty' => 'No products yet.', 'what' => 'products',
+		$h .= WB_List::render( 'wb_products', $cols, [ 'cct' => 'wb_products', 'actions' => [ 'product_open', 'edit_wb_products', 'datasheet_pdf', 'send_datasheet', 'product_docs', 'archive_wb_products' ], 'archive' => true, 'prefetch' => [ 'WB_Product_Images', 'prime' ], 'empty' => 'No products yet.', 'what' => 'products',
 			'placeholder' => 'Code, name or barcode', 'search' => [ 'sku', 'name', 'barcode' ], 'orderby' => 'sku', 'order' => 'asc', 'sortable' => [ 'sku', 'name', 'list_price', 'cost_price', 'min_margin_pct', 'status' ] ] );
 		$h .= WB_Records::fold( 'wb_products', ! $rows );   // first run: open
 		$h .= WB_Import::fold( 'wb_products' );
@@ -600,7 +601,7 @@ class WB_Screens {
 				'search' => [ 'quote_number' ], 'search_in' => [ 'customer_id' => [ 'wb_customers', 'name' ] ], 'statuses' => [ 'draft' => 'Draft', 'sent' => 'Sent', 'accepted' => 'Accepted', 'declined' => 'Declined', 'expired' => 'Expired' ] ] );
 		$for = absint( $_GET['customer'] ?? 0 );
 		$f   = WB_Quote_Editor::new_form( $for );
-		return $h . self::fold( 'New quote', $f, $for > 0, 'wb-add' );
+		return $h . self::fold( 'New quote', $f, $for > 0, 'wb-add' ) . WB_Quick_Sale::fold();   // 1.6.0: paid and taken at the counter
 	}
 
 	public static function orders( $atts = [] ): string {
@@ -640,7 +641,7 @@ class WB_Screens {
 
 	public static function invoices( $atts = [] ): string {
 		if ( $g = self::gate( 'wb_issue_invoices' ) ) return $g;
-		$h = WB_RowActions::notice();
+		$h = WB_RowActions::notice() . WB_Statements::chase_fold();   // 1.6.0: ageing and who to chase
 		$credits = WB_CCT::find( 'wb_credit_notes', [ 'status' => 'requested' ] );
 		if ( $credits ) {
 			$h .= self::fold( 'Credit notes waiting for approval', WB_Render::render_table( $credits, [ [ 'key' => 'invoice_id', 'label' => 'Invoice', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_invoices', (int) $v )['invoice_number'] ?? '' ) ) ], 'reason', [ 'key' => 'total', 'type' => 'money' ], [ 'key' => 'requested_by_staff_id', 'label' => 'Asked by', 'render' => fn( $v ) => esc_html( (string) ( WB_CCT::get( 'wb_staff', (int) $v )['first_name'] ?? '' ) ) ] ],

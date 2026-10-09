@@ -88,6 +88,7 @@ class WB_Datasheets {
 			. '</td><td class="co" style="text-align:right">' . $e( $name ) . '<br>' . implode( '<br>', array_map( fn( $l ) => nl2br( $e( $l ) ), $co ) ) . '</td></tr></table>';
 		$h .= '<h1>' . $e( $d['name'] ) . '</h1><div class="num">' . $e( $d['sku'] ) . ( '' !== (string) ( $d['category'] ?? '' ) ? ' · ' . $e( $d['category'] ) : '' ) . '</div>';
 		if ( '' !== trim( (string) ( $d['headline'] ?? '' ) ) ) $h .= '<p class="lead">' . $e( $d['headline'] ) . '</p>';
+		if ( 0 === strpos( (string) ( $d['image'] ?? '' ), 'data:image/' ) ) $h .= '<p><img src="' . $e( $d['image'] ) . '" alt="" style="max-width:220px;max-height:160px"></p>';   // 1.6.0: the product's picture
 		$meta = array_filter( [
 			[ 'Sold per', (string) ( $d['unit'] ?? '' ) . ( (float) ( $d['pack_size'] ?? 1 ) > 1 ? ' (pack of ' . $e( rtrim( rtrim( number_format( (float) $d['pack_size'], 2, '.', '' ), '0' ), '.' ) ) . ')' : '' ) ],
 			[ 'Shelf life', (int) ( $d['shelf_life_days'] ?? 0 ) > 0 ? (int) $d['shelf_life_days'] . ' days' : '' ],
@@ -150,6 +151,7 @@ class WB_Datasheets {
 			'sku' => (string) $p['sku'], 'name' => (string) $p['name'], 'category' => (string) ( $cat['name'] ?? '' ), 'unit' => (string) ( $p['unit'] ?? '' ), 'pack_size' => (float) ( $p['pack_size'] ?? 1 ),
 			'shelf_life_days' => (int) ( $p['shelf_life_days'] ?? 0 ), 'headline' => (string) ( $row['headline'] ?? '' ), 'description' => (string) ( $row['description'] ?? '' ), 'applications' => (string) ( $row['applications'] ?? '' ),
 			'handling' => (string) ( $row['handling'] ?? '' ), 'revision' => (string) ( $row['revision'] ?? '' ), 'revised_at' => (string) ( $row['revised_at'] ?? '' ), 'specs' => self::spec_rows( (string) ( $p['spec_json'] ?? '' ) ), 'made' => wb_today(),
+			'image' => class_exists( 'WB_Product_Images' ) ? WB_Product_Images::data_uri( $product_id ) : '',
 		], 'brand' => $brand ];
 	}
 

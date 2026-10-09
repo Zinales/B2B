@@ -101,6 +101,11 @@ class WB_Pages {
 			. ( '' !== (string) $c['region'] ? self::fact( 'Region', esc_html( (string) $c['region'] ) ) : '' )
 			. '</dl>';
 		if ( $age['total'] > 0 ) $h .= self::ageing_strip( $age );
+		if ( current_user_can( 'wb_issue_invoices' ) && $terms > 0 ) {   // 1.6.0: a monthly statement, switched on by a person
+			$on = WB_Statements::is_monthly( $id );
+			$h .= '<div class="wb-page-switch">' . WB_Render::form_open( 'statement_monthly' ) . '<input type="hidden" name="customer_id" value="' . $id . '"><input type="hidden" name="on" value="' . ( $on ? '' : '1' ) . '">'
+				. '<span>Monthly statement by email: <strong>' . ( $on ? 'on, day ' . WB_Statements::day() : 'off' ) . '</strong></span><button type="submit" class="wb-btn wb-btn-sm wb-btn-ghost">' . ( $on ? 'Switch off' : 'Switch on' ) . '</button></form></div>';
+		}
 		if ( '' !== trim( (string) ( $c['notes'] ?? '' ) ) ) $h .= '<p class="wb-page-note">' . nl2br( esc_html( (string) $c['notes'] ) ) . '</p>';
 
 		$q = [ 'q' => $name ];
@@ -169,7 +174,7 @@ class WB_Pages {
 		if ( current_user_can( 'wb_manage_products' ) ) $acts[] = [ WB_Records::edit_url( 'wb_products', $id ), 'Edit', true ];
 		$h = self::head( (string) $p['sku'] . ' · ' . (string) $p['name'], WB_Render::chip( (string) $p['status'] ), $acts, 'products', 'All products' );
 
-		$h .= '<dl class="wb-facts">' . self::fact( 'List price', self::money( (float) $p['list_price'] ), 'per ' . (string) $p['unit'] . ( (float) $p['pack_size'] > 1 ? ', pack of ' . WB_Render::num( $p['pack_size'] ) : '' ) );
+		$h .= '<div class="wb-product-top">' . WB_Product_Images::panel( $p ) . '<dl class="wb-facts">' . self::fact( 'List price', self::money( (float) $p['list_price'] ), 'per ' . (string) $p['unit'] . ( (float) $p['pack_size'] > 1 ? ', pack of ' . WB_Render::num( $p['pack_size'] ) : '' ) );
 		if ( $pricing ) $h .= self::fact( 'Cost', self::money( (float) $p['cost_price'] ) ) . self::fact( 'Lowest price allowed', self::money( $floor ), rtrim( rtrim( number_format( $margin, 2, '.', '' ), '0' ), '.' ) . '% margin on cost' );
 		if ( current_user_can( 'wb_view_stock' ) ) {
 			$avail = WB_Stock::available( $id );
@@ -180,7 +185,7 @@ class WB_Pages {
 			. self::fact( 'Datasheet', WB_Datasheets::cell( WB_Datasheets::current( $id, $p ) ) );
 		$sup = (int) ( $p['preferred_supplier_id'] ?? 0 ) > 0 ? WB_CCT::get( 'wb_suppliers', (int) $p['preferred_supplier_id'] ) : null;
 		if ( $sup ) $h .= self::fact( 'Usual supplier', esc_html( (string) $sup['name'] ), (int) $p['lead_time_days'] > 0 ? (int) $p['lead_time_days'] . ' days lead time' : '' );
-		$h .= '</dl>';
+		$h .= '</dl></div>';
 
 		$spec = WB_Datasheets::spec_rows( (string) ( $p['spec_json'] ?? '' ) );
 		if ( $spec ) {

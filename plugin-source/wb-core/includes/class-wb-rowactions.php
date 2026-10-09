@@ -137,6 +137,9 @@ class WB_RowActions {
 			$a[ 'archive_' . $cct ] = [ 'cct' => $cct, 'label' => 'Archive', 'icon' => 'archive', 'danger' => true, 'reason' => 'Why archive it? (It stays on file and can be restored.)',
 				'allowed' => fn() => current_user_can( $cap ), 'visible' => fn( $r ) => 'archived' !== ( $r['record_status'] ?? '' ),
 				'handle' => fn( $id, $why ) => WB_CCT::set_status( $cct, $id, 'archived', $why ) ];
+			$a[ 'restore_' . $cct ] = [ 'cct' => $cct, 'label' => 'Restore', 'icon' => 'complete', 'confirm' => 'Bring it back into the current list?',   // 1.6.0: archive is undone on the screen
+				'allowed' => fn() => current_user_can( $cap ), 'visible' => fn( $r ) => 'archived' === ( $r['record_status'] ?? '' ),
+				'handle' => fn( $id ) => WB_CCT::set_status( $cct, $id, 'active', 'restored' ) ];
 		}
 		return (array) apply_filters( 'wb_row_actions', $a );
 	}

@@ -34,11 +34,19 @@ For everyone. Part of _Knowing: demand, cashflow and the Integrity report_.
 3. **Invoices.** Press a column heading to sort by it; press it again to turn it round. Long lists come in pages of fifty with Previous and Next. Every one of these is in the address, so a filtered list can be bookmarked or sent to a colleague.
 4. **Customers.** Click a customer's name in any list to open their page; click a product code to open the product's.
 
+## Make a counter sale
+
+For whoever serves at the counter. Part of _Selling: from a quote to the goods going out_.
+
+1. **Quotes.** Open "Quick sale at the counter" on Quotes. Choose the customer (Bayside Hardware pays cash), find the product, give the quantity.
+2. **Quotes.** Choose how it was paid, type the slip number and the name of the person taking the goods, and press "Sold and paid".
+3. **Orders.** The order opens with its invoice paid and its collection note signed. Each has its own number and PDF, exactly as if every button had been pressed.
+
 ## Chase a customer who is late
 
 For accounts. Part of _Getting paid: the bank statement, matching and credit notes_.
 
-1. **Invoices.** Press the Overdue chip on Invoices. Click the customer's name on a late invoice.
+1. **Invoices.** Open the Chase fold at the top of Invoices: everything owed by how late, then the customers to chase, the most overdue money first. Click a customer's name.
 2. **Customers.** Their page shows what they owe and how late, and every open invoice with what is still owing on it.
 3. **Customers.** Press "Send a reminder". Their accounts contact is ticked, the message is filled in, and the statement PDF is attached. Send it.
 4. **Customers.** The reminder is on their timeline with the date and who it went to. When their payment comes in on the bank statement it matches the invoice by its number.

@@ -14,6 +14,7 @@ Everything in the sale is typed once, on the quote. The order, the invoice and t
 6. **Orders.** The release check decides whether goods may leave: an account on hold or closed, no; the invoice paid, yes; a cash customer who has not paid, no; a customer on terms, yes while nothing is overdue and everything they owe, this order included, is inside their credit limit. "Release for collection / delivery" runs it and puts the stock aside.
 7. **Deliveries.** Issue the delivery or collection note (DN) for the quantities going out, or "Issue note for everything left". Issuing it takes the stock off the books, there and then. Record who signed for it when it is back.
 8. **Orders.** When every line has been delivered and the invoice is paid or inside its terms, close the order. An order can be cancelled at any point before goods have left.
+9. **Quotes.** At the counter, "Quick sale" does all of this in one press for goods paid and taken now: the quote, the order, the invoice, the payment, the release and the signed collection note, each with its own number. A price that needs approval cannot be a counter sale; if any step is refused it stops there and says which.
 
 The rules it keeps:
 
@@ -30,8 +31,9 @@ Money is matched to invoices from the bank statement, and the system never guess
 3. **Payments.** An unmatched payment is matched by hand under "Match a payment by hand", with a note saying why. Hand matches are listed apart in the Integrity report. Cash or card taken at the counter is recorded under its own fold and matched at once.
 4. **Invoices.** As money arrives the invoice moves from issued to part paid to paid. At 02:00 the nightly run marks anything past its due date overdue, which blocks that customer's next release until it is settled.
 5. **Invoices.** A correction is a credit note. Press "Ask for a credit note" against the invoice with the amount and the reason; a different person approves it under "Credit notes waiting for approval". Only on approval does it take its CRN number and PDF, so the series stays gapless, and the invoice's outstanding amount drops.
-6. **Customers.** Each customer's page shows what they owe and how late, in five columns from not yet due to over 90 days. "Send a statement" or, when something is late, "Send a reminder" emails the statement PDF with the words from your template.
-7. **Your account.** A customer with a login sees their open invoices, downloads any invoice or credit note, and their statement, from their account.
+6. **Invoices.** The Chase fold at the top of Invoices shows everything owed by how late, then every customer with something past its due date, the most overdue money first, with when they were last chased. "Send a reminder" or "Send a statement" from there.
+7. **Customers.** Each customer's page shows what they owe and how late, in five columns from not yet due to over 90 days. "Send a statement" or, when something is late, "Send a reminder" emails the statement PDF with the words from your template. "Monthly statement by email" switches on a statement on the same day every month while they owe anything; the owner sets the day on the Chase fold.
+8. **Your account.** A customer with a login sees their open invoices, downloads any invoice or credit note, and their statement, from their account.
 
 The rules it keeps:
 
@@ -72,7 +74,7 @@ The rules it keeps:
 
 A category groups products and carries the lowest margin and the shared specification rows. A price tier is a discount off list that a customer sits in. A rule is one customer's own price for one product or one category. The list price is what everyone else pays.
 
-1. **Products.** Add a product: its category, cost, list price, lowest margin (else the category's, else the policy), reorder point and price dates. Type one in or upload a file of them.
+1. **Products.** Add a product: its category, cost, list price, lowest margin (else the category's, else the policy), reorder point and price dates. Type one in or upload a file of them. On the product's page add a picture (JPG, PNG or WebP): it shows on the lists, on quote lines and on the datasheet.
 2. **Products.** Set up categories and price tiers under their own folds. One tier is the default for new customers.
 3. **Customers.** Put each customer in a tier. Add a rule for a customer who has negotiated their own price for a product or a whole category; a second person approves the rule before it is used.
 4. **Quotes.** When a line is quoted, the price comes from the most specific thing that applies: the customer's product rule, then their category rule (nearest category first), then their tier, then list. The source is shown and frozen on the line.
@@ -103,11 +105,12 @@ The rules it keeps:
 
 Every night at 02:00 the system works out, from what actually happened, what is likely to happen next: who will order, when money will move, and whether anyone has had to put their name to something unusual.
 
-1. **Marketing.** Record a contact (a call, a visit, a complaint) against a customer. Read who is likely to order soon, who has gone quiet, and each customer's stage: lead, quoted, first order, repeat, at risk, lapsed.
-2. **The system, at night.** Nightly: per customer and product, the rhythm of ordering and the predicted next order with a confidence; per product, which months are busy; each customer's stage, updated only when it changes.
-3. **Cashflow.** Thirteen weeks ahead, week by week: invoices due (shifted by how late each customer actually pays), likely orders, open purchase orders on the supplier's terms, and payroll. Each night's forecast is kept so it can be checked later.
-4. **Integrity.** On the first of the month, last month's Integrity report: stock adjustments and write-offs, count differences, credit notes with the payment they reverse, hand-matched payments, prices approved below the floor, and the audit-trail check, each by the person who asked and the person who approved.
-5. **Notifications.** What the system noticed (a reorder alert, an overdue invoice, a chain check) is a notification in the workspace. Email is off for every group until the owner switches it on under Settings.
+1. **Today.** Today, for people who see the money: this month so far against the same days last year (sales before VAT and cash received), and the next four weeks of cash from last night's forecast, week by week.
+2. **Marketing.** Record a contact (a call, a visit, a complaint) against a customer. Read who is likely to order soon, who has gone quiet, and each customer's stage: lead, quoted, first order, repeat, at risk, lapsed.
+3. **The system, at night.** Nightly: per customer and product, the rhythm of ordering and the predicted next order with a confidence; per product, which months are busy; each customer's stage, updated only when it changes.
+4. **Cashflow.** Thirteen weeks ahead, week by week: invoices due (shifted by how late each customer actually pays), likely orders, open purchase orders on the supplier's terms, and payroll. Each night's forecast is kept so it can be checked later.
+5. **Integrity.** On the first of the month, last month's Integrity report: stock adjustments and write-offs, count differences, credit notes with the payment they reverse, hand-matched payments, prices approved below the floor, and the audit-trail check, each by the person who asked and the person who approved.
+6. **Notifications.** What the system noticed (a reorder alert, an overdue invoice, a chain check) is a notification in the workspace. Email is off for every group until the owner switches it on under Settings.
 
 The rules it keeps:
 
@@ -152,7 +155,8 @@ An owner sets the company up once; everything after that is day-to-day work. The
 3. **Settings.** Who can do what: tick the screens each person works in. A person's menu shows only those, and a screen they cannot open says who can give it to them.
 4. **Products.** Load the master tables: categories, price tiers, products, customers, contacts, suppliers, staff, leave types, KPIs. Type them in on each screen, or download the template, fill it, "Check file" and then "Validate and import". A file with one problem imports nothing and lists the problems by row.
 5. **Settings.** Email templates: the words each "Send by email" starts with, for quotes, invoices, credit notes, statements, reminders and datasheets. The details fill themselves in. The site must be able to send email (an SMTP plugin is the reliable way).
-6. **System Settings.** Business clock and nightly jobs: set a real server cron for wp-cron so the 02:00 run (overdue sweep, quote expiry, reorder alerts, demand and cashflow, chain check, the Integrity report on the first) is reliable.
+6. **Customers.** Archive, never delete: an archived customer or product leaves the lists, and "Show archived" under the list brings them into view with "Restore" on each.
+7. **System Settings.** Business clock and nightly jobs: set a real server cron for wp-cron so the 02:00 run (overdue sweep, quote expiry, reorder alerts, demand and cashflow, chain check, the Integrity report on the first) is reliable.
 
 The rules it keeps:
 
