@@ -59,6 +59,7 @@ function wp_body_open() {}
 function wp_footer() { echo '<!--foot-->'; }
 function do_shortcode( $s ) { return '<div data-shortcodes="' . esc_attr( $s ) . '">rendered</div>'; }
 function get_option( $k, $d = false ) { return $GLOBALS['T']['options'][ $k ] ?? $d; }
+function update_option( $k, $v, $a = null ) { $GLOBALS['T']['options'][ $k ] = $v; return true; }
 function get_user_meta( $id, $k, $single = false ) { return ''; }
 function get_query_var( $k, $d = '' ) { return $d; }
 function add_action( ...$a ) {} function add_filter( ...$a ) {} function add_shortcode( ...$a ) {}
@@ -193,7 +194,10 @@ ok( 'a failed attempt is said in words', false !== strpos( $html, 'That login na
 unset( $_GET['login'] );
 $GLOBALS['T']['options'] = [ WB_Demo::LOGIN_OPTION => [ 'enabled' => 'yes', 'user_id' => 7 ], WB_Demo::PASS_OPTION => 'demo-4821' ];
 [ , $html ] = WB_Workspace::render( 'sign-in' );
-ok( 'demo open: two cards, the demo visitor filled in, one button, the words about what is saved', false !== strpos( $html, 'wb-signin--two' ) && false !== strpos( $html, '<dt>Login name</dt><dd><code>demo</code></dd>' ) && false !== strpos( $html, '<dt>Password</dt><dd><code>demo-4821</code></dd>' ) && false !== strpos( $html, 'href="https://b2b.test/workspace/demo/">Enter the demo</a>' ) && false !== strpos( $html, 'kept for the day and cleared every night' ) );
+ok( 'demo open: two cards, the demo visitor filled in, one button, the words about what is saved', false !== strpos( $html, 'wb-signin--two' ) && false !== strpos( $html, '<dt>Login name</dt><dd><code>demo</code></dd>' ) && false !== strpos( $html, '<dt>Password</dt><dd><code>demo-user007</code></dd>' ) && false !== strpos( $html, 'href="https://b2b.test/workspace/demo/">Enter the demo</a>' ) && false !== strpos( $html, 'kept for the day and cleared every night' ) );
+ok( 'a password the system made by itself gives way to demo-user007', WB_Demo::password() === 'demo-user007' );
+$GLOBALS['T']['options'][ WB_Demo::PASS_CHOSEN ] = '1'; $GLOBALS['T']['options'][ WB_Demo::PASS_OPTION ] = 'demo-4821';
+ok( 'a password the owner chose is kept', WB_Demo::password() === 'demo-4821' );
 ok( 'the demo login can also be typed into the form', false !== strpos( $html, 'Or type the login name and password into the form' ) );
 ok( 'a demo password is letters, digits or dashes a visitor can read', [ WB_Demo::valid_password( 'demo-4821' ), WB_Demo::valid_password( 'abc' ), WB_Demo::valid_password( 'has space 1' ), WB_Demo::valid_password( '<script>' ), WB_Demo::valid_password( str_repeat( 'a', 33 ) ) ] === [ true, false, false, false, false ] );
 $GLOBALS['T']['options'] = [];

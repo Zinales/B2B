@@ -2,7 +2,7 @@
 /**
  * Plugin Name: B2BGro — Core
  * Description: The engine for a B2B wholesale business: hash-chained audit ledger, gapless document numbering, roles by dashboard, the two pricing checks, stock as a ledger, the quote → order → invoice → payment → delivery state machine, bank-statement matching, demand and cashflow forecasting, staff time/leave/KPIs, private document storage, the Setup screen (brand + first-run checklist), bank CSV mapping, the customer portal and South African payroll. Serves its own screens at /workspace/ and /portal/ (no pages to create). Business data lives in JetEngine CCTs (wp_jet_cct_wb_*); engine records in plugin tables (wp_wb_*).
- * Version: 1.7.1
+ * Version: 1.7.2
  * Author: GroB2B
  * Requires PHP: 8.0
  * Requires at least: 6.4
@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WB_VERSION', '1.7.1' );
+define( 'WB_VERSION', '1.7.2' );
 define( 'WB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WB_PLUGIN_FILE', __FILE__ );
 
@@ -51,7 +51,8 @@ require_once WB_PLUGIN_DIR . 'includes/class-wb-quick-sale.php';
 require_once WB_PLUGIN_DIR . 'includes/class-wb-today.php';
 require_once WB_PLUGIN_DIR . 'includes/class-wb-product-images.php';
 require_once WB_PLUGIN_DIR . 'includes/class-wb-portal-shop.php';
-require_once WB_PLUGIN_DIR . 'includes/class-wb-floor.php';        // 1.7.0 the picking list and a signature on the note   // 1.7.0 customers order from their account: their prices, order again, a basket // 1.6.0 a picture per product, in the media library        // 1.6.0 Today: the month so far and the next four weeks of cash   // 1.6.0 a counter sale in one press, through the same chain         // 1.5.0 a person sends a document by email: templates, recipients, the record  // 1.5.0 find a product as you type; quote lines edited in place         // 1.5.0 a page for each customer and each product          // 1.5.0 search, status filter, sort and paging for every list        // tables, chips, notices (primitives, never hand markup)
+require_once WB_PLUGIN_DIR . 'includes/class-wb-floor.php';
+require_once WB_PLUGIN_DIR . 'includes/class-wb-optin.php';        // 1.7.2 "keep me posted": an opt-in for news, never needed for the demo        // 1.7.0 the picking list and a signature on the note   // 1.7.0 customers order from their account: their prices, order again, a basket // 1.6.0 a picture per product, in the media library        // 1.6.0 Today: the month so far and the next four weeks of cash   // 1.6.0 a counter sale in one press, through the same chain         // 1.5.0 a person sends a document by email: templates, recipients, the record  // 1.5.0 find a product as you type; quote lines edited in place         // 1.5.0 a page for each customer and each product          // 1.5.0 search, status filter, sort and paging for every list        // tables, chips, notices (primitives, never hand markup)
 require_once WB_PLUGIN_DIR . 'includes/class-wb-rowactions.php';    // the ⋯ menu actions registry
 require_once WB_PLUGIN_DIR . 'includes/class-wb-screens.php';       // dashboard shortcodes + panel POST handlers
 require_once WB_PLUGIN_DIR . 'includes/class-wb-rest.php';          // wb/v1
@@ -71,6 +72,7 @@ function wb_activate(): void {
 	WB_Stock::create_tables();
 	WB_Payments::create_table();
 	WB_Demand::create_tables();
+	WB_Optin::create_table();
 	WB_Roles::sync();
 	WB_Storage::ensure_dir();
 	wb_default_options();
@@ -116,6 +118,7 @@ add_action( 'plugins_loaded', function () {
 	WB_Product_Images::init();
 	WB_Portal_Shop::init();
 	WB_Floor::init();
+	WB_Optin::init();
 	WB_Guide::init();
 	WB_Setup::init();
 	WB_Portal::init();

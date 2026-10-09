@@ -965,6 +965,7 @@ class WB_Screens {
 		}
 		$h .= self::fold( 'Who can do what', $body ?: '<p class="wb-muted">Give people a role first (Users in WordPress).</p>' );
 		$h .= WB_Send::settings_fold();   // 1.5.0: what each "Send by email" says
+		$h .= WB_Optin::settings_fold();  // 1.7.2: the people who asked for news
 		$h .= self::fold( 'Audit trail', WB_Render::form_open( 'ledger_verify' ) . WB_Render::form_close( 'Check the audit trail now' ) );
 		return $h;
 	}

@@ -257,7 +257,7 @@ class WB_Workspace {
 				. '<p class="wb-small">Or type the login name and password into the form. You go in as a demo manager.</p>'
 				. '<p class="wb-muted">A shared sample company with customers, products, quotes and a bank statement already in it. Click anything, break nothing. <strong>Whatever you save is kept for the day and cleared every night.</strong> Please do not enter real names or numbers.</p></section>';
 		}
-		return $h . '</div>';
+		return $h . '</div>' . ( class_exists( 'WB_Optin' ) ? WB_Optin::form( 'sign-in' ) : '' );   // 1.7.2: news, by choice, never needed for the demo
 	}
 
 	/**

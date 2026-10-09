@@ -488,6 +488,17 @@ body.wb-app{margin:0;background:var(--wb-canvas);color:var(--wb-muted);font-fami
 .wb-welcome-foot .wb-wrap{display:flex;justify-content:space-between;gap:1rem;align-items:center;font-size:var(--wb-fs-md);color:var(--wb-canvas-82)}
 .wb-app .wb-welcome-foot a{color:var(--wb-canvas);text-decoration:underline;text-underline-offset:.15em}
 .wb-builton{color:var(--wb-canvas-82)}
+.wb-optin{max-width:40rem;margin:var(--wb-s5) auto 0}
+.wb-wrap .wb-optin{margin:0}
+.wb-optin h2{margin:0 0 .3rem}
+.wb-optin-form{display:grid;grid-template-columns:1fr 1fr;gap:.7rem 1rem;align-items:end}
+.wb-optin-form .wb-optin-consent,.wb-optin-form .wb-btn{grid-column:1/-1;justify-self:start}
+.wb-optin-consent{align-items:flex-start;font-size:var(--wb-fs-sm);color:var(--wb-ink)}
+.wb-optin-consent input{margin-top:.2rem;flex:none}
+.wb-optin-hp{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.wb-optin-said{background:var(--wb-good-bg);color:var(--wb-good);padding:.6rem .8rem;border-radius:var(--wb-r)}
+.wb-optin-said.is-err{background:var(--wb-bad-bg);color:var(--wb-bad)}
+@media (max-width:640px){.wb-optin-form{grid-template-columns:1fr}}
 .wb-demo-creds{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.4rem 0 .8rem}
 .wb-demo-creds dt{font-size:var(--wb-fs-xs);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--wb-muted)}
 .wb-demo-creds dd{margin:.2rem 0 0}

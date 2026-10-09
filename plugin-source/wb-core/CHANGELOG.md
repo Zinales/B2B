@@ -1,5 +1,20 @@
 # wb-core changelog
 
+## 1.7.2 — 9 October 2026
+- The demo password is **demo-user007** (Zina, 9 October). It replaces the one 1.7.1 made by itself
+  (demo-1234), and is set on the demo login when the demo opens, when Settings is saved and every
+  night. A password an owner saves under Settings still wins.
+- **Keep me posted** (Zina: "I don't want to capture details to test the demo, but we could add an
+  opt-in for releases and special offers"): a small form on the front page and the sign-in page,
+  never needed for the demo. An email, an optional name, and a tick box that is required; the
+  exact words agreed to, the time and the page are kept with the address (POPIA). Every address
+  has its own unsubscribe link that works without signing in. Nothing is emailed from the system:
+  under Settings › "People who asked for news" the owner sees the list, takes someone off it, and
+  downloads it as CSV with each person's unsubscribe link for the mailing tool they use. A hidden
+  field and five sign-ups an hour per address keep robots out. Can be hidden under Settings.
+- Tests: regress-optin.php; regress-frame checks demo-user007 and that an owner's own password is
+  kept.
+
 ## 1.7.1 — 9 October 2026
 Demo login details (Zina: "we don't have demo login details captured for users, so they can't
 access the demo yet").

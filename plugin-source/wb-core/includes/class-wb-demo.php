@@ -99,8 +99,10 @@ class WB_Demo {
 	 * password, and the data goes back to the sample every night.
 	 */
 	const PASS_OPTION  = 'wb_demo_password';
+	const PASS_CHOSEN  = 'wb_demo_password_chosen';   // set when an owner saves one under Settings
+	const PASS_DEFAULT = 'demo-user007';              // 1.7.2, Zina: "make the password demo-user007"
 	/** Panel actions a shared login must never run: they change the tenant, not the sample. */
-	const BLOCKED_PANELS = [ 'setup_save', 'setup_reset', 'dashboards', 'settings', 'tables_create', 'leave_types', 'record_import', 'send_templates' ];
+	const BLOCKED_PANELS = [ 'setup_save', 'setup_reset', 'dashboards', 'settings', 'tables_create', 'leave_types', 'record_import', 'send_templates', 'optin_setting', 'optin_remove' ];
 
 	public static function init(): void {
 		add_shortcode( 'wb_demo', [ __CLASS__, 'shortcode' ] );
@@ -118,14 +120,15 @@ class WB_Demo {
 		return (bool) preg_match( '/^[A-Za-z0-9-]{6,32}$/', $p );
 	}
 
-	/** The shown password; one is made (easy to read and type) the first time it is asked for. */
+	/**
+	 * The shown password: the one an owner saved under Settings, else demo-user007. A password the
+	 * system made by itself in 1.7.1 (demo-1234) gives way to demo-user007.
+	 */
 	public static function password(): string {
 		$p = (string) get_option( self::PASS_OPTION, '' );
-		if ( ! self::valid_password( $p ) ) {
-			$p = 'demo-' . wp_rand( 1000, 9999 );
-			update_option( self::PASS_OPTION, $p, false );
-		}
-		return $p;
+		if ( '1' === (string) get_option( self::PASS_CHOSEN, '' ) && self::valid_password( $p ) ) return $p;
+		if ( self::PASS_DEFAULT !== $p ) update_option( self::PASS_OPTION, self::PASS_DEFAULT, false );
+		return self::PASS_DEFAULT;
 	}
 
 	/** The demo login's name as WordPress has it ('demo', or 'demo-xxxxxx' when 'demo' was taken). */
@@ -195,6 +198,7 @@ class WB_Demo {
 		if ( '' !== $pass ) {
 			if ( ! self::valid_password( $pass ) ) return new WP_Error( 'wb_demo_password', 'The demo password must be 6 to 32 letters, digits or dashes, so a visitor can read it and type it.' );
 			update_option( self::PASS_OPTION, $pass, false );
+			update_option( self::PASS_CHOSEN, '1', false );
 		}
 		if ( $on ) {
 			$uid = self::ensure_login();

@@ -54,6 +54,7 @@ function get_bloginfo( $k ) { return 'Demo Technical Supplies'; }
 function wp_body_open() {}
 function wp_footer() {}
 function get_option( $k, $d = false ) { return $GLOBALS['T']['options'][ $k ] ?? $d; }
+function update_option( $k, $v, $a = null ) { $GLOBALS['T']['options'][ $k ] = $v; return true; }
 function date_i18n( $f ) { return date( $f ); }
 function wp_nonce_field( ...$a ) { return ''; }
 function sanitize_html_class( $s ) { return $s; }
@@ -117,7 +118,7 @@ function do_shortcode( $s ) {
 }
 
 $base = WB_PLUGIN_DIR . 'includes/';
-foreach ( [ 'roles', 'setup', 'workspace', 'welcome', 'render', 'needs', 'demo', 'guide', 'pricing', 'quote-editor', 'pages', 'send', 'records', 'invoices', 'orders', 'screens', 'documents', 'docs', 'datasheets', 'statements' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
+foreach ( [ 'roles', 'setup', 'workspace', 'welcome', 'render', 'needs', 'demo', 'guide', 'pricing', 'quote-editor', 'pages', 'send', 'records', 'invoices', 'orders', 'screens', 'documents', 'docs', 'datasheets', 'statements', 'optin' ] as $c ) require_once $base . 'class-wb-' . $c . '.php';
 
 function caps_of( string $role ): array {
 	if ( 'administrator' === $role ) return WB_Roles::staff_caps();

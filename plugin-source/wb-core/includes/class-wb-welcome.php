@@ -127,6 +127,7 @@ class WB_Welcome {
 			$h .= '</ol>' . $btn( $demo, 'Try the demo' ) . '</div></section>';
 		}
 
+		if ( ! $in && class_exists( 'WB_Optin' ) && '' !== ( $opt = WB_Optin::form( 'welcome' ) ) ) $h .= '<section class="wb-sec wb-sec--white"><div class="wb-wrap">' . $opt . '</div></section>';   // 1.7.2: news, by choice
 		$h .= '<footer class="wb-sec wb-sec--sink wb-welcome-foot"><div class="wb-wrap"><span>' . esc_html( $name ) . ' <span class="wb-builton">· built on B2BGro</span></span>' . ( $in ? '' : '<a href="' . esc_url( $signin ) . '">Sign in</a>' ) . '</div></footer>';
 		return $h;
 	}
